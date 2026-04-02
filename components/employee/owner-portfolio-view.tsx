@@ -209,19 +209,50 @@ export function OwnerPortfolioView({
     }
     setLocatingCurrent(true);
     setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        setPendingPoint({ latitude, longitude });
+
+    // Some browsers (Chrome/Edge especially) are stricter about secure context and can fail fast with
+    // high accuracy. We retry with different options and show the real error when possible.
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setLocatingCurrent(false);
+      setError("تعذر الحصول على موقعك الحالي. يرجى استخدام اتصال آمن (https) أو localhost.");
+      return;
+    }
+
+    const getCoords = (options: PositionOptions) =>
+      new Promise<{ latitude: number; longitude: number }>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            });
+          },
+          (err) => reject(err),
+          options
+        );
+      });
+
+    try {
+      // Attempt 1: high accuracy.
+      const coords = await getCoords({ enableHighAccuracy: true, timeout: 25000, maximumAge: 10000 });
+      setPendingPoint({ latitude: coords.latitude, longitude: coords.longitude });
+      setLocatingCurrent(false);
+      return;
+    } catch (err) {
+      // Fallback: less strict settings (improves compatibility).
+      try {
+        const fallbackCoords = await getCoords({ enableHighAccuracy: false, timeout: 25000, maximumAge: 30000 });
+        setPendingPoint({ latitude: fallbackCoords.latitude, longitude: fallbackCoords.longitude });
         setLocatingCurrent(false);
-      },
-      () => {
+        return;
+      } catch (fallbackErr) {
+        const maybeError = fallbackErr as GeolocationPositionError;
+        const codePart = typeof maybeError?.code === "number" ? ` (code: ${maybeError.code})` : "";
+        const messagePart = maybeError?.message ? ` - ${maybeError.message}` : "";
         setLocatingCurrent(false);
-        setError("تعذر الحصول على موقعك الحالي. تأكد من السماح بالموقع.");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+        setError(`تعذر الحصول على موقعك الحالي. تأكد من السماح بالموقع.${codePart}${messagePart}`);
+      }
+    }
   }
 
   async function onSaveOwner() {
