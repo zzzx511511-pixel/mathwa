@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Owner = { id: string; full_name: string };
 type Property = { id: string; name: string; location?: string; city?: string };
@@ -61,8 +61,10 @@ export function MaintenanceInvoicesView({
   const [propertyId, setPropertyId] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageLabel, setImageLabel] = useState("");
   const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const propertyLabel = useMemo(() => {
     const p = properties.find((x) => x.id === propertyId);
@@ -116,6 +118,28 @@ export function MaintenanceInvoicesView({
   async function onSave() {
     setSaving(true);
     setError(null);
+
+    let uploadedImageUrl = "";
+    if (imageFile) {
+      const form = new FormData();
+      form.append("file", imageFile);
+      const uploadRes = await fetch("/api/employee/maintenance-invoices/upload-image", {
+        method: "POST",
+        body: form
+      });
+      const uploadData = (await uploadRes.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        publicUrl?: string | null;
+      };
+      if (!uploadRes.ok || !uploadData.ok) {
+        setSaving(false);
+        setError(uploadData.error ?? "تعذر رفع صورة الفاتورة.");
+        return;
+      }
+      uploadedImageUrl = String(uploadData.publicUrl ?? "").trim();
+    }
+
     const res = await fetch("/api/employee/maintenance-invoices/create", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -124,7 +148,7 @@ export function MaintenanceInvoicesView({
         propertyId,
         amount,
         description,
-        imageUrl,
+        imageUrl: uploadedImageUrl || null,
         status
       })
     });
@@ -141,8 +165,18 @@ export function MaintenanceInvoicesView({
     setPropertyId("");
     setAmount("");
     setDescription("");
-    setImageUrl("");
+    setImageFile(null);
+    setImageLabel("");
     setStatus("pending");
+  }
+
+  function getInvoiceImageUrl(row: Record<string, unknown>): string | null {
+    const candidates = [row.image_url, row.receipt_image_url, row.image, row.photo_url, row.attachment_url];
+    for (const candidate of candidates) {
+      const s = String(candidate ?? "").trim();
+      if (s) return s;
+    }
+    return null;
   }
 
   return (
@@ -254,14 +288,27 @@ export function MaintenanceInvoicesView({
             </label>
 
             <label className="block md:col-span-2">
-              <span className="mb-1 block text-sm font-semibold text-ink-900/80">صورة الفاتورة (رابط)</span>
+              <span className="mb-1 block text-sm font-semibold text-ink-900/80">صورة الفاتورة</span>
               <input
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                type="url"
-                className="w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2 text-ink-900 outline-none focus:border-brand-400"
-                placeholder="https://example.com/invoice.jpg"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  setImageFile(file);
+                  setImageLabel(file ? file.name : "");
+                }}
               />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-xl border border-brand-400 bg-white px-4 py-2 text-sm font-bold text-brand-500 hover:bg-brand-50"
+              >
+                إرفاق صورة الفاتورة
+              </button>
+              <div className="mt-1 text-xs text-ink-900/65">{imageLabel || "لم يتم اختيار صورة"}</div>
             </label>
           </div>
 
@@ -294,13 +341,14 @@ export function MaintenanceInvoicesView({
               <th className="px-3 py-3 text-right font-semibold">العقار</th>
               <th className="px-3 py-3 text-right font-semibold">المبلغ</th>
               <th className="px-3 py-3 text-right font-semibold">الوصف</th>
+              <th className="px-3 py-3 text-right font-semibold">الصورة</th>
               <th className="px-3 py-3 text-right font-semibold">تاريخ الإنشاء</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td className="px-4 py-6 text-ink-900/70" colSpan={6}>
+                <td className="px-4 py-6 text-ink-900/70" colSpan={7}>
                   لا توجد فواتير.
                 </td>
               </tr>
@@ -312,6 +360,21 @@ export function MaintenanceInvoicesView({
                   <td className="px-3 py-3 font-mono text-xs text-ink-900/70">{String(row.property_id ?? "—")}</td>
                   <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
                   <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
+                  <td className="px-3 py-3 text-ink-900/75">
+                    {getInvoiceImageUrl(row) ? (
+                      <a
+                        href={getInvoiceImageUrl(row) as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-lg border border-ink-900/15 bg-white px-2 py-1 text-base hover:border-brand-400"
+                        title="عرض صورة الفاتورة"
+                      >
+                        🖼️
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td className="px-3 py-3 tabular-nums text-ink-900/70">{fmtDate(row.created_at)}</td>
                 </tr>
               ))
