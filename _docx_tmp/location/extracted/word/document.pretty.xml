@@ -1,0 +1,3683 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document mc:Ignorable="w14 w15 wp14" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex">
+<w:body>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="160"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="72"/>
+<w:szCs w:val="72"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ…ط«ظˆظ‰ ط§ظ„ط¹ظ‚ط§ط±ظٹط©</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="80"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="B8860B"/>
+<w:sz w:val="36"/>
+<w:szCs w:val="36"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ…طھط·ظ„ط¨ط§طھ ظ†ط¸ط§ظ… ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ ظ„ظ„ط¹ظ‚ط§ط±ط§طھ</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="300"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="888888"/>
+<w:sz w:val="22"/>
+<w:szCs w:val="22"/>
+</w:rPr>
+<w:t xml:space="preserve">Location / GPS System Requirements</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pBdr>
+<w:bottom w:val="single" w:color="B8860B" w:sz="12" w:space="1"/>
+</w:pBdr>
+<w:spacing w:after="200"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="9026"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="9026"/>
+<w:tcBorders>
+<w:top w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:left w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:bottom w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:right w:val="none" w:color="FFFFFF" w:sz="0"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="160"/>
+<w:left w:type="dxa" w:w="240"/>
+<w:bottom w:type="dxa" w:w="160"/>
+<w:right w:type="dxa" w:w="240"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ†ط¸ط±ط© ط¹ط§ظ…ط©</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="FFFFFF"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ‚ط§ط¹ط¯ط© ط§ظ„طھطµظ…ظٹظ…: ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ ط³ط±ظٹ ظˆظ…ظ‚ظٹط¯</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading1"/>
+<w:pBdr>
+<w:bottom w:val="single" w:color="B8860B" w:sz="6" w:space="4"/>
+</w:pBdr>
+<w:spacing w:before="360" w:after="180"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ‚ط§ط¹ط¯ط© ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="60" w:after="60"/>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ (GPS / ط®ط±ط§ط¦ط·) ظ„ط£ظٹ ط¹ظ‚ط§ط± ظ‡ظˆ ظ…ط¹ظ„ظˆظ…ط© ط­ط³ط§ط³ط© ظ„ط§ طھظڈط¹ط±ط¶ ط¥ظ„ط§ ظ„ظ„ط¬ظ‡ط§طھ ط§ظ„ظ…طµط±ط­ ظ„ظ‡ط§.</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="60" w:after="60"/>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط³ط¨ط¨: ط­ظ…ط§ظٹط© ط®طµظˆطµظٹط© ط§ظ„ظ…ظ„ط§ظƒ ظˆط§ظ„ظ…ط³طھط£ط¬ط±ظٹظ†طŒ ظˆظ…ظ†ط¹ ط§ظ„ظ…ظ†ط§ظپط³ظٹظ† ظ…ظ† ظ…ط¹ط±ظپط© ظ…ظˆط§ظ‚ط¹ ط§ظ„ط¹ظ‚ط§ط±ط§طھ.</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="2000"/>
+<w:gridCol w:w="2200"/>
+<w:gridCol w:w="4826"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط¬ظ‡ط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2200"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">طµظ„ط§ط­ظٹط© ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4826"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ…ط§ ظٹط¸ظ‡ط± ط¨ط¯ظ„ط§ظ‹ ط¹ظ†ظ‡</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ًںŒگ ط§ظ„ط²ط§ط¦ط± ط§ظ„ط¹ط§ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2200"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ…ظ…ظ†ظˆط¹ طھظ…ط§ظ…ط§ظ‹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4826"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ†طµ ظپظ‚ط·: ظ…ط«ظ„ آ«ط§ظ„ط±ظٹط§ط¶طŒ ط§ظ„ظ…ظ†ط·ظ‚ط© ط§ظ„طµظ†ط§ط¹ظٹط©آ»</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ًںڈ¢ ط§ظ„ظ…ط³طھط£ط¬ط±</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2200"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ…ظ…ظ†ظˆط¹ طھظ…ط§ظ…ط§ظ‹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4826"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ†طµ ط§ظ„ط¹ظ†ظˆط§ظ† ظپظ‚ط· ط¨ط¯ظˆظ† ط®ط±ظٹط·ط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ًںڈ  ط§ظ„ظ…ط§ظ„ظƒ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2200"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ط¹ظ‚ط§ط±ط§طھظ‡ ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4826"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط±ظ‰ ظ…ظˆظ‚ط¹ ط¹ظ‚ط§ط±ط§طھظ‡ ط§ظ„ظ…ط³ط¬ظ„ط© ظ„ط¯ظٹظ‡</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ًں‘¨â€چًں’¼ ط§ظ„ظ…ظˆط¸ظپ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2200"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظƒظ„ ط§ظ„ط¹ظ‚ط§ط±ط§طھ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4826"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط±ظ‰ ظˆظٹط¶ظٹظپ ظˆظٹط¹ط¯ظ„ ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ًں‘” ظ…ط¯ظٹط± / ط±ط¦ظٹط³ ظ…ط¬ظ„ط³</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2200"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظƒظ„ ط§ظ„ط¹ظ‚ط§ط±ط§طھ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4826"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">طµظ„ط§ط­ظٹط© ظƒط§ظ…ظ„ط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="9026"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="9026"/>
+<w:tcBorders>
+<w:top w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:left w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:bottom w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:right w:val="none" w:color="FFFFFF" w:sz="0"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="160"/>
+<w:left w:type="dxa" w:w="240"/>
+<w:bottom w:type="dxa" w:w="160"/>
+<w:right w:type="dxa" w:w="240"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="FFFFFF"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط­ظ‚ظˆظ„ ظˆط§ظ„ظ€ RLS Policies ط§ظ„ظ…ط·ظ„ظˆط¨ط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading1"/>
+<w:pBdr>
+<w:bottom w:val="single" w:color="B8860B" w:sz="6" w:space="4"/>
+</w:pBdr>
+<w:spacing w:before="360" w:after="180"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ط¥ط¶ط§ظپط§طھ ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ â€” Supabase</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading2"/>
+<w:spacing w:before="280" w:after="140"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="26"/>
+<w:szCs w:val="26"/>
+</w:rPr>
+<w:t xml:space="preserve">ط­ظ‚ظˆظ„ ط§ظ„ظ…ظˆظ‚ط¹ ظپظٹ ط¬ط¯ظˆظ„ properties</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="60" w:after="60"/>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط£ط¶ظپ ظ‡ط°ظ‡ ط§ظ„ط­ظ‚ظˆظ„ ظ„ط¬ط¯ظˆظ„ properties ط§ظ„ظ…ظˆط¬ظˆط¯:</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="2000"/>
+<w:gridCol w:w="1600"/>
+<w:gridCol w:w="2800"/>
+<w:gridCol w:w="2626"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط­ظ‚ظ„</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1600"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ†ظˆط¹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظˆطµظپ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2626"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ…ظ† ظٹظ…ظ„ط£ظ‡</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">latitude</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1600"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">DECIMAL nullable</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط®ط· ط§ظ„ط¹ط±ط¶</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2626"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ…ظˆط¸ظپ ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">longitude</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1600"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">DECIMAL nullable</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط®ط· ط§ظ„ط·ظˆظ„</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2626"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ…ظˆط¸ظپ ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">location_text</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1600"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">TEXT</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط¹ظ†ظˆط§ظ† ط§ظ„ظ†طµظٹ ط§ظ„ط¹ط§ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2626"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ…ظˆط¸ظپ â€” ظٹط¸ظ‡ط± ظ„ظ„ط¬ظ…ظٹط¹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2000"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">location_notes</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1600"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">TEXT nullable</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ظ…ظˆظ‚ط¹ ظ„ظ„ظ…ظˆط¸ظپظٹظ†</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2626"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ…ظˆط¸ظپ ظپظ‚ط· â€” ط³ط±ظٹ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading2"/>
+<w:spacing w:before="280" w:after="140"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="26"/>
+<w:szCs w:val="26"/>
+</w:rPr>
+<w:t xml:space="preserve">SQL â€” ط¥ط¶ط§ظپط© ط§ظ„ط­ظ‚ظˆظ„</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="20" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2d7a55"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">-- ط£ط¶ظپ ظ‡ط°ظ‡ ط§ظ„ط£ط³ط·ط± ظپظٹ Supabase SQL Editor</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">ALTER TABLE properties ADD COLUMN IF NOT EXISTS latitude DECIMAL;</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">ALTER TABLE properties ADD COLUMN IF NOT EXISTS longitude DECIMAL;</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">ALTER TABLE properties ADD COLUMN IF NOT EXISTS location_text TEXT;</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="20"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">ALTER TABLE properties ADD COLUMN IF NOT EXISTS location_notes TEXT;</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading2"/>
+<w:spacing w:before="280" w:after="140"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="26"/>
+<w:szCs w:val="26"/>
+</w:rPr>
+<w:t xml:space="preserve">RLS Policies â€” ط­ظ…ط§ظٹط© ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="16" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2d7a55"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">-- Policy 1: ط§ظ„ظ…ظˆط¸ظپظˆظ† ظٹط±ظˆظ† ظƒظ„ ط´ظٹط،</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">CREATE POLICY staff_see_location ON properties</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  FOR SELECT USING (</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN (&apos;super_admin&apos;,&apos;manager&apos;,&apos;employee&apos;,&apos;collector&apos;))</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="16"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  );</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="16" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2d7a55"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">-- Policy 2: ط§ظ„ظ…ط§ظ„ظƒ ظٹط±ظ‰ ظ…ظˆظ‚ط¹ ط¹ظ‚ط§ط±ط§طھظ‡ ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">CREATE POLICY owner_see_own_location ON properties</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  FOR SELECT USING (</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">    owner_id IN (SELECT id FROM owners WHERE user_id = auth.uid())</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="16"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  );</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="16" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2d7a55"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">-- Policy 3: ط§ظ„ط¹ظ…ظٹظ„ ظˆط§ظ„ط²ط§ط¦ط± ظٹط±ظˆظ† location_text ظپظ‚ط· (ط¨ط¯ظˆظ† lat/lng)</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2d7a55"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">-- ط§ط³طھط®ط¯ظ… View ظ…ظ†ظپطµظ„ ظ„ظ„ط¹ظ…ظ„ط§ط، ظٹظڈط®ظپظٹ latitude ظˆ longitude</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">CREATE VIEW public_properties AS</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  SELECT id, name, type, area_sqm, location_text,</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">         annual_rent, status, images, features</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  FROM properties</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">  WHERE status IN (&apos;vacant&apos;, &apos;for_sale&apos;);</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="0" w:after="20"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Courier New" w:cs="Courier New" w:eastAsia="Courier New" w:hAnsi="Courier New"/>
+<w:color w:val="2d7a55"/>
+<w:sz w:val="17"/>
+<w:szCs w:val="17"/>
+</w:rPr>
+<w:t xml:space="preserve">-- ظ‡ط°ط§ ط§ظ„ظ€ View ظ„ط§ ظٹط­طھظˆظٹ ط¹ظ„ظ‰ latitude ط£ظˆ longitude</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="9026"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="9026"/>
+<w:tcBorders>
+<w:top w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:left w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:bottom w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:right w:val="none" w:color="FFFFFF" w:sz="0"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="160"/>
+<w:left w:type="dxa" w:w="240"/>
+<w:bottom w:type="dxa" w:w="160"/>
+<w:right w:type="dxa" w:w="240"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ظˆط§ط¬ظ‡ط© ط§ظ„ظ…ط³طھط®ط¯ظ…</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="FFFFFF"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظƒظٹظپ ظٹط¸ظ‡ط± ط§ظ„ظ…ظˆظ‚ط¹ ظپظٹ ظƒظ„ ط¨ظˆط§ط¨ط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading1"/>
+<w:pBdr>
+<w:bottom w:val="single" w:color="B8860B" w:sz="6" w:space="4"/>
+</w:pBdr>
+<w:spacing w:before="360" w:after="180"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ظˆط§ط¬ظ‡ط© ط§ظ„ظ…ط³طھط®ط¯ظ… â€” Frontend</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading2"/>
+<w:spacing w:before="280" w:after="140"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="26"/>
+<w:szCs w:val="26"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ„ظˆط­ط© ط§ظ„ظ…ظˆط¸ظپ â€” ط¥ط¶ط§ظپط© ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="60" w:after="60"/>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظپظٹ ظƒظ„ ط¨ط·ط§ظ‚ط© ط¹ظ‚ط§ط± ظپظٹ ظ„ظˆط­ط© ط§ظ„ظ…ظˆط¸ظپ ظٹط¸ظ‡ط± ط²ط± ًں“چ ط¨ط¬ط§ظ†ط¨ ط§ظ„ط¹ظ‚ط§ط±:</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط¹ظ†ط¯ ط§ظ„ط¶ط؛ط· ط¹ظ„ظ‰ ط§ظ„ط²ط± ظٹظپطھط­ Modal ظٹط­طھظˆظٹ ط¹ظ„ظ‰:</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط®ط±ظٹط·ط© Google Maps / Leaflet ظٹظ…ظƒظ† ط§ظ„ظ†ظ‚ط± ط¹ظ„ظٹظ‡ط§ ظ„طھط­ط¯ظٹط¯ ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط­ظ‚ظ„ط§ظ† ظٹط¯ظˆظٹط§ظ†: ط®ط· ط§ظ„ط¹ط±ط¶ (Latitude) + ط®ط· ط§ظ„ط·ظˆظ„ (Longitude)</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط²ط± آ«ط§ط³طھط®ط¯ط§ظ… ظ…ظˆظ‚ط¹ظٹ ط§ظ„ط­ط§ظ„ظٹآ» ظ„ظ„ط­طµظˆظ„ ط¹ظ„ظ‰ ط§ظ„ط¥ط­ط¯ط§ط«ظٹط§طھ طھظ„ظ‚ط§ط¦ظٹط§ظ‹</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط­ظ‚ظ„ ظ†طµظٹ ظ„ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ظ…ظˆظ‚ط¹ (ظ„ظ„ظ…ظˆط¸ظپظٹظ† ظپظ‚ط·)</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط²ط± ط­ظپط¸ ظٹظڈط­ط¯ظ‘ط« ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ ظ…ط¨ط§ط´ط±ط©</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="2400"/>
+<w:gridCol w:w="1800"/>
+<w:gridCol w:w="1800"/>
+<w:gridCol w:w="3026"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2400"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط¹ظ†طµط±</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط¸ظ‡ط± ظپظٹ ظ„ظˆط­ط© ط§ظ„ظ…ظˆط¸ظپ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط¸ظ‡ط± ظپظٹ ط¨ظˆط§ط¨ط© ط§ظ„ظ…ط§ظ„ظƒ</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="3026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="80"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="80"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط¸ظ‡ط± ظ„ظ„ط¹ظ…ظٹظ„/ط§ظ„ط²ط§ط¦ط±</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2400"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط²ط± ًں“چ ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ„ط§</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="3026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ„ط§</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2400"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ط®ط±ظٹط·ط© طھظپط§ط¹ظ„ظٹط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ط¹ظ‚ط§ط±ط§طھظ‡ ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="3026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ„ط§</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2400"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">Latitude / Longitude</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ط¹ظ‚ط§ط±ط§طھظ‡ ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="3026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ„ط§</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2400"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ†طµ ط§ظ„ط¹ظ†ظˆط§ظ†</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="3026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F5EDD8" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2400"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">âœ… ظ†ط¹ظ…</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="1800"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ„ط§</w:t>
+</w:r>
+</w:p>
+</w:tc>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="3026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="FFFFFF" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="70"/>
+<w:left w:type="dxa" w:w="100"/>
+<w:bottom w:type="dxa" w:w="70"/>
+<w:right w:type="dxa" w:w="100"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">â‌Œ ظ„ط§</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading2"/>
+<w:spacing w:before="280" w:after="140"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="26"/>
+<w:szCs w:val="26"/>
+</w:rPr>
+<w:t xml:space="preserve">ط¨ظˆط§ط¨ط© ط§ظ„ظ…ط§ظ„ظƒ â€” ط¹ط±ط¶ ط§ظ„ظ…ظˆظ‚ط¹</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ظ…ط§ظ„ظƒ ظٹط±ظ‰ ط²ط± ًں“چ آ«ط¹ط±ط¶ ط¹ظ„ظ‰ ط§ظ„ط®ط±ظٹط·ط©آ» ظپظٹ طµظپط­ط© طھظپط§طµظٹظ„ ط¹ظ‚ط§ط±ظ‡</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط®ط±ظٹط·ط© طھط¹ط±ط¶ ظپظ‚ط· ط¹ظ‚ط§ط±ط§طھظ‡ â€” ظ„ط§ ظٹط±ظ‰ ط¹ظ‚ط§ط±ط§طھ ط§ظ„ط¢ط®ط±ظٹظ†</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ„ط§ ظٹط³طھط·ظٹط¹ طھط¹ط¯ظٹظ„ ط§ظ„ظ…ظˆظ‚ط¹ â€” ظ„ظ„ظ‚ط±ط§ط،ط© ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط¸ظ‡ط± ظ„ظ‡ ط§ظ„ط¹ظ†ظˆط§ظ† ط§ظ„ظ†طµظٹ + ط§ظ„ط®ط±ظٹط·ط© ط§ظ„طھظپط§ط¹ظ„ظٹط©</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading2"/>
+<w:spacing w:before="280" w:after="140"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="26"/>
+<w:szCs w:val="26"/>
+</w:rPr>
+<w:t xml:space="preserve">ط¨ظˆط§ط¨ط© ط§ظ„ظ…ط³طھط£ط¬ط± ظˆط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¹ط§ظ…</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ„ط§ طھط¸ظ‡ط± ط£ظٹ ط®ط±ظٹط·ط© ط£ظˆ ط¥ط­ط¯ط§ط«ظٹط§طھ</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظٹط¸ظ‡ط± ظپظ‚ط· ط§ظ„ظ†طµ: ظ…ط«ظ„ آ«ط§ظ„ط±ظٹط§ط¶طŒ ط§ظ„ظ…ظ†ط·ظ‚ط© ط§ظ„طµظ†ط§ط¹ظٹط© ط§ظ„ط«ط§ظ†ظٹط©آ»</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ظ„ط§ ظٹظˆط¬ط¯ ط±ط§ط¨ط· ط®ط±ط§ط¦ط· ظˆظ„ط§ ط²ط± آ«ط¹ط±ط¶ ط¹ظ„ظ‰ ط§ظ„ط®ط±ظٹط·ط©آ»</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="ListParagraph"/>
+<w:numPr>
+<w:ilvl w:val="0"/>
+<w:numId w:val="2"/>
+</w:numPr>
+<w:spacing w:before="50" w:after="50"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط­طھظ‰ ظپظٹ API calls: ظ„ط§ ظٹظڈط±ط¬ط¹ ط§ظ„ظ€ API ظ‚ظٹظ… latitude/longitude ظ„ظ„ط¹ظ…ظ„ط§ط،</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="9026"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="9026"/>
+<w:tcBorders>
+<w:top w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:left w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:bottom w:val="none" w:color="FFFFFF" w:sz="0"/>
+<w:right w:val="none" w:color="FFFFFF" w:sz="0"/>
+</w:tcBorders>
+<w:shd w:fill="3D2B1F" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="160"/>
+<w:left w:type="dxa" w:w="240"/>
+<w:bottom w:type="dxa" w:w="160"/>
+<w:right w:type="dxa" w:w="240"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="E8C96A"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط·ظ„ط¨ ط§ظ„ط¬ط§ظ‡ط² ظ„ظ€ Cursor</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="FFFFFF"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ†ط³ط® ظ‡ط°ط§ ط§ظ„ظ†طµ ظˆط¶ط¹ظ‡ ظپظٹ Cursor ظ…ط¨ط§ط´ط±ط©</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading1"/>
+<w:pBdr>
+<w:bottom w:val="single" w:color="B8860B" w:sz="6" w:space="4"/>
+</w:pBdr>
+<w:spacing w:before="360" w:after="180"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="32"/>
+<w:szCs w:val="32"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ„ط·ظ„ط¨ ط§ظ„ط¬ط§ظ‡ط² ظ„ظ€ Cursor</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="60" w:after="60"/>
+<w:jc w:val="right"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط§ظ†ط³ط® ط§ظ„ظ†طµ ط§ظ„طھط§ظ„ظٹ ظƒط§ظ…ظ„ط§ظ‹ ظˆط¶ط¹ظ‡ ظپظٹ ط®ط§ظ†ط© ط§ظ„ظƒطھط§ط¨ط© ظپظٹ Cursor:</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:tbl>
+<w:tblPr>
+<w:tblW w:type="dxa" w:w="9026"/>
+<w:tblBorders>
+<w:top w:val="single" w:color="auto" w:sz="4"/>
+<w:left w:val="single" w:color="auto" w:sz="4"/>
+<w:bottom w:val="single" w:color="auto" w:sz="4"/>
+<w:right w:val="single" w:color="auto" w:sz="4"/>
+<w:insideH w:val="single" w:color="auto" w:sz="4"/>
+<w:insideV w:val="single" w:color="auto" w:sz="4"/>
+</w:tblBorders>
+</w:tblPr>
+<w:tblGrid>
+<w:gridCol w:w="9026"/>
+</w:tblGrid>
+<w:tr>
+<w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="9026"/>
+<w:tcBorders>
+<w:top w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:left w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:bottom w:val="single" w:color="CCCCCC" w:sz="1"/>
+<w:right w:val="single" w:color="CCCCCC" w:sz="1"/>
+</w:tcBorders>
+<w:shd w:fill="F0F7F0" w:val="clear"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="160"/>
+<w:left w:type="dxa" w:w="200"/>
+<w:bottom w:type="dxa" w:w="160"/>
+<w:right w:type="dxa" w:w="200"/>
+</w:tcMar>
+</w:tcPr>
+<w:p>
+<w:pPr>
+<w:spacing w:after="100"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:b/>
+<w:bCs/>
+<w:color w:val="3D2B1F"/>
+<w:sz w:val="20"/>
+<w:szCs w:val="20"/>
+</w:rPr>
+<w:t xml:space="preserve">ط£ط¶ظپ ظ†ط¸ط§ظ… ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ (GPS) ظ„ظ„ط¹ظ‚ط§ط±ط§طھ ظ…ط¹ ط§ظ„ط´ط±ظˆط· ط§ظ„طھط§ظ„ظٹط©:</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="60"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">1. ظپظٹ ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ: ط£ط¶ظپ ط­ظ‚ظˆظ„ latitude ظˆlongitude ظˆlocation_text ظ„ط¬ط¯ظˆظ„ properties</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="60"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">2. ط§ظ„ظ…ظˆط¸ظپ ظپظ‚ط·: ظٹط±ظ‰ ظˆظٹط¶ظٹظپ ظˆظٹط¹ط¯ظ„ ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ ظ„ط£ظٹ ط¹ظ‚ط§ط±</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="60"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">3. ط§ظ„ظ…ط§ظ„ظƒ: ظٹط±ظ‰ ظ…ظˆظ‚ط¹ ط¹ظ‚ط§ط±ط§طھظ‡ ظپظ‚ط· ط¹ظ„ظ‰ ط§ظ„ط®ط±ظٹط·ط© â€” ظ„ظ„ظ‚ط±ط§ط،ط© ظپظ‚ط·</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="60"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">4. ط§ظ„ظ…ط³طھط£ط¬ط± ظˆط§ظ„ط²ط§ط¦ط±: ظ„ط§ ظٹط±ظˆظ† ط£ظٹ ظ…ظˆظ‚ط¹ ط¬ط؛ط±ط§ظپظٹ â€” ظٹط¸ظ‡ط± ظ„ظ‡ظ… ط§ظ„ظ†طµ ظپظ‚ط· ظ…ط«ظ„ آ«ط§ظ„ط±ظٹط§ط¶طŒ ط§ظ„ظ…ظ†ط·ظ‚ط© ط§ظ„طµظ†ط§ط¹ظٹط©آ»</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="60"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">5. ظپظٹ ظ„ظˆط­ط© ط§ظ„ظ…ظˆط¸ظپ: ط£ط¶ظپ ط²ط± ًں“چ ط¨ط¬ط§ظ†ط¨ ظƒظ„ ط¹ظ‚ط§ط± ظٹظپطھط­ ظ†ط§ظپط°ط© ظ„ط¥ط¶ط§ظپط© ط§ظ„ظ…ظˆظ‚ط¹ ط¹ظ„ظ‰ ط§ظ„ط®ط±ظٹط·ط© ط£ظˆ ط¥ط¯ط®ط§ظ„ ط§ظ„ط¥ط­ط¯ط§ط«ظٹط§طھ ظٹط¯ظˆظٹط§ظ‹</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="60"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">6. ظپظٹ ط£ظ…ظ„ط§ظƒ ط§ظ„ط؛ظٹط±: ط²ط± ط§ظ„ظ…ظˆظ‚ط¹ ظٹط¸ظ‡ط± ط¨ط¬ط§ظ†ط¨ ظƒظ„ ط¹ظ‚ط§ط± ظ…ظ† ط¹ظ‚ط§ط±ط§طھ ط§ظ„ظ…ط§ظ„ظƒ</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:after="0"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:color w:val="2C1F14"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">7. RLS Policy ظپظٹ Supabase: طھظ…ظ†ط¹ ط¥ط±ط¬ط§ط¹ latitude ظˆlongitude ظ„ظ„ط¹ظ…ظ„ط§ط، ظˆط§ظ„ط²ظˆط§ط±</w:t>
+</w:r>
+</w:p>
+</w:tc>
+</w:tr>
+</w:tbl>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pBdr>
+<w:bottom w:val="single" w:color="B8860B" w:sz="8" w:space="1"/>
+</w:pBdr>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:spacing w:before="80"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>
+<w:i/>
+<w:iCs/>
+<w:color w:val="888888"/>
+<w:sz w:val="18"/>
+<w:szCs w:val="18"/>
+</w:rPr>
+<w:t xml:space="preserve">آ© 2025 ظ…ط«ظˆظ‰ ط§ظ„ط¹ظ‚ط§ط±ظٹط© â€” ظ…طھط·ظ„ط¨ط§طھ ظ†ط¸ط§ظ… ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط¬ط؛ط±ط§ظپظٹ</w:t>
+</w:r>
+</w:p>
+<w:sectPr>
+<w:pgSz w:w="11906" w:h="16838" w:orient="portrait"/>
+<w:pgMar w:top="1200" w:right="1200" w:bottom="1200" w:left="1200" w:header="708" w:footer="708" w:gutter="0"/>
+<w:pgNumType/>
+<w:docGrid w:linePitch="360"/>
+</w:sectPr>
+</w:body>
+</w:document>

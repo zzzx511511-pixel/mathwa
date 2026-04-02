@@ -1,0 +1,81 @@
+<svg width="1600" height="700" viewBox="0 0 1600 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="800" y1="0" x2="800" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8A5A35"/>
+      <stop offset="0.45" stop-color="#5C341D"/>
+      <stop offset="1" stop-color="#2C140D"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1120 120) rotate(90) scale(210 320)">
+      <stop stop-color="#D8A45B" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#D8A45B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ground" x1="800" y1="430" x2="800" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3C1C11" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#160B08" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="700" fill="url(#sky)"/>
+  <rect width="1600" height="700" fill="url(#sun)"/>
+
+  <!-- skyline far layer -->
+  <g fill="#7F5737" fill-opacity="0.52">
+    <rect x="20" y="330" width="50" height="200"/>
+    <rect x="80" y="310" width="46" height="220"/>
+    <rect x="140" y="290" width="56" height="240"/>
+    <rect x="205" y="350" width="45" height="180"/>
+    <rect x="260" y="320" width="58" height="210"/>
+    <rect x="332" y="280" width="52" height="250"/>
+    <rect x="398" y="300" width="68" height="230"/>
+    <rect x="480" y="270" width="52" height="260"/>
+    <rect x="545" y="250" width="60" height="280"/>
+    <rect x="620" y="210" width="42" height="320"/>
+    <rect x="675" y="190" width="38" height="340"/>
+    <rect x="726" y="160" width="30" height="370"/>
+    <rect x="770" y="120" width="26" height="410"/>
+    <rect x="806" y="180" width="54" height="350"/>
+    <rect x="874" y="235" width="44" height="295"/>
+    <rect x="932" y="200" width="58" height="330"/>
+    <rect x="1006" y="260" width="50" height="270"/>
+    <rect x="1068" y="220" width="45" height="310"/>
+    <rect x="1124" y="175" width="34" height="355"/>
+    <rect x="1168" y="220" width="58" height="310"/>
+    <rect x="1240" y="260" width="52" height="270"/>
+    <rect x="1304" y="230" width="44" height="300"/>
+    <rect x="1360" y="280" width="58" height="250"/>
+    <rect x="1430" y="310" width="46" height="220"/>
+    <rect x="1486" y="335" width="42" height="195"/>
+  </g>
+
+  <!-- Kingdom tower style silhouette -->
+  <g fill="#6E462D">
+    <path d="M735 90H785V530H735V90Z"/>
+    <path d="M735 90C735 66 752 48 770 48C788 48 805 66 805 90V132H735V90Z"/>
+    <path d="M748 70H792L770 110L748 70Z" fill="#8F6845"/>
+  </g>
+
+  <!-- atmospheric haze -->
+  <rect x="0" y="250" width="1600" height="220" fill="#B9802F" fill-opacity="0.12"/>
+  <rect x="0" y="310" width="1600" height="180" fill="#C89A59" fill-opacity="0.11"/>
+
+  <!-- foreground city blocks -->
+  <g fill="#4A2A1A" fill-opacity="0.85">
+    <rect x="0" y="420" width="130" height="120"/>
+    <rect x="150" y="435" width="110" height="105"/>
+    <rect x="275" y="440" width="130" height="100"/>
+    <rect x="420" y="430" width="140" height="110"/>
+    <rect x="580" y="445" width="130" height="95"/>
+    <rect x="730" y="455" width="145" height="85"/>
+    <rect x="900" y="448" width="135" height="92"/>
+    <rect x="1050" y="438" width="155" height="102"/>
+    <rect x="1220" y="450" width="130" height="90"/>
+    <rect x="1370" y="442" width="135" height="98"/>
+    <rect x="1515" y="448" width="85" height="92"/>
+  </g>
+
+  <!-- road perspective -->
+  <path d="M640 700L770 470H830L960 700H640Z" fill="#2A140E" fill-opacity="0.75"/>
+  <path d="M790 700L798 470H802L810 700H790Z" fill="#C99A59" fill-opacity="0.45"/>
+
+  <rect y="430" width="1600" height="270" fill="url(#ground)"/>
+</svg>
