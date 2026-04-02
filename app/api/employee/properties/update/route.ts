@@ -56,9 +56,15 @@ export async function POST(req: Request) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const db = url && serviceKey
-    ? createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
-    : getSupabaseServerClient();
+  // IMPORTANT: We must not return ok=true unless the DB update actually happened.
+  // Service role bypasses RLS; without it, PostgREST can return 0 affected rows without an explicit error.
+  if (!url || !serviceKey) {
+    return NextResponse.json(
+      { ok: false, error: "missing_supabase_service_role_key: اضف SUPABASE_SERVICE_ROLE_KEY على السيرفر (Vercel) لضمان حفظ التعديلات." },
+      { status: 500 }
+    );
+  }
+  const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   const status = tenantName ? "occupied" : "vacant";
   const propertyUpdatePayload: Record<string, unknown> = {
@@ -103,16 +109,31 @@ export async function POST(req: Request) {
   let propertyUpdated = false;
   let propertyErrorMessage: string | null = null;
   for (const payload of payloadAttempts) {
-    const { error } = await db.from("properties").update(payload).eq("id", propertyId);
-    if (!error) {
+    const { error, data } = await db
+      .from("properties")
+      .update(payload)
+      .eq("id", propertyId)
+      // NOTE: This repo's typings allow only the columns arg for select().
+      // We validate success using returned rows length.
+      .select("id");
+
+    if (error) {
+      propertyErrorMessage = error.message;
+      continue;
+    }
+    const updatedRows = Array.isArray(data) ? data.length : null;
+    if (updatedRows === 1) {
       propertyUpdated = true;
       propertyErrorMessage = null;
       break;
     }
-    propertyErrorMessage = error.message;
+    // No error but also no rows updated (common when RLS/permissions block the update or id not found).
+    propertyErrorMessage = `no_rows_updated (rows=${updatedRows ?? "null"})`;
   }
   if (!propertyUpdated) {
-    return NextResponse.json({ ok: false, error: `property_update_failed: ${propertyErrorMessage}` }, { status: 500 });
+    const msg = propertyErrorMessage || "unknown_error";
+    const statusCode = msg.includes("no_rows_updated") ? 404 : 500;
+    return NextResponse.json({ ok: false, error: `property_update_failed: ${msg}` }, { status: statusCode });
   }
 
   let tenant: Record<string, unknown> | null = null;
@@ -126,9 +147,21 @@ export async function POST(req: Request) {
           contract_end: contractEnd || null
         }
       : { full_name: null, phone: null, contract_start: null, contract_end: null };
-    const { data, error } = await db.from("tenants").update(payload).eq("id", tenantId).select("*").maybeSingle();
+    const { error, data } = await db.from("tenants").update(payload).eq("id", tenantId).select("id");
     if (error) return NextResponse.json({ ok: false, error: `tenant_update_failed: ${error.message}` }, { status: 500 });
-    tenant = (data as Record<string, unknown>) ?? null;
+    const updatedRows = Array.isArray(data) ? data.length : null;
+    if (updatedRows !== 1) {
+      return NextResponse.json({ ok: false, error: `tenant_update_failed: no_rows_updated (rows=${updatedRows ?? "null"})` }, { status: 404 });
+    }
+    // Return tenant object shaped from request (avoids requiring a read that may be blocked in some setups).
+    tenant = {
+      id: tenantId,
+      property_id: propertyId,
+      full_name: tenantName || null,
+      phone: tenantPhone || null,
+      contract_start: contractStart || null,
+      contract_end: contractEnd || null
+    };
   } else if (hasTenantData) {
     const { data, error } = await db
       .from("tenants")

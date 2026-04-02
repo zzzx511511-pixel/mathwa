@@ -3,6 +3,7 @@ import { EmployeePortalShell } from "@/components/employee/employee-portal-shell
 import { EstatesBreadcrumb } from "@/components/employee/estates-breadcrumb";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { MaintenanceInvoicesView } from "@/components/employee/maintenance-invoices-view";
 
 export const dynamic = "force-dynamic";
 
@@ -102,59 +103,7 @@ export default async function EmployeeMaintenancePage({
             {errorMessage}
           </div>
         ) : null}
-
-        <div className="mt-5 overflow-x-auto rounded-2xl border border-ink-900/10">
-          <table className="w-full min-w-[800px] border-collapse text-sm">
-            <thead className="bg-brand-100 text-ink-900/85">
-              <tr>
-                <th className="px-3 py-3 text-right font-semibold">المعرّف</th>
-                <th className="px-3 py-3 text-right font-semibold">الحالة</th>
-                <th className="px-3 py-3 text-right font-semibold">العقار</th>
-                <th className="px-3 py-3 text-right font-semibold">المبلغ</th>
-                <th className="px-3 py-3 text-right font-semibold">الوصف</th>
-                <th className="px-3 py-3 text-right font-semibold">تاريخ الإنشاء</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-6 text-ink-900/70" colSpan={6}>
-                    لا توجد فواتير في هذه الصفحة.
-                  </td>
-                </tr>
-              ) : (
-                rows.map((row) => (
-                  <tr key={getAnyId(row)} className="border-t border-ink-900/5 hover:bg-brand-50/40">
-                    <td className="px-3 py-3 font-mono text-xs">
-                      <Link
-                        prefetch={false}
-                        className="font-medium text-brand-500 hover:underline"
-                        href={`/employee/maintenance/${getAnyId(row)}`}
-                      >
-                        {getAnyId(row).slice(0, 8)}…
-                      </Link>
-                    </td>
-                    <td className="px-3 py-3 text-ink-900/80">
-                      {fmtInvoiceStatus(row.status)}
-                    </td>
-                    <td className="px-3 py-3 font-mono text-xs text-ink-900/70">
-                      {String(row.property_id ?? "—")}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums text-ink-900/80">
-                      {fmtAmount(row.amount)}
-                    </td>
-                    <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">
-                      {shortText(row.description)}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums text-ink-900/70">
-                      {fmtDate(row.created_at)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <MaintenanceInvoicesView initialRows={rows} />
 
         <PaginationControls
           basePath="/employee/maintenance"
