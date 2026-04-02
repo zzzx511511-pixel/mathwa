@@ -6,6 +6,7 @@ type Body = {
   propertyId?: unknown;
   amount?: unknown;
   description?: unknown;
+  imageUrl?: unknown;
   status?: unknown;
 };
 
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
   const propertyId = asText(body.propertyId);
   const amount = asAmount(body.amount);
   const description = asText(body.description);
+  const imageUrl = asText(body.imageUrl);
   const status = asText(body.status).toLowerCase() || "pending";
 
   if (!ownerId) return NextResponse.json({ ok: false, error: "ownerId مطلوب." }, { status: 400 });
@@ -48,6 +50,12 @@ export async function POST(req: Request) {
 
   // Some schemas may not have owner_id on maintenance_invoices; we try with it first then fallback.
   const payloadAttempts: Array<Record<string, unknown>> = [
+    { owner_id: ownerId, property_id: propertyId, amount, description: description || null, image_url: imageUrl || null, status },
+    { owner_id: ownerId, property_id: propertyId, amount, description: description || null, receipt_image_url: imageUrl || null, status },
+    { owner_id: ownerId, property_id: propertyId, amount, description: description || null, image: imageUrl || null, status },
+    { property_id: propertyId, amount, description: description || null, image_url: imageUrl || null, status },
+    { property_id: propertyId, amount, description: description || null, receipt_image_url: imageUrl || null, status },
+    { property_id: propertyId, amount, description: description || null, image: imageUrl || null, status },
     { owner_id: ownerId, property_id: propertyId, amount, description: description || null, status },
     { property_id: propertyId, amount, description: description || null, status }
   ];

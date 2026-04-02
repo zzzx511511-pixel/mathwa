@@ -61,6 +61,7 @@ export function MaintenanceInvoicesView({
   const [propertyId, setPropertyId] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
 
   const propertyLabel = useMemo(() => {
@@ -123,6 +124,7 @@ export function MaintenanceInvoicesView({
         propertyId,
         amount,
         description,
+        imageUrl,
         status
       })
     });
@@ -139,6 +141,7 @@ export function MaintenanceInvoicesView({
     setPropertyId("");
     setAmount("");
     setDescription("");
+    setImageUrl("");
     setStatus("pending");
   }
 
@@ -247,6 +250,17 @@ export function MaintenanceInvoicesView({
                 rows={3}
                 className="w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2 text-ink-900 outline-none focus:border-brand-400"
                 placeholder="وصف مختصر للفواتير/الأعمال"
+              />
+            </label>
+
+            <label className="block md:col-span-2">
+              <span className="mb-1 block text-sm font-semibold text-ink-900/80">صورة الفاتورة (رابط)</span>
+              <input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                type="url"
+                className="w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2 text-ink-900 outline-none focus:border-brand-400"
+                placeholder="https://example.com/invoice.jpg"
               />
             </label>
           </div>
