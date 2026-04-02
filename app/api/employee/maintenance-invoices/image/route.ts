@@ -3,9 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 
 const BUCKET = "invoices";
 
+function escapeHtmlAttr(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
 /**
- * يفتح صورة الفاتورة عبر رابط موقّع (مناسب للـ bucket الخاص أو العام).
- * الاستخدام: /api/employee/maintenance-invoices/image?path=employee%2Fxxx.jpg
+ * ?path=employee/xxx.jpg — يعرض الصورة (format=html) أو يعيد التوجيه للرابط الموقّع
  */
 export async function GET(req: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,6 +19,8 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const path = searchParams.get("path")?.trim();
+  const asHtml = searchParams.get("format") === "html";
+
   if (!path) {
     return NextResponse.json({ ok: false, error: "path مطلوب." }, { status: 400 });
   }
@@ -25,19 +30,28 @@ export async function GET(req: Request) {
 
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
-  const { data, error } = await db.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
-  if (data?.signedUrl) {
-    return NextResponse.redirect(data.signedUrl);
+  const { data: signed, error: signErr } = await db.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
+  let imageUrl: string | null = signed?.signedUrl ?? null;
+
+  if (!imageUrl) {
+    const { data: pub } = db.storage.from(BUCKET).getPublicUrl(path);
+    imageUrl = pub?.publicUrl ?? null;
   }
 
-  // إذا فشل الرابط الموقّع (سياسات التخزين)، جرّب الرابط العام للـ bucket العام
-  const { data: pub } = db.storage.from(BUCKET).getPublicUrl(path);
-  if (pub?.publicUrl) {
-    return NextResponse.redirect(pub.publicUrl);
+  if (!imageUrl) {
+    return NextResponse.json(
+      { ok: false, error: signErr?.message ?? "تعذر إنشاء رابط الصورة." },
+      { status: 500 }
+    );
   }
 
-  return NextResponse.json(
-    { ok: false, error: error?.message ?? "تعذر إنشاء رابط الصورة." },
-    { status: 500 }
-  );
+  if (asHtml) {
+    const safe = escapeHtmlAttr(imageUrl);
+    const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>صورة الفاتورة</title></head><body style="margin:0;background:#0f172a;display:flex;justify-content:center;align-items:center;min-height:100vh"><img src="${safe}" alt="فاتورة الصيانة" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`;
+    return new NextResponse(html, {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, max-age=60" }
+    });
+  }
+
+  return NextResponse.redirect(imageUrl);
 }

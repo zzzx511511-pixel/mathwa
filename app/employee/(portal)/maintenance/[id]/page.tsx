@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmployeePortalShell } from "@/components/employee/employee-portal-shell";
 import { EstatesBreadcrumb } from "@/components/employee/estates-breadcrumb";
+import { MaintenanceInvoiceDetailActions } from "@/components/employee/maintenance-invoice-detail-actions";
 import { KvTable } from "@/components/ui/kv-table";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -60,7 +61,10 @@ export default async function EmployeeMaintenanceDetailsPage({
           </div>
         ) : (
           <div className="mt-5">
-            <KvTable data={data as Record<string, unknown>} />
+            <MaintenanceInvoiceDetailActions invoice={data as Record<string, unknown>} />
+            <div className="mt-4">
+              <KvTable data={data as Record<string, unknown>} />
+            </div>
           </div>
         )}
       </section>

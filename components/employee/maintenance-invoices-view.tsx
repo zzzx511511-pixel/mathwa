@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getInvoiceImageViewerHref } from "@/lib/maintenance-invoice-image";
 
 type Owner = { id: string; full_name: string };
 type Property = { id: string; name: string; location?: string; city?: string };
@@ -41,34 +42,6 @@ function fmtInvoiceStatus(v: unknown): string {
 
 function anyId(row: Record<string, unknown>): string {
   return String(row?.id ?? row?.request_id ?? row?.uuid ?? "—");
-}
-
-/** يستخرج مسار الملف داخل bucket invoices من رابط التخزين العام/الموقّع في Supabase */
-function extractInvoicesPathFromStorageUrl(href: string): string | null {
-  try {
-    const u = new URL(href);
-    const p = u.pathname;
-    const m =
-      p.match(/\/storage\/v1\/object\/public\/invoices\/(.+)$/) ||
-      p.match(/\/storage\/v1\/object\/sign\/invoices\/(.+)$/);
-    if (!m?.[1]) return null;
-    return decodeURIComponent(m[1].replace(/\+/g, " "));
-  } catch {
-    return null;
-  }
-}
-
-function imageViewerHref(pathOrUrl: string): string {
-  const trimmed = pathOrUrl.trim();
-  if (!trimmed) return "#";
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    const extracted = extractInvoicesPathFromStorageUrl(trimmed);
-    if (extracted) {
-      return `/api/employee/maintenance-invoices/image?path=${encodeURIComponent(extracted)}`;
-    }
-    return trimmed;
-  }
-  return `/api/employee/maintenance-invoices/image?path=${encodeURIComponent(trimmed)}`;
 }
 
 /** Accepts Arabic/English digits and common separators so the Save button matches a valid amount. */
@@ -255,32 +228,6 @@ export function MaintenanceInvoicesView({
     }
   }
 
-  /** رابط يفتح الصورة (مباشرة أو عبر API برابط موقّع من Storage) */
-  function getInvoiceImageHref(row: Record<string, unknown>): string | null {
-    const pathCandidates = [row.image_path, row.storage_path, row.invoice_image_path, row.attachment_path];
-    for (const candidate of pathCandidates) {
-      const p = String(candidate ?? "").trim();
-      if (p) {
-        return imageViewerHref(p);
-      }
-    }
-    const urlCandidates = [
-      row.image_url,
-      row.receipt_image_url,
-      row.receipt_url,
-      row.invoice_image_url,
-      row.attachment_url,
-      row.image,
-      row.photo_url
-    ];
-    for (const candidate of urlCandidates) {
-      const s = String(candidate ?? "").trim();
-      if (!s) continue;
-      return imageViewerHref(s);
-    }
-    return null;
-  }
-
   async function onDeleteInvoice(invoiceId: string) {
     if (!confirm("حذف هذه الفاتورة نهائيًا؟")) return;
     setDeletingId(invoiceId);
@@ -458,18 +405,23 @@ export function MaintenanceInvoicesView({
         </div>
       ) : null}
 
-      <div className="mt-5 overflow-x-auto rounded-2xl border border-ink-900/10">
-        <table className="w-full min-w-[800px] border-collapse text-sm">
+      <p className="mt-2 text-xs text-ink-900/55">
+        إن لم تظهر أعمدة «الصورة» أو «حذف»، مرّر الجدول أفقيًا — أو وسّع نافذة المتصفح.
+      </p>
+      <div className="mt-3 overflow-x-auto rounded-2xl border border-ink-900/10">
+        <table className="w-full min-w-[960px] border-collapse text-sm">
           <thead className="bg-brand-100 text-ink-900/85">
             <tr>
+              <th className="sticky right-0 z-10 whitespace-nowrap bg-brand-100 px-3 py-3 text-right font-semibold shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.12)]">
+                حذف
+              </th>
+              <th className="px-3 py-3 text-right font-semibold">الصورة</th>
               <th className="px-3 py-3 text-right font-semibold">المعرّف</th>
               <th className="px-3 py-3 text-right font-semibold">الحالة</th>
               <th className="px-3 py-3 text-right font-semibold">العقار</th>
               <th className="px-3 py-3 text-right font-semibold">المبلغ</th>
               <th className="px-3 py-3 text-right font-semibold">الوصف</th>
-              <th className="px-3 py-3 text-right font-semibold">الصورة</th>
               <th className="px-3 py-3 text-right font-semibold">تاريخ الإنشاء</th>
-              <th className="px-3 py-3 text-right font-semibold">إجراءات</th>
             </tr>
           </thead>
           <tbody>
@@ -482,9 +434,34 @@ export function MaintenanceInvoicesView({
             ) : (
               rows.map((row) => {
                 const rowId = anyId(row);
-                const imgHref = getInvoiceImageHref(row);
+                const imgHref = getInvoiceImageViewerHref(row);
                 return (
-                <tr key={rowId} className="border-t border-ink-900/5 hover:bg-brand-50/40">
+                <tr key={rowId} className="group border-t border-ink-900/5 hover:bg-brand-50/40">
+                  <td className="sticky right-0 z-10 whitespace-nowrap border-l border-ink-900/10 bg-white px-3 py-3 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)] group-hover:bg-brand-50/40">
+                    <button
+                      type="button"
+                      onClick={() => onDeleteInvoice(rowId)}
+                      disabled={deletingId === rowId}
+                      className="rounded-full border border-red-500/50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60"
+                    >
+                      {deletingId === rowId ? "جارٍ الحذف..." : "حذف الفاتورة"}
+                    </button>
+                  </td>
+                  <td className="px-3 py-3 text-ink-900/75">
+                    {imgHref ? (
+                      <a
+                        href={imgHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-lg border border-brand-400/40 bg-white px-2 py-1 text-base hover:border-brand-500"
+                        title="عرض صورة الفاتورة"
+                      >
+                        🖼️
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td className="px-3 py-3 font-mono text-xs">
                     <Link
                       prefetch={false}
@@ -498,32 +475,7 @@ export function MaintenanceInvoicesView({
                   <td className="px-3 py-3 font-mono text-xs text-ink-900/70">{String(row.property_id ?? "—")}</td>
                   <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
                   <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
-                  <td className="px-3 py-3 text-ink-900/75">
-                    {imgHref ? (
-                      <a
-                        href={imgHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-lg border border-ink-900/15 bg-white px-2 py-1 text-base hover:border-brand-400"
-                        title="فتح صورة الفاتورة (للمراجعة والموافقة)"
-                      >
-                        🖼️
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
                   <td className="px-3 py-3 tabular-nums text-ink-900/70">{fmtDate(row.created_at)}</td>
-                  <td className="px-3 py-3">
-                    <button
-                      type="button"
-                      onClick={() => onDeleteInvoice(rowId)}
-                      disabled={deletingId === rowId}
-                      className="rounded-full border border-red-500/40 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60"
-                    >
-                      {deletingId === rowId ? "..." : "حذف"}
-                    </button>
-                  </td>
                 </tr>
               );
               })

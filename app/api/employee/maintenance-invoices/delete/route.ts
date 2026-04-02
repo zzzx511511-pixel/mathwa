@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { extractInvoicesPathFromStorageUrl } from "@/lib/maintenance-invoice-image";
 
 const BUCKET = "invoices";
 
@@ -43,8 +44,17 @@ export async function POST(req: Request) {
     .map((x) => String(x ?? "").trim())
     .find(Boolean);
 
-  if (storagePath) {
-    const { error: removeErr } = await db.storage.from(BUCKET).remove([storagePath]);
+  const fromUrl =
+    !storagePath &&
+    [r.image_url, r.receipt_image_url, r.receipt_url, r.invoice_image_url, r.attachment_url]
+      .map((x) => String(x ?? "").trim())
+      .find((u) => u.startsWith("http"));
+
+  const pathToRemove =
+    storagePath || (fromUrl ? extractInvoicesPathFromStorageUrl(fromUrl) : null);
+
+  if (pathToRemove) {
+    const { error: removeErr } = await db.storage.from(BUCKET).remove([pathToRemove]);
     if (removeErr) {
       console.warn("maintenance_invoices delete: storage remove", removeErr.message);
     }
