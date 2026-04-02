@@ -353,14 +353,22 @@ export function OwnerPortfolioView({
       tenant?: Record<string, unknown> | null;
     };
     setPropertySaving(false);
-    if (!res.ok || !data.ok || !data.property) {
+    // Treat success as res.ok && data.ok. Some environments may not return `property`
+    // (e.g., due to RLS/select constraints) even when the update succeeded.
+    if (!res.ok || !data.ok) {
       setError(data.error ?? "تعذر تعديل بيانات العقار.");
       setEditingPropertyId(editingId);
       return;
     }
-    const propId = String(editPropertyForm.propertyId || data.property.id || "");
+    const propId = String(editPropertyForm.propertyId || data.property?.id || "");
+    if (!propId) {
+      // Can't update UI mapping without a stable id.
+      setError("تعذر تحديد رقم العقار بعد الحفظ.");
+      setEditingPropertyId(editingId);
+      return;
+    }
     const localUpdatedProperty: Record<string, unknown> = {
-      ...(data.property as Record<string, unknown>),
+      ...((data.property as Record<string, unknown> | undefined) ?? {}),
       id: propId,
       name: editPropertyForm.propertyName,
       location: editPropertyForm.location,
@@ -375,8 +383,8 @@ export function OwnerPortfolioView({
     };
     setRows((prev) => prev.map((row) => (String(row.id ?? "") === propId ? localUpdatedProperty : row)));
     const localTenant: Record<string, unknown> = {
-      ...(data.tenant as Record<string, unknown>),
-      id: editPropertyForm.tenantId || data.tenant?.id || "",
+      ...(((data.tenant ?? {}) as Record<string, unknown>) || {}),
+      id: editPropertyForm.tenantId || String((data.tenant as Record<string, unknown> | null | undefined)?.id ?? ""),
       property_id: propId,
       full_name: editPropertyForm.tenantName || null,
       phone: editPropertyForm.tenantPhone || null,
