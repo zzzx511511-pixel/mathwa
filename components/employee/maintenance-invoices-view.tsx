@@ -42,6 +42,38 @@ function anyId(row: Record<string, unknown>): string {
   return String(row?.id ?? row?.request_id ?? row?.uuid ?? "—");
 }
 
+/** Accepts Arabic/English digits and common separators so the Save button matches a valid amount. */
+function parseAmountInput(raw: string): number | null {
+  const map: Record<string, string> = {
+    "٠": "0",
+    "١": "1",
+    "٢": "2",
+    "٣": "3",
+    "٤": "4",
+    "٥": "5",
+    "٦": "6",
+    "٧": "7",
+    "٨": "8",
+    "٩": "9",
+    "۰": "0",
+    "۱": "1",
+    "۲": "2",
+    "۳": "3",
+    "۴": "4",
+    "۵": "5",
+    "۶": "6",
+    "۷": "7",
+    "۸": "8",
+    "۹": "9"
+  };
+  let s = raw.trim().replace(/\s/g, "");
+  s = [...s].map((ch) => map[ch] ?? ch).join("");
+  s = s.replace(/\u066C/g, ".").replace(/,/g, "");
+  const n = Number(s);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+
 export function MaintenanceInvoicesView({
   initialRows
 }: {
@@ -72,6 +104,9 @@ export function MaintenanceInvoicesView({
     const tail = [p.location, p.city].filter(Boolean).join(" - ");
     return tail ? `${p.name} (${tail})` : p.name;
   }, [properties, propertyId]);
+
+  const amountNumber = useMemo(() => parseAmountInput(amount), [amount]);
+  const canSave = Boolean(ownerId && propertyId && amountNumber != null);
 
   useEffect(() => {
     if (!open || owners.length > 0) return;
@@ -116,65 +151,102 @@ export function MaintenanceInvoicesView({
   }, [ownerId]);
 
   async function onSave() {
-    setSaving(true);
     setError(null);
-
-    let uploadedImageUrl = "";
-    if (imageFile) {
-      const form = new FormData();
-      form.append("file", imageFile);
-      const uploadRes = await fetch("/api/employee/maintenance-invoices/upload-image", {
-        method: "POST",
-        body: form
-      });
-      const uploadData = (await uploadRes.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-        publicUrl?: string | null;
-      };
-      if (!uploadRes.ok || !uploadData.ok) {
-        setSaving(false);
-        setError(uploadData.error ?? "تعذر رفع صورة الفاتورة.");
-        return;
-      }
-      uploadedImageUrl = String(uploadData.publicUrl ?? "").trim();
-    }
-
-    const res = await fetch("/api/employee/maintenance-invoices/create", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ownerId,
-        propertyId,
-        amount,
-        description,
-        imageUrl: uploadedImageUrl || null,
-        status
-      })
-    });
-    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; invoice?: Record<string, unknown> };
-    setSaving(false);
-    if (!res.ok || !data.ok || !data.invoice) {
-      setError(data.error ?? "تعذر حفظ الفاتورة.");
+    if (!ownerId) {
+      setError("اختر المالك.");
       return;
     }
-    // Update UI immediately.
-    setRows((prev) => [data.invoice as InvoiceRow, ...prev]);
-    setOpen(false);
-    setOwnerId("");
-    setPropertyId("");
-    setAmount("");
-    setDescription("");
-    setImageFile(null);
-    setImageLabel("");
-    setStatus("pending");
+    if (!propertyId) {
+      setError("اختر العقار.");
+      return;
+    }
+    const parsed = parseAmountInput(amount);
+    if (parsed == null) {
+      setError("أدخل مبلغًا صحيحًا أكبر من صفر (يمكنك استخدام الأرقام العربية أو الإنجليزية).");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      let uploadedImageUrl = "";
+      let uploadedPath = "";
+      if (imageFile) {
+        const form = new FormData();
+        form.append("file", imageFile);
+        const uploadRes = await fetch("/api/employee/maintenance-invoices/upload-image", {
+          method: "POST",
+          body: form
+        });
+        const uploadData = (await uploadRes.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          path?: string;
+          publicUrl?: string | null;
+        };
+        if (!uploadRes.ok || !uploadData.ok) {
+          setError(uploadData.error ?? "تعذر رفع صورة الفاتورة. تأكد من وجود bucket invoices وصلاحيات التخزين.");
+          return;
+        }
+        uploadedImageUrl = String(uploadData.publicUrl ?? "").trim();
+        uploadedPath = String(uploadData.path ?? "").trim();
+      }
+
+      const res = await fetch("/api/employee/maintenance-invoices/create", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ownerId,
+          propertyId,
+          amount: parsed,
+          description,
+          imageUrl: uploadedImageUrl || null,
+          imagePath: uploadedPath || null,
+          status
+        })
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; invoice?: Record<string, unknown> };
+      if (!res.ok || !data.ok || !data.invoice) {
+        setError(data.error ?? "تعذر حفظ الفاتورة.");
+        return;
+      }
+      setRows((prev) => [data.invoice as InvoiceRow, ...prev]);
+      setOpen(false);
+      setOwnerId("");
+      setPropertyId("");
+      setAmount("");
+      setDescription("");
+      setImageFile(null);
+      setImageLabel("");
+      setStatus("pending");
+    } catch {
+      setError("حدث خطأ غير متوقع أثناء الحفظ. حاول مرة أخرى.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function getInvoiceImageUrl(row: Record<string, unknown>): string | null {
-    const candidates = [row.image_url, row.receipt_image_url, row.image, row.photo_url, row.attachment_url];
-    for (const candidate of candidates) {
+  /** رابط يفتح الصورة (مباشرة أو عبر API برابط موقّع من Storage) */
+  function getInvoiceImageHref(row: Record<string, unknown>): string | null {
+    const pathCandidates = [row.image_path, row.storage_path, row.invoice_image_path, row.attachment_path];
+    for (const candidate of pathCandidates) {
+      const p = String(candidate ?? "").trim();
+      if (p) {
+        return `/api/employee/maintenance-invoices/image?path=${encodeURIComponent(p)}`;
+      }
+    }
+    const urlCandidates = [
+      row.image_url,
+      row.receipt_image_url,
+      row.receipt_url,
+      row.invoice_image_url,
+      row.attachment_url,
+      row.image,
+      row.photo_url
+    ];
+    for (const candidate of urlCandidates) {
       const s = String(candidate ?? "").trim();
-      if (s) return s;
+      if (!s) continue;
+      if (s.startsWith("http://") || s.startsWith("https://")) return s;
     }
     return null;
   }
@@ -293,7 +365,6 @@ export function MaintenanceInvoicesView({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0] ?? null;
@@ -312,11 +383,17 @@ export function MaintenanceInvoicesView({
             </label>
           </div>
 
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-col gap-2">
+            {!canSave && !saving ? (
+              <p className="text-xs text-ink-900/60">
+                لإظهار زر الحفظ: اختر المالك والعقار، ثم أدخل مبلغًا صحيحًا (أكبر من صفر). الصورة اختيارية.
+              </p>
+            ) : null}
+            <div className="flex gap-2">
             <button
               type="button"
               onClick={onSave}
-              disabled={saving || !ownerId || !propertyId || !amount}
+              disabled={saving || !canSave}
               className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
             >
               {saving ? "جارٍ الحفظ..." : "حفظ الفاتورة"}
@@ -328,6 +405,7 @@ export function MaintenanceInvoicesView({
             >
               إلغاء
             </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -361,13 +439,13 @@ export function MaintenanceInvoicesView({
                   <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
                   <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
                   <td className="px-3 py-3 text-ink-900/75">
-                    {getInvoiceImageUrl(row) ? (
+                    {getInvoiceImageHref(row) ? (
                       <a
-                        href={getInvoiceImageUrl(row) as string}
+                        href={getInvoiceImageHref(row) as string}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center rounded-lg border border-ink-900/15 bg-white px-2 py-1 text-base hover:border-brand-400"
-                        title="عرض صورة الفاتورة"
+                        title="فتح صورة الفاتورة (للمراجعة والموافقة)"
                       >
                         🖼️
                       </a>
