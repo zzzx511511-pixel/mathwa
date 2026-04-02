@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const BUCKET = "invoices";
 
@@ -14,7 +14,7 @@ function isBucketMissingError(msg: string): boolean {
   return m.includes("bucket not found") || m.includes("not found") || m.includes("no such bucket");
 }
 
-async function ensureInvoicesBucket(db: ReturnType<typeof createClient>): Promise<{ ok: true } | { ok: false; error: string }> {
+async function ensureInvoicesBucket(db: SupabaseClient): Promise<{ ok: true } | { ok: false; error: string }> {
   const { data: buckets, error: listErr } = await db.storage.listBuckets();
   if (listErr) {
     // لا نوقف التنفيذ: أحيانًا listBuckets يفشل بينما الإنشاء/الرفع يعملان بصلاحية الخدمة
@@ -68,11 +68,12 @@ export async function POST(req: Request) {
   if (!(fileValue instanceof File)) {
     return NextResponse.json({ ok: false, error: "file مطلوب." }, { status: 400 });
   }
+  const file = fileValue;
 
-  if (!fileValue.type.startsWith("image/")) {
+  if (!file.type.startsWith("image/")) {
     return NextResponse.json({ ok: false, error: "نوع الملف يجب أن يكون صورة." }, { status: 400 });
   }
-  if (fileValue.size > 10 * 1024 * 1024) {
+  if (file.size > 10 * 1024 * 1024) {
     return NextResponse.json({ ok: false, error: "حجم الصورة كبير. الحد الأقصى 10MB." }, { status: 400 });
   }
 
@@ -87,12 +88,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const ext = safeExt(fileValue.name);
+  const ext = safeExt(file.name);
   const path = `employee/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   async function doUpload(): Promise<{ error: { message: string } | null }> {
-    return db.storage.from(BUCKET).upload(path, fileValue, {
-      contentType: fileValue.type || "image/jpeg",
+    return db.storage.from(BUCKET).upload(path, file, {
+      contentType: file.type || "image/jpeg",
       upsert: false
     });
   }

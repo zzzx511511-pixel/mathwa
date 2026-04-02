@@ -26,9 +26,18 @@ export async function GET(req: Request) {
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   const { data, error } = await db.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
-  if (error || !data?.signedUrl) {
-    return NextResponse.json({ ok: false, error: error?.message ?? "تعذر إنشاء رابط الصورة." }, { status: 500 });
+  if (data?.signedUrl) {
+    return NextResponse.redirect(data.signedUrl);
   }
 
-  return NextResponse.redirect(data.signedUrl);
+  // إذا فشل الرابط الموقّع (سياسات التخزين)، جرّب الرابط العام للـ bucket العام
+  const { data: pub } = db.storage.from(BUCKET).getPublicUrl(path);
+  if (pub?.publicUrl) {
+    return NextResponse.redirect(pub.publicUrl);
+  }
+
+  return NextResponse.json(
+    { ok: false, error: error?.message ?? "تعذر إنشاء رابط الصورة." },
+    { status: 500 }
+  );
 }

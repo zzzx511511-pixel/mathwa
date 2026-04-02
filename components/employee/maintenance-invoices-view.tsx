@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Owner = { id: string; full_name: string };
@@ -40,6 +41,34 @@ function fmtInvoiceStatus(v: unknown): string {
 
 function anyId(row: Record<string, unknown>): string {
   return String(row?.id ?? row?.request_id ?? row?.uuid ?? "—");
+}
+
+/** يستخرج مسار الملف داخل bucket invoices من رابط التخزين العام/الموقّع في Supabase */
+function extractInvoicesPathFromStorageUrl(href: string): string | null {
+  try {
+    const u = new URL(href);
+    const p = u.pathname;
+    const m =
+      p.match(/\/storage\/v1\/object\/public\/invoices\/(.+)$/) ||
+      p.match(/\/storage\/v1\/object\/sign\/invoices\/(.+)$/);
+    if (!m?.[1]) return null;
+    return decodeURIComponent(m[1].replace(/\+/g, " "));
+  } catch {
+    return null;
+  }
+}
+
+function imageViewerHref(pathOrUrl: string): string {
+  const trimmed = pathOrUrl.trim();
+  if (!trimmed) return "#";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    const extracted = extractInvoicesPathFromStorageUrl(trimmed);
+    if (extracted) {
+      return `/api/employee/maintenance-invoices/image?path=${encodeURIComponent(extracted)}`;
+    }
+    return trimmed;
+  }
+  return `/api/employee/maintenance-invoices/image?path=${encodeURIComponent(trimmed)}`;
 }
 
 /** Accepts Arabic/English digits and common separators so the Save button matches a valid amount. */
@@ -84,6 +113,7 @@ export function MaintenanceInvoicesView({
   const [loadingOwners, setLoadingOwners] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -231,7 +261,7 @@ export function MaintenanceInvoicesView({
     for (const candidate of pathCandidates) {
       const p = String(candidate ?? "").trim();
       if (p) {
-        return `/api/employee/maintenance-invoices/image?path=${encodeURIComponent(p)}`;
+        return imageViewerHref(p);
       }
     }
     const urlCandidates = [
@@ -246,9 +276,27 @@ export function MaintenanceInvoicesView({
     for (const candidate of urlCandidates) {
       const s = String(candidate ?? "").trim();
       if (!s) continue;
-      if (s.startsWith("http://") || s.startsWith("https://")) return s;
+      return imageViewerHref(s);
     }
     return null;
+  }
+
+  async function onDeleteInvoice(invoiceId: string) {
+    if (!confirm("حذف هذه الفاتورة نهائيًا؟")) return;
+    setDeletingId(invoiceId);
+    setError(null);
+    const res = await fetch("/api/employee/maintenance-invoices/delete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ invoiceId })
+    });
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    setDeletingId(null);
+    if (!res.ok || !data.ok) {
+      setError(data.error ?? "تعذر حذف الفاتورة.");
+      return;
+    }
+    setRows((prev) => prev.filter((row) => anyId(row) !== invoiceId));
   }
 
   return (
@@ -421,27 +469,39 @@ export function MaintenanceInvoicesView({
               <th className="px-3 py-3 text-right font-semibold">الوصف</th>
               <th className="px-3 py-3 text-right font-semibold">الصورة</th>
               <th className="px-3 py-3 text-right font-semibold">تاريخ الإنشاء</th>
+              <th className="px-3 py-3 text-right font-semibold">إجراءات</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td className="px-4 py-6 text-ink-900/70" colSpan={7}>
+                <td className="px-4 py-6 text-ink-900/70" colSpan={8}>
                   لا توجد فواتير.
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
-                <tr key={anyId(row)} className="border-t border-ink-900/5 hover:bg-brand-50/40">
-                  <td className="px-3 py-3 font-mono text-xs">{anyId(row).slice(0, 8)}…</td>
+              rows.map((row) => {
+                const rowId = anyId(row);
+                const imgHref = getInvoiceImageHref(row);
+                return (
+                <tr key={rowId} className="border-t border-ink-900/5 hover:bg-brand-50/40">
+                  <td className="px-3 py-3 font-mono text-xs">
+                    <Link
+                      prefetch={false}
+                      href={`/employee/maintenance/${rowId}`}
+                      className="font-medium text-brand-500 hover:underline"
+                    >
+                      {rowId.slice(0, 8)}…
+                    </Link>
+                  </td>
                   <td className="px-3 py-3 text-ink-900/80">{fmtInvoiceStatus(row.status)}</td>
                   <td className="px-3 py-3 font-mono text-xs text-ink-900/70">{String(row.property_id ?? "—")}</td>
                   <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
                   <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
                   <td className="px-3 py-3 text-ink-900/75">
-                    {getInvoiceImageHref(row) ? (
+                    {imgHref ? (
                       <a
-                        href={getInvoiceImageHref(row) as string}
+                        href={imgHref}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center rounded-lg border border-ink-900/15 bg-white px-2 py-1 text-base hover:border-brand-400"
@@ -454,8 +514,19 @@ export function MaintenanceInvoicesView({
                     )}
                   </td>
                   <td className="px-3 py-3 tabular-nums text-ink-900/70">{fmtDate(row.created_at)}</td>
+                  <td className="px-3 py-3">
+                    <button
+                      type="button"
+                      onClick={() => onDeleteInvoice(rowId)}
+                      disabled={deletingId === rowId}
+                      className="rounded-full border border-red-500/40 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60"
+                    >
+                      {deletingId === rowId ? "..." : "حذف"}
+                    </button>
+                  </td>
                 </tr>
-              ))
+              );
+              })
             )}
           </tbody>
         </table>
