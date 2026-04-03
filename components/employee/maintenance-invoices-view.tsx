@@ -9,12 +9,6 @@ type Property = { id: string; name: string; location?: string; city?: string };
 
 type InvoiceRow = Record<string, unknown>;
 
-const STATUS_OPTIONS: Array<{ value: "pending" | "approved" | "rejected"; label: string }> = [
-  { value: "pending", label: "قيد المراجعة" },
-  { value: "approved", label: "معتمد" },
-  { value: "rejected", label: "مرفوض" }
-];
-
 function fmtDate(v: unknown): string {
   if (v == null || v === "") return "—";
   const s = String(v);
@@ -87,6 +81,7 @@ export function MaintenanceInvoicesView({
   const [loadingProperties, setLoadingProperties] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -98,7 +93,6 @@ export function MaintenanceInvoicesView({
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageLabel, setImageLabel] = useState("");
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const propertyLabel = useMemo(() => {
@@ -110,6 +104,14 @@ export function MaintenanceInvoicesView({
 
   const amountNumber = useMemo(() => parseAmountInput(amount), [amount]);
   const canSave = Boolean(ownerId && propertyId && amountNumber != null);
+  const pendingRows = useMemo(
+    () => rows.filter((row) => String(row.status ?? "").toLowerCase() === "pending"),
+    [rows]
+  );
+  const finishedRows = useMemo(
+    () => rows.filter((row) => ["approved", "rejected"].includes(String(row.status ?? "").toLowerCase())),
+    [rows]
+  );
 
   useEffect(() => {
     if (!open || owners.length > 0) return;
@@ -204,7 +206,7 @@ export function MaintenanceInvoicesView({
           description,
           imageUrl: uploadedImageUrl || null,
           imagePath: uploadedPath || null,
-          status
+          status: "pending"
         })
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; invoice?: Record<string, unknown> };
@@ -220,7 +222,6 @@ export function MaintenanceInvoicesView({
       setDescription("");
       setImageFile(null);
       setImageLabel("");
-      setStatus("pending");
     } catch {
       setError("حدث خطأ غير متوقع أثناء الحفظ. حاول مرة أخرى.");
     } finally {
@@ -244,6 +245,23 @@ export function MaintenanceInvoicesView({
       return;
     }
     setRows((prev) => prev.filter((row) => anyId(row) !== invoiceId));
+  }
+
+  async function onSetInvoiceStatus(invoiceId: string, nextStatus: "approved" | "rejected") {
+    setUpdatingStatusId(invoiceId);
+    setError(null);
+    const res = await fetch("/api/employee/maintenance-invoices/set-status", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ invoiceId, status: nextStatus })
+    });
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; invoice?: InvoiceRow };
+    setUpdatingStatusId(null);
+    if (!res.ok || !data.ok || !data.invoice) {
+      setError(data.error ?? "تعذر تحديث حالة الفاتورة.");
+      return;
+    }
+    setRows((prev) => prev.map((row) => (anyId(row) === invoiceId ? (data.invoice as InvoiceRow) : row)));
   }
 
   return (
@@ -328,20 +346,9 @@ export function MaintenanceInvoicesView({
               />
             </label>
 
-            <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-ink-900/80">الحالة</span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2 text-ink-900 outline-none focus:border-brand-400"
-              >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="block rounded-xl border border-ink-900/10 bg-white px-3 py-2 text-sm text-ink-900/70">
+              حالة الفاتورة الجديدة: <span className="font-bold text-ink-900">قيد المراجعة</span>
+            </div>
 
             <label className="block md:col-span-2">
               <span className="mb-1 block text-sm font-semibold text-ink-900/80">الوصف</span>
@@ -405,11 +412,104 @@ export function MaintenanceInvoicesView({
         </div>
       ) : null}
 
-      <p className="mt-2 text-xs text-ink-900/55">
-        إن لم تظهر أعمدة «الصورة» أو «حذف»، مرّر الجدول أفقيًا — أو وسّع نافذة المتصفح.
-      </p>
-      <div className="mt-3 overflow-x-auto rounded-2xl border border-ink-900/10">
-        <table className="w-full min-w-[960px] border-collapse text-sm">
+      <p className="mt-2 text-xs text-ink-900/55">إن لم تظهر كل الأعمدة، مرّر الجدول أفقيًا.</p>
+
+      <h3 className="mt-5 text-base font-bold text-ink-900">قيد المراجعة</h3>
+      <div className="mt-2 overflow-x-auto rounded-2xl border border-ink-900/10">
+        <table className="w-full min-w-[980px] border-collapse text-sm">
+          <thead className="bg-brand-100 text-ink-900/85">
+            <tr>
+              <th className="sticky right-0 z-10 whitespace-nowrap bg-brand-100 px-3 py-3 text-right font-semibold shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.12)]">
+                الإجراءات
+              </th>
+              <th className="px-3 py-3 text-right font-semibold">الصورة</th>
+              <th className="px-3 py-3 text-right font-semibold">المعرّف</th>
+              <th className="px-3 py-3 text-right font-semibold">العقار</th>
+              <th className="px-3 py-3 text-right font-semibold">المبلغ</th>
+              <th className="px-3 py-3 text-right font-semibold">الوصف</th>
+              <th className="px-3 py-3 text-right font-semibold">تاريخ الإنشاء</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingRows.length === 0 ? (
+              <tr>
+                <td className="px-4 py-6 text-ink-900/70" colSpan={7}>
+                  لا توجد فواتير جديدة.
+                </td>
+              </tr>
+            ) : (
+              pendingRows.map((row) => {
+                const rowId = anyId(row);
+                const imgHref = getInvoiceImageViewerHref(row);
+                return (
+                  <tr key={rowId} className="group border-t border-ink-900/5 hover:bg-brand-50/40">
+                    <td className="sticky right-0 z-10 whitespace-nowrap border-l border-ink-900/10 bg-white px-3 py-3 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)] group-hover:bg-brand-50/40">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onSetInvoiceStatus(rowId, "approved")}
+                          disabled={updatingStatusId === rowId}
+                          className="rounded-full border border-green-500/50 bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700 hover:bg-green-100 disabled:opacity-60"
+                        >
+                          اعتماد
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onSetInvoiceStatus(rowId, "rejected")}
+                          disabled={updatingStatusId === rowId}
+                          className="rounded-full border border-red-500/50 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-60"
+                        >
+                          رفض
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteInvoice(rowId)}
+                          disabled={deletingId === rowId}
+                          className="rounded-full border border-ink-900/20 px-3 py-1.5 text-xs font-bold text-ink-900/75 hover:bg-ink-900/5 disabled:opacity-60"
+                        >
+                          {deletingId === rowId ? "جارٍ الحذف..." : "حذف"}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-ink-900/75">
+                      {imgHref ? (
+                        <a
+                          href={imgHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-lg border border-brand-400/40 bg-white px-2 py-1 text-base hover:border-brand-500"
+                          title="عرض صورة الفاتورة"
+                        >
+                          🖼️
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-3 py-3 font-mono text-xs">
+                      <Link
+                        prefetch={false}
+                        href={`/employee/maintenance/${rowId}`}
+                        className="font-medium text-brand-500 hover:underline"
+                      >
+                        {rowId.slice(0, 8)}…
+                      </Link>
+                    </td>
+                    <td className="px-3 py-3 font-mono text-xs text-ink-900/70">{String(row.property_id ?? "—")}</td>
+                    <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
+                    <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
+                    <td className="px-3 py-3 tabular-nums text-ink-900/70">{fmtDate(row.created_at)}</td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 className="mt-6 text-base font-bold text-ink-900">الفواتير المنتهية</h3>
+      <div className="mt-2 overflow-x-auto rounded-2xl border border-ink-900/10">
+        <table className="w-full min-w-[980px] border-collapse text-sm">
           <thead className="bg-brand-100 text-ink-900/85">
             <tr>
               <th className="sticky right-0 z-10 whitespace-nowrap bg-brand-100 px-3 py-3 text-right font-semibold shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.12)]">
@@ -425,59 +525,70 @@ export function MaintenanceInvoicesView({
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {finishedRows.length === 0 ? (
               <tr>
                 <td className="px-4 py-6 text-ink-900/70" colSpan={8}>
-                  لا توجد فواتير.
+                  لا توجد فواتير منتهية.
                 </td>
               </tr>
             ) : (
-              rows.map((row) => {
+              finishedRows.map((row) => {
                 const rowId = anyId(row);
                 const imgHref = getInvoiceImageViewerHref(row);
+                const s = String(row.status ?? "").toLowerCase();
+                const statusClass =
+                  s === "approved"
+                    ? "border-green-500/40 bg-green-50 text-green-700"
+                    : s === "rejected"
+                      ? "border-red-500/40 bg-red-50 text-red-700"
+                      : "border-ink-900/20 bg-white text-ink-900/75";
                 return (
-                <tr key={rowId} className="group border-t border-ink-900/5 hover:bg-brand-50/40">
-                  <td className="sticky right-0 z-10 whitespace-nowrap border-l border-ink-900/10 bg-white px-3 py-3 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)] group-hover:bg-brand-50/40">
-                    <button
-                      type="button"
-                      onClick={() => onDeleteInvoice(rowId)}
-                      disabled={deletingId === rowId}
-                      className="rounded-full border border-red-500/50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60"
-                    >
-                      {deletingId === rowId ? "جارٍ الحذف..." : "حذف الفاتورة"}
-                    </button>
-                  </td>
-                  <td className="px-3 py-3 text-ink-900/75">
-                    {imgHref ? (
-                      <a
-                        href={imgHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-lg border border-brand-400/40 bg-white px-2 py-1 text-base hover:border-brand-500"
-                        title="عرض صورة الفاتورة"
+                  <tr key={rowId} className="group border-t border-ink-900/5 hover:bg-brand-50/40">
+                    <td className="sticky right-0 z-10 whitespace-nowrap border-l border-ink-900/10 bg-white px-3 py-3 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)] group-hover:bg-brand-50/40">
+                      <button
+                        type="button"
+                        onClick={() => onDeleteInvoice(rowId)}
+                        disabled={deletingId === rowId}
+                        className="rounded-full border border-red-500/50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60"
                       >
-                        🖼️
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="px-3 py-3 font-mono text-xs">
-                    <Link
-                      prefetch={false}
-                      href={`/employee/maintenance/${rowId}`}
-                      className="font-medium text-brand-500 hover:underline"
-                    >
-                      {rowId.slice(0, 8)}…
-                    </Link>
-                  </td>
-                  <td className="px-3 py-3 text-ink-900/80">{fmtInvoiceStatus(row.status)}</td>
-                  <td className="px-3 py-3 font-mono text-xs text-ink-900/70">{String(row.property_id ?? "—")}</td>
-                  <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
-                  <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
-                  <td className="px-3 py-3 tabular-nums text-ink-900/70">{fmtDate(row.created_at)}</td>
-                </tr>
-              );
+                        {deletingId === rowId ? "جارٍ الحذف..." : "حذف الفاتورة"}
+                      </button>
+                    </td>
+                    <td className="px-3 py-3 text-ink-900/75">
+                      {imgHref ? (
+                        <a
+                          href={imgHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-lg border border-brand-400/40 bg-white px-2 py-1 text-base hover:border-brand-500"
+                          title="عرض صورة الفاتورة"
+                        >
+                          🖼️
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-3 py-3 font-mono text-xs">
+                      <Link
+                        prefetch={false}
+                        href={`/employee/maintenance/${rowId}`}
+                        className="font-medium text-brand-500 hover:underline"
+                      >
+                        {rowId.slice(0, 8)}…
+                      </Link>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-bold ${statusClass}`}>
+                        {fmtInvoiceStatus(row.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 font-mono text-xs text-ink-900/70">{String(row.property_id ?? "—")}</td>
+                    <td className="px-3 py-3 tabular-nums text-ink-900/80">{fmtAmount(row.amount)}</td>
+                    <td className="max-w-[14rem] px-3 py-3 text-ink-900/75">{shortText(row.description)}</td>
+                    <td className="px-3 py-3 tabular-nums text-ink-900/70">{fmtDate(row.created_at)}</td>
+                  </tr>
+                );
               })
             )}
           </tbody>
