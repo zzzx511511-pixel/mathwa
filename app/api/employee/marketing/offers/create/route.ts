@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   const mainImageUrl = body?.mainImageUrl != null ? String(body.mainImageUrl).trim() : "";
   const galleryUrls = Array.isArray(body?.galleryUrls) ? body.galleryUrls : [];
   const features = body?.features != null && typeof body.features === "object" ? body.features : {};
+  void body?.listingId;
 
   if (!title || !propertyType || !city || !district || !price || !description) {
     return NextResponse.json({ ok: false, error: "invalid_request" }, { status: 400 });

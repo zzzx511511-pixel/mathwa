@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FEATURE_OPTIONS,
@@ -36,8 +36,18 @@ function buildFeaturesRecord(selected: Set<FeatureKey>) {
   return o;
 }
 
+function newListingId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `listing-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 export function MarketingOfferCreateForm() {
   const router = useRouter();
+  const [listingId] = useState(newListingId);
+  const imagesInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [city, setCity] = useState("");
@@ -51,12 +61,15 @@ export function MarketingOfferCreateForm() {
   const [longitude, setLongitude] = useState("");
   const [featuresPick, setFeaturesPick] = useState<Set<FeatureKey>>(new Set());
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
-  const [galleryDraft, setGalleryDraft] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+
+  const uploadingMedia = uploadingGallery || uploadingVideo;
 
   const showHazard = useMemo(
     () => PROPERTY_TYPES_WITH_HAZARD.has(propertyType.trim()),
@@ -88,23 +101,93 @@ export function MarketingOfferCreateForm() {
     });
   }
 
-  function addGalleryUrlFromDraft() {
-    const u = galleryDraft.trim();
-    if (!u) return;
-    try {
-      // eslint-disable-next-line no-new -- validation only
-      new URL(u);
-    } catch {
-      setError("رابط صورة غير صالح.");
+  async function uploadGalleryFiles(fileList: FileList | null) {
+    if (!fileList?.length) return;
+    const files = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) {
+      setError("اختر ملفات صور صالحة.");
       return;
     }
-    if (galleryUrls.length >= 8) {
+    const remaining = 8 - galleryUrls.length;
+    if (remaining <= 0) {
       setError("الحد الأقصى 8 صور.");
       return;
     }
-    setGalleryUrls((g) => [...g, u]);
-    setGalleryDraft("");
+    const toUpload = files.slice(0, remaining);
+    if (files.length > remaining) {
+      setError(`تم اختيار ${files.length} صورة؛ سيتم رفع أول ${remaining} فقط (الحد 8).`);
+    } else {
+      setError(null);
+    }
+
+    setUploadingGallery(true);
+    const pushed: string[] = [];
+    try {
+      for (const file of toUpload) {
+        if (file.size > 10 * 1024 * 1024) {
+          setError("إحدى الصور تتجاوز 10MB.");
+          continue;
+        }
+        const fd = new FormData();
+        fd.append("listingId", listingId);
+        fd.append("kind", "image");
+        fd.append("file", file);
+        const res = await fetch("/api/employee/marketing/offers/upload", { method: "POST", body: fd });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          publicUrl?: string | null;
+        };
+        if (!res.ok || !data.ok || !data.publicUrl) {
+          throw new Error(data.error ?? "تعذر رفع الصورة.");
+        }
+        pushed.push(data.publicUrl);
+      }
+      if (pushed.length) {
+        setGalleryUrls((g) => [...g, ...pushed]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "فشل رفع الصور.");
+    } finally {
+      setUploadingGallery(false);
+      if (imagesInputRef.current) imagesInputRef.current.value = "";
+    }
+  }
+
+  async function uploadVideoFile(file: File | null) {
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      setError("حجم الفيديو يتجاوز 50MB.");
+      return;
+    }
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (ext !== "mp4" && file.type && file.type !== "video/mp4") {
+      setError("الفيديو يجب أن يكون MP4.");
+      return;
+    }
+    setUploadingVideo(true);
     setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("listingId", listingId);
+      fd.append("kind", "video");
+      fd.append("file", file);
+      const res = await fetch("/api/employee/marketing/offers/upload", { method: "POST", body: fd });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        publicUrl?: string | null;
+      };
+      if (!res.ok || !data.ok || !data.publicUrl) {
+        throw new Error(data.error ?? "تعذر رفع الفيديو.");
+      }
+      setVideoUrl(data.publicUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "فشل رفع الفيديو.");
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+    }
   }
 
   function removeGalleryAt(i: number) {
@@ -145,17 +228,13 @@ export function MarketingOfferCreateForm() {
           throw new Error("خطوط الطول والعرض يجب أن تكون أرقاماً صحيحة.");
         }
       }
-      const v = videoUrl.trim();
-      if (v && !/\.mp4(\?|$)/i.test(v) && !v.includes("youtube")) {
-        /* optional mp4 url — soft warn only */
-      }
-
       const mainImageUrl = galleryUrls[0] ?? "";
 
       const res = await fetch("/api/employee/marketing/offers/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          listingId,
           title: title.trim(),
           propertyType: propertyType.trim(),
           city: city.trim(),
@@ -196,8 +275,15 @@ export function MarketingOfferCreateForm() {
       className="space-y-6 rounded-2xl border border-ink-900/10 bg-white p-6 shadow-sm"
     >
       <div className="rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-3 text-sm text-amber-950/90">
-        رفع الملفات إلى <strong>Supabase Storage</strong> (مسار <code>marketing-offers/{"{listing_id}"}/</code>)
-        يُفعّل عند ربط قاعدة البيانات؛ حالياً يمكنك إدخال روابط صور مباشرة (حتى 8، الأولى رئيسية).
+        تُرفع الصور والفيديو إلى bucket <strong>marketing-offers</strong> ضمن المسار{" "}
+        <code className="text-xs">
+          {listingId}/images/…
+        </code>{" "}
+        و{" "}
+        <code className="text-xs">
+          {listingId}/videos/…
+        </code>
+        . تُحفظ الروابط العامة مع العرض عند الحفظ.
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -391,34 +477,44 @@ export function MarketingOfferCreateForm() {
         <p className="text-xs text-ink-900/55">أدخل خطي طول وعرض صحيحين لعرض خريطة Google.</p>
       )}
 
-      <div>
+      <div className="relative rounded-xl border border-ink-900/10 bg-[#faf8f5] p-4">
         <p className="mb-2 text-sm font-semibold text-ink-900/80">معرض الصور (حتى 8 — الأولى صورة رئيسية)</p>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input
-            value={galleryDraft}
-            onChange={(e) => setGalleryDraft(e.target.value)}
-            type="url"
-            className="flex-1 rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 text-ink-900 outline-none focus:border-brand-400"
-            placeholder="https://... (رابط صورة)"
-          />
-          <button
-            type="button"
-            onClick={addGalleryUrlFromDraft}
-            disabled={galleryUrls.length >= 8}
-            className="rounded-xl border border-gold-400/50 bg-gold-400/15 px-4 py-2.5 text-sm font-bold text-ink-900 hover:bg-gold-400/25 disabled:opacity-50"
-          >
-            إضافة للمعرض
-          </button>
-        </div>
+        <p className="mb-3 text-xs text-ink-900/55">رفع من الجهاز؛ الحد 10MB لكل صورة.</p>
+        <input
+          ref={imagesInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          disabled={uploadingGallery || galleryUrls.length >= 8}
+          onChange={(e) => void uploadGalleryFiles(e.target.files)}
+        />
+        <button
+          type="button"
+          disabled={uploadingGallery || galleryUrls.length >= 8}
+          onClick={() => imagesInputRef.current?.click()}
+          className="rounded-xl border border-gold-400/50 bg-gold-400/15 px-4 py-2.5 text-sm font-bold text-ink-900 hover:bg-gold-400/25 disabled:opacity-50"
+        >
+          رفع صور
+        </button>
+        {uploadingGallery ? (
+          <div className="mt-3 flex items-center gap-2 text-sm text-ink-900/80">
+            <span
+              className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"
+              aria-hidden
+            />
+            جاري رفع الصور…
+          </div>
+        ) : null}
         {galleryUrls.length > 0 ? (
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {galleryUrls.map((url, i) => (
               <li
                 key={`${url}-${i}`}
-                className="flex items-center gap-2 rounded-lg border border-ink-900/10 bg-[#faf8f5] p-2"
+                className="flex items-center gap-2 rounded-lg border border-ink-900/10 bg-white p-2"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- user/external URLs */}
-                <img src={url} alt="" className="h-14 w-14 shrink-0 rounded object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element -- public storage URL */}
+                <img src={url} alt="" className="h-20 w-20 shrink-0 rounded object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs text-ink-900/80">{url}</p>
                   {i === 0 ? (
@@ -436,25 +532,62 @@ export function MarketingOfferCreateForm() {
                 <button
                   type="button"
                   onClick={() => removeGalleryAt(i)}
-                  className="shrink-0 rounded border border-red-200/80 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+                  disabled={uploadingGallery}
+                  className="shrink-0 rounded border border-red-200/80 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
                   حذف
                 </button>
               </li>
             ))}
           </ul>
+        ) : !uploadingGallery ? (
+          <p className="mt-2 text-xs text-ink-900/50">لم تُرفع صور بعد.</p>
         ) : null}
       </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-ink-900/80">رابط فيديو MP4 (اختياري)</label>
+      <div className="relative rounded-xl border border-ink-900/10 bg-[#faf8f5] p-4">
+        <label className="block text-sm font-semibold text-ink-900/80">فيديو العرض (اختياري)</label>
+        <p className="mt-1 text-xs text-ink-900/55">ملف MP4 واحد، بحد أقصى 50MB.</p>
         <input
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-          type="url"
-          className="mt-1 w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 text-ink-900 outline-none focus:border-brand-400"
-          placeholder="رابط مباشر لملف MP4 — الحد 50MB عند الرفع للتخزين"
+          ref={videoInputRef}
+          type="file"
+          accept="video/mp4,.mp4"
+          className="hidden"
+          disabled={uploadingVideo}
+          onChange={(e) => void uploadVideoFile(e.target.files?.[0] ?? null)}
         />
+        <button
+          type="button"
+          disabled={uploadingVideo}
+          onClick={() => videoInputRef.current?.click()}
+          className="mt-2 rounded-xl border border-brand-400/50 bg-brand-50 px-4 py-2.5 text-sm font-bold text-brand-700 hover:bg-brand-100 disabled:opacity-50"
+        >
+          رفع فيديو MP4
+        </button>
+        {uploadingVideo ? (
+          <div className="mt-3 flex items-center gap-2 text-sm text-ink-900/80">
+            <span
+              className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"
+              aria-hidden
+            />
+            جاري رفع الفيديو…
+          </div>
+        ) : null}
+        {videoUrl && !uploadingVideo ? (
+          <div className="mt-3 overflow-hidden rounded-xl border border-ink-900/15 bg-black/5">
+            <p className="bg-[#f5f3ef] px-3 py-2 text-xs font-semibold text-ink-900/70">معاينة الفيديو</p>
+            <video src={videoUrl} controls className="max-h-72 w-full" preload="metadata" />
+            <div className="border-t border-ink-900/10 px-3 py-2">
+              <button
+                type="button"
+                onClick={() => setVideoUrl("")}
+                className="text-xs font-semibold text-red-700 hover:underline"
+              >
+                إزالة الفيديو
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div>
@@ -483,10 +616,10 @@ export function MarketingOfferCreateForm() {
       <div className="flex flex-wrap gap-2">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploadingMedia}
           className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-brand-400 disabled:opacity-60"
         >
-          {loading ? "جاري الحفظ…" : "حفظ العرض"}
+          {loading ? "جاري الحفظ…" : uploadingMedia ? "انتظر انتهاء الرفع…" : "حفظ العرض"}
         </button>
       </div>
     </form>
