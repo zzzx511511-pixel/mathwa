@@ -68,6 +68,7 @@ export function MarketingOfferCreateForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+  const [okIsPreview, setOkIsPreview] = useState(false);
 
   const uploadingMedia = uploadingGallery || uploadingVideo;
 
@@ -208,6 +209,7 @@ export function MarketingOfferCreateForm() {
     setLoading(true);
     setError(null);
     setOk(false);
+    setOkIsPreview(false);
     try {
       const area = String(areaSqm).trim();
       if (area && (Number.isNaN(Number(area)) || Number(area) <= 0)) {
@@ -609,7 +611,9 @@ export function MarketingOfferCreateForm() {
       ) : null}
       {ok ? (
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          تم تسجيل العرض (معاينة). جارٍ الرجوع لغرفة التسويق…
+          {okIsPreview
+            ? "تم تسجيل العرض (وضع معاينة — بدون حفظ في قاعدة البيانات). جارٍ الرجوع…"
+            : "تم حفظ العرض في قاعدة البيانات. جارٍ الرجوع لغرفة التسويق…"}
         </div>
       ) : null}
 
