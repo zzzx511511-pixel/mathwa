@@ -11,6 +11,7 @@ import {
   type UnifiedPublicOffer,
   type OffersPageSection
 } from "@/lib/site/marketing-listings-public";
+import { showIndustrialRiskBadge } from "@/lib/marketing/listing-form-constants";
 
 export const dynamic = "force-dynamic";
 
@@ -210,6 +211,7 @@ function OfferCard({
       ? suggestedIndustrialImages[idx % suggestedIndustrialImages.length]
       : suggestedGeneralImages[idx % suggestedGeneralImages.length];
   const heroImage = offer.imageUrl || fallbackImage;
+  const showRisk = showIndustrialRiskBadge(offer.type);
 
   return (
     <article className="overflow-hidden rounded-xl border border-ink-900/10 bg-white">
@@ -226,9 +228,11 @@ function OfferCard({
         <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-blue-600 px-2 py-1 text-[11px] font-bold text-white">
           {offer.modeLabel}
         </span>
-        <span className={`pointer-events-none absolute bottom-2 right-2 rounded-md px-2 py-1 text-[11px] font-bold ${riskClass}`}>
-          {riskLabel}
-        </span>
+        {showRisk ? (
+          <span className={`pointer-events-none absolute bottom-2 right-2 rounded-md px-2 py-1 text-[11px] font-bold ${riskClass}`}>
+            {riskLabel}
+          </span>
+        ) : null}
       </Link>
       <div className="space-y-2 p-4">
         <Link href={detailHref} prefetch className="block rounded-lg py-1 hover:bg-[#f8f3ea]/60">

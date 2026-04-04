@@ -17,6 +17,7 @@ export function MarketingListingsManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,6 +54,29 @@ export function MarketingListingsManager() {
     setRows((prev) => prev.filter((r) => String(r.id) !== id));
   }
 
+  async function onArchive(id: string, archive: boolean) {
+    const msg = archive
+      ? "إخفاء هذا العرض عن الموقع العام (يبقى في قاعدة البيانات)؟"
+      : "إعادة نشر هذا العرض على الموقع؟";
+    if (!confirm(msg)) return;
+    setArchivingId(id);
+    setError(null);
+    const res = await fetch("/api/employee/marketing/offers/archive", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ listingId: id, archive })
+    });
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; status?: string };
+    setArchivingId(null);
+    if (!res.ok || !data.ok) {
+      setError(data.error ?? "تعذر تحديث حالة العرض.");
+      return;
+    }
+    setRows((prev) =>
+      prev.map((r) => (String(r.id) === id ? { ...r, status: data.status ?? (archive ? "archived" : "published") } : r))
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 rounded-2xl border border-ink-900/10 bg-white p-8 text-sm text-ink-900/75">
@@ -85,6 +109,8 @@ export function MarketingListingsManager() {
             const id = String(row.id ?? "");
             const title = String(row.title ?? "—");
             const sec = row.offer_section as OfferSectionKey | undefined;
+            const st = String(row.status ?? "published");
+            const isArchived = st === "archived";
             return (
               <li
                 key={id}
@@ -94,19 +120,44 @@ export function MarketingListingsManager() {
                   <p className="font-semibold text-ink-900">{title}</p>
                   <p className="text-xs text-ink-900/60">
                     القسم: {sectionLabel(sec)} ·{" "}
+                    <span className={isArchived ? "text-amber-800" : "text-emerald-800"}>
+                      {isArchived ? "مؤرشف (مخفي عن الموقع)" : "منشور"}
+                    </span>{" "}
+                    ·{" "}
                     <Link href={`/offers/${id}`} className="text-brand-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                      عرض على الموقع
+                      معاينة الرابط
                     </Link>
                   </p>
                 </div>
-                <button
-                  type="button"
-                  disabled={deletingId === id}
-                  onClick={() => void onDelete(id)}
-                  className="shrink-0 rounded-lg border border-red-500/50 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-100 disabled:opacity-60"
-                >
-                  {deletingId === id ? "جارٍ الحذف…" : "حذف نهائي"}
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {!isArchived ? (
+                    <button
+                      type="button"
+                      disabled={archivingId === id || deletingId === id}
+                      onClick={() => void onArchive(id, true)}
+                      className="shrink-0 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-60"
+                    >
+                      {archivingId === id ? "جارٍ التحديث…" : "أرشفة"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={archivingId === id || deletingId === id}
+                      onClick={() => void onArchive(id, false)}
+                      className="shrink-0 rounded-lg border border-emerald-500/50 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 disabled:opacity-60"
+                    >
+                      {archivingId === id ? "جارٍ التحديث…" : "إعادة النشر"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    disabled={deletingId === id || archivingId === id}
+                    onClick={() => void onDelete(id)}
+                    className="shrink-0 rounded-lg border border-red-500/50 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-100 disabled:opacity-60"
+                  >
+                    {deletingId === id ? "جارٍ الحذف…" : "حذف نهائي"}
+                  </button>
+                </div>
               </li>
             );
           })}

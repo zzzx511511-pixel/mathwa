@@ -22,6 +22,7 @@ import { OfferPublicToolbar } from "@/components/offers/offer-public-toolbar";
 import { SampleOfferCard } from "@/components/offers/sample-offer-card";
 import { OccupancyBar } from "@/components/projects/occupancy-bar";
 import { filterPublicVacantOffers } from "@/lib/site/public-vacant-offers";
+import { showIndustrialRiskBadge } from "@/lib/marketing/listing-form-constants";
 import {
   mapListingRowToUnifiedOffer,
   mapPropertyRowToUnifiedOffer,
@@ -399,6 +400,8 @@ function OfferCard({
       ? "bg-blue-600 text-white"
       : "bg-emerald-600 text-white";
 
+  const showRiskBadge = showIndustrialRiskBadge(offer.type);
+
   return (
     <article className="overflow-hidden rounded-xl border border-ink-900/10 bg-white p-0">
       <Link
@@ -411,7 +414,7 @@ function OfferCard({
         <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-black/65 px-2 py-1 text-[11px] font-bold text-white">
           {offer.modeLabel}
         </span>
-        {showRisk ? (
+        {showRiskBadge ? (
           <span className={`pointer-events-none absolute right-2 top-2 rounded-md px-2 py-1 text-[11px] font-bold ${riskClass}`}>
             {riskLabel}
           </span>

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useFavorites } from "@/hooks/use-favorites";
+import { supabaseClient } from "@/lib/supabase/client";
 
 type OfferPublicToolbarProps = {
   path: string;
@@ -23,7 +24,8 @@ export function OfferPublicToolbar({ path, title, kind, compact }: OfferPublicTo
 
   const showHint = useCallback((msg: string) => {
     setHint(msg);
-    window.setTimeout(() => setHint(null), 2200);
+    const ms = /حساب|تسجيل|دخول/i.test(msg) ? 5200 : 2200;
+    window.setTimeout(() => setHint(null), ms);
   }, []);
 
   const onCopy = useCallback(async () => {
@@ -56,6 +58,13 @@ export function OfferPublicToolbar({ path, title, kind, compact }: OfferPublicTo
   }, [path, title, showHint]);
 
   const onToggleFavorite = useCallback(async () => {
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+    if (!user) {
+      showHint("يجب إنشاء حساب أو تسجيل الدخول أولاً لاستخدام المفضلة.");
+      return;
+    }
     const was = favorite;
     await toggle({ path, title, kind });
     showHint(!was ? "أُضيف إلى المفضلة." : "أُزيل من المفضلة.");

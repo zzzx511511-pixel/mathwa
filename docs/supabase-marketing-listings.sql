@@ -55,3 +55,9 @@ alter table public.listings
   add constraint listings_offer_section_check
   check (offer_section in ('industrial', 'commercial-workers', 'residential', 'lands'));
 alter table public.listings alter column offer_section set not null;
+
+-- حالات العرض: منشور للعامة | مؤرشف (مخفي عن الموقع)
+alter table public.listings drop constraint if exists listings_status_check;
+alter table public.listings
+  add constraint listings_status_check
+  check (status in ('published', 'archived'));
