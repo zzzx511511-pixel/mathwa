@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { isPreviewMode } from "@/lib/demo/is-preview-mode";
 
 const LS_KEY = "mathwa-marketing-leads-preview-v1";
 
@@ -53,6 +54,8 @@ function saveRows(rows: MarketingLeadRow[]) {
 export function MarketingLeadsPanel() {
   const [rows, setRows] = useState<MarketingLeadRow[]>([]);
   const [form, setForm] = useState(empty);
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     setRows(loadRows());
@@ -63,15 +66,54 @@ export function MarketingLeadsPanel() {
     saveRows(next);
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const row: MarketingLeadRow = {
-      id: crypto.randomUUID(),
-      ...form,
-      createdAt: new Date().toISOString()
-    };
-    persist([row, ...rows]);
-    setForm(empty);
+    setSubmitError(null);
+    if (isPreviewMode()) {
+      const row: MarketingLeadRow = {
+        id: crypto.randomUUID(),
+        ...form,
+        createdAt: new Date().toISOString()
+      };
+      persist([row, ...rows]);
+      setForm(empty);
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/public/marketing-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          phone: form.phone,
+          requestType: form.requestType,
+          propertyTypeWanted: form.propertyTypeWanted,
+          budgetMin: form.budgetMin,
+          budgetMax: form.budgetMax,
+          preferredCity: form.preferredCity,
+          source: form.source,
+          interestedListingId: form.interestedListingId,
+          status: form.status,
+          notes: form.notes
+        })
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; id?: string };
+      if (!res.ok || !data.ok || !data.id) {
+        throw new Error(data.error ?? "تعذر حفظ الطلب في قاعدة البيانات.");
+      }
+      const row: MarketingLeadRow = {
+        id: String(data.id),
+        ...form,
+        createdAt: new Date().toISOString()
+      };
+      persist([row, ...rows]);
+      setForm(empty);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "حدث خطأ غير متوقع.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function remove(id: string) {
@@ -86,9 +128,13 @@ export function MarketingLeadsPanel() {
       >
         <h3 className="text-lg font-bold text-brand-400">إضافة عميل محتمل (Lead)</h3>
         <p className="text-sm text-ink-900/70">
-          تخزين محلي للمعاينة فقط؛ مع Supabase + RLS يُعرض لكل موظف طلباته المعنّاة فقط، مع محرك المطابقة
-          التلقائي عند إضافة عرض جديد.
+          {isPreviewMode()
+            ? "وضع معاينة: التخزين محلي في المتصفح فقط."
+            : "يُحفظ في جدول marketing_leads في Supabase (نفّذ docs/supabase-marketing-leads.sql إن لزم)."}
         </p>
+        {submitError ? (
+          <div className="rounded-xl border border-red-500/30 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</div>
+        ) : null}
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className="block text-sm font-semibold text-ink-900/80">الاسم</label>
@@ -212,9 +258,10 @@ export function MarketingLeadsPanel() {
         </div>
         <button
           type="submit"
-          className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-brand-400"
+          disabled={saving}
+          className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-brand-400 disabled:opacity-60"
         >
-          حفظ Lead (معاينة)
+          {saving ? "جارٍ الحفظ…" : isPreviewMode() ? "حفظ Lead (معاينة محلية)" : "حفظ في قاعدة البيانات"}
         </button>
       </form>
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isPreviewMode } from "@/lib/demo/is-preview-mode";
 import { PAYMENT_METHOD_OPTIONS } from "@/lib/marketing/listing-form-constants";
+import { isOfferSectionKey } from "@/lib/marketing/offer-section";
 
 const PAYMENT_SET = new Set(PAYMENT_METHOD_OPTIONS.map((o) => o.value));
 
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
   const mainImageUrl = body?.mainImageUrl != null ? String(body.mainImageUrl).trim() : "";
   const galleryUrls = Array.isArray(body?.galleryUrls) ? body.galleryUrls : [];
   const features = body?.features != null && typeof body.features === "object" ? body.features : {};
+  const offerSectionRaw = body?.offerSection != null ? String(body.offerSection).trim() : "industrial";
 
   if (!title || !propertyType || !city || !district || !description) {
     return NextResponse.json({ ok: false, error: "invalid_request" }, { status: 400 });
@@ -130,6 +132,9 @@ export async function POST(req: Request) {
   if (hazardLevel && !["high", "medium", "low"].includes(hazardLevel)) {
     return NextResponse.json({ ok: false, error: "invalid_hazard" }, { status: 400 });
   }
+  if (!isOfferSectionKey(offerSectionRaw)) {
+    return NextResponse.json({ ok: false, error: "invalid_offer_section" }, { status: 400 });
+  }
 
   if (isPreviewMode()) {
     return NextResponse.json({ ok: true, preview: true });
@@ -186,6 +191,7 @@ export async function POST(req: Request) {
     video_url: videoUrl || null,
     features,
     status: "published",
+    offer_section: offerSectionRaw,
     updated_at: new Date().toISOString()
   };
 

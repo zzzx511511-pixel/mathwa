@@ -22,6 +22,15 @@ import { OfferPublicToolbar } from "@/components/offers/offer-public-toolbar";
 import { SampleOfferCard } from "@/components/offers/sample-offer-card";
 import { OccupancyBar } from "@/components/projects/occupancy-bar";
 import { filterPublicVacantOffers } from "@/lib/site/public-vacant-offers";
+import {
+  mapListingRowToUnifiedOffer,
+  mapPropertyRowToUnifiedOffer,
+  offersForHomeCategory,
+  type ListingRow,
+  type PropertyOfferRow,
+  type UnifiedPublicOffer
+} from "@/lib/site/marketing-listings-public";
+import type { OfferSectionKey } from "@/lib/marketing/offer-section";
 
 export const dynamic = "force-dynamic";
 
@@ -38,37 +47,52 @@ type OfferRow = {
   property_status?: string | null;
 };
 
-type Offer = {
-  id: string;
-  title: string;
-  details: string;
-  type: string;
-  area: string;
-  price: string;
-  modeLabel: "للبيع" | "للإيجار";
-  risk: "high" | "medium" | "low";
-};
-
 export default async function PublicHomePage() {
-  let allOffers: Offer[] = [];
+  let allOffers: UnifiedPublicOffer[] = [];
   try {
     const supabase = getSupabaseServerClient();
-    const { data } = await supabase.rpc("get_public_property_offers", { p_limit: 48 });
-    const rows = filterPublicVacantOffers((data ?? []) as OfferRow[]);
-    allOffers = rows.map((row: OfferRow, idx: number) => mapOffer(row, idx));
+    const [{ data: rpcData }, { data: listingData }] = await Promise.all([
+      supabase.rpc("get_public_property_offers", { p_limit: 48 }),
+      supabase.from("listings").select("*").eq("status", "published").order("created_at", { ascending: false }).limit(48)
+    ]);
+    const propertyRows = filterPublicVacantOffers((rpcData ?? []) as OfferRow[]) as PropertyOfferRow[];
+    const listingRows = (listingData ?? []) as ListingRow[];
+    const fromRpc = propertyRows.map((r, i) => mapPropertyRowToUnifiedOffer(r, i));
+    const fromListings = listingRows.map((r, i) => mapListingRowToUnifiedOffer(r, i));
+    const seen = new Set<string>();
+    for (const o of [...fromListings, ...fromRpc]) {
+      if (seen.has(o.id)) continue;
+      seen.add(o.id);
+      allOffers.push(o);
+    }
   } catch {
-    /* نفس منطق صفحة العروض: لا نسقط الصفحة كاملة إذا تعذّر Supabase */
+    /* لا نسقط الصفحة كاملة إذا تعذّر Supabase */
   }
 
-  const industrial = pickCategory(allOffers, /مصنع|مستودع|ورشة|صناعي/i);
-  const commercialWorkers = pickCategory(allOffers, /تجاري|سكن عمال|عمائر|مكاتب/i);
-  const residential = pickCategory(allOffers, /سكني|شقة|فيلا|دور/i);
-  const lands = pickCategory(allOffers, /أرض|اراضي|الأراضي/i);
-
-  const topIndustrial = takeWithFallback(industrial, allOffers, 3);
-  const topCommercialWorkers = takeWithFallback(commercialWorkers, allOffers, 3);
-  const topResidential = takeWithFallback(residential, allOffers, 3);
-  const topLands = takeWithFallback(lands, allOffers, 3);
+  const topIndustrial = takeWithFallback(
+    offersForHomeCategory(allOffers, "industrial" as OfferSectionKey, /مصنع|مستودع|ورشة|حوش|صناعي|أرض صناعية/i),
+    allOffers,
+    3
+  );
+  const topCommercialWorkers = takeWithFallback(
+    offersForHomeCategory(
+      allOffers,
+      "commercial-workers" as OfferSectionKey,
+      /تجاري|سكن عمال|عمائر|مكاتب|مكتب|عمارة|محل/i
+    ),
+    allOffers,
+    3
+  );
+  const topResidential = takeWithFallback(
+    offersForHomeCategory(allOffers, "residential" as OfferSectionKey, /سكني|شقة|فيلا|دور|دوبلكس|تاون|قصر/i),
+    allOffers,
+    3
+  );
+  const topLands = takeWithFallback(
+    offersForHomeCategory(allOffers, "lands" as OfferSectionKey, /أرض|اراضي|الأراضي|زراعية/i),
+    allOffers,
+    3
+  );
 
   return (
     <div id="top" className="space-y-10">
@@ -299,7 +323,7 @@ function CategorySection({
   id: string;
   title: string;
   subtitle: string;
-  offers: Offer[];
+  offers: UnifiedPublicOffer[];
   images: string[];
   showRisk?: boolean;
   sampleCards?: SampleCard[];
@@ -344,39 +368,7 @@ function CategorySection({
   );
 }
 
-function mapOffer(row: OfferRow, idx: number): Offer {
-  const type = String(row.property_type ?? "عقار");
-  const summary = String(row.summary ?? "");
-  const modeLabel: "للبيع" | "للإيجار" = /إيجار|للايجار|للتأجير/i.test(summary) ? "للإيجار" : "للبيع";
-  const risk = pickRisk(type + " " + summary, idx);
-
-  return {
-    id: String(row.id ?? Math.random().toString(36).slice(2, 9)),
-    title: String(row.title ?? "عرض عقاري"),
-    details: summary || "تفاصيل متاحة بعد التواصل.",
-    type,
-    area: [row.city, row.district].filter(Boolean).join(" - ") || "الرياض",
-    price:
-      row.price && Number.isFinite(row.price)
-        ? `${new Intl.NumberFormat("ar-SA").format(row.price)} ر.س`
-        : "السعر عند التواصل",
-    modeLabel,
-    risk
-  };
-}
-
-function pickRisk(text: string, idx: number): "high" | "medium" | "low" {
-  if (/عالي|خطورة عالية/i.test(text)) return "high";
-  if (/متوسط|خطورة متوسطة/i.test(text)) return "medium";
-  if (/منخفض|خطورة منخفضة/i.test(text)) return "low";
-  return (["high", "medium", "low"] as const)[idx % 3];
-}
-
-function pickCategory(offers: Offer[], pattern: RegExp) {
-  return offers.filter((offer) => pattern.test(`${offer.type} ${offer.title} ${offer.details}`));
-}
-
-function takeWithFallback(primary: Offer[], all: Offer[], count: number) {
+function takeWithFallback(primary: UnifiedPublicOffer[], all: UnifiedPublicOffer[], count: number) {
   if (primary.length >= count) return primary.slice(0, count);
   const used = new Set(primary.map((item) => item.id));
   const fill = all.filter((item) => !used.has(item.id)).slice(0, Math.max(0, count - primary.length));
@@ -388,11 +380,12 @@ function OfferCard({
   imageUrl,
   showRisk
 }: {
-  offer: Offer;
+  offer: UnifiedPublicOffer;
   imageUrl: string;
   showRisk?: boolean;
 }) {
   const detailHref = `/offers/${offer.id}` as Route;
+  const heroUrl = offer.imageUrl || imageUrl;
   const riskLabel =
     offer.risk === "high"
       ? "خطورة عالية"
@@ -412,7 +405,7 @@ function OfferCard({
         href={detailHref}
         prefetch
         className="relative block h-36 bg-cover bg-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2"
-        style={{ backgroundImage: `url('${imageUrl}')` }}
+        style={{ backgroundImage: `url('${heroUrl}')` }}
         aria-label={`فتح تفاصيل: ${offer.title}`}
       >
         <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-black/65 px-2 py-1 text-[11px] font-bold text-white">

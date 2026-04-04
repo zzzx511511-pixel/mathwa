@@ -21,6 +21,8 @@ create table if not exists public.listings (
   video_url text,
   features jsonb not null default '{}'::jsonb,
   status text not null default 'published',
+  offer_section text not null default 'industrial'
+    check (offer_section in ('industrial', 'commercial-workers', 'residential', 'lands')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -41,3 +43,15 @@ to anon, authenticated
 using (status = 'published');
 
 -- ملاحظة: الإدراج يتم من API باستخدام SUPABASE_SERVICE_ROLE_KEY الذي يتجاوز RLS.
+
+-- --- ترقية جدول موجود مسبقاً (بدون عمود offer_section) ---
+alter table public.listings add column if not exists offer_section text;
+update public.listings
+  set offer_section = 'industrial'
+  where offer_section is null or trim(offer_section) = '';
+alter table public.listings alter column offer_section set default 'industrial';
+alter table public.listings drop constraint if exists listings_offer_section_check;
+alter table public.listings
+  add constraint listings_offer_section_check
+  check (offer_section in ('industrial', 'commercial-workers', 'residential', 'lands'));
+alter table public.listings alter column offer_section set not null;

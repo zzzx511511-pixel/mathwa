@@ -9,6 +9,7 @@ import {
   type FeatureKey,
   type PaymentMethodValue
 } from "@/lib/marketing/listing-form-constants";
+import { OFFER_SECTION_FORM_OPTIONS, type OfferSectionKey } from "@/lib/marketing/offer-section";
 
 const cityOptions = ["الرياض", "جدة", "الدمام", "مكة", "المدينة", "الخبر", "الطائف"];
 const districtOptions = ["السلي", "الملقا", "النرجس", "الياسمين", "العليا", "الصحافة", "النسيم"];
@@ -53,6 +54,7 @@ export function MarketingOfferCreateForm() {
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [listingMode, setListingMode] = useState<"sale" | "rent">("sale");
+  const [offerSection, setOfferSection] = useState<OfferSectionKey>("industrial");
   const [price, setPrice] = useState("");
   const [areaSqm, setAreaSqm] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodValue>("cash");
@@ -242,6 +244,7 @@ export function MarketingOfferCreateForm() {
           city: city.trim(),
           district: district.trim(),
           listingMode,
+          offerSection,
           price: price.trim(),
           areaSqm: area || undefined,
           paymentMethod,
@@ -317,6 +320,20 @@ export function MarketingOfferCreateForm() {
               <option key={t} value={t} />
             ))}
           </datalist>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-ink-900/80">القسم (في صفحة العروض)</label>
+          <select
+            value={offerSection}
+            onChange={(e) => setOfferSection(e.target.value as OfferSectionKey)}
+            className="mt-1 w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 text-ink-900 outline-none focus:border-brand-400"
+          >
+            {OFFER_SECTION_FORM_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-semibold text-ink-900/80">نوع العرض</label>
