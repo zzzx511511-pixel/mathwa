@@ -24,3 +24,7 @@ comment on table public.marketing_leads is 'Leads من نموذج غرفة ال�
 alter table public.marketing_leads enable row level security;
 
 -- لا سياسات قراءة/كتابة للعموم — الوصول عبر service role من الخادم فقط.
+
+-- إن ظهرت رسالة PostgREST: Could not find the table ... in the schema cache
+-- نفّذ في SQL Editor بعد إنشاء/تعديل الجدول:
+--   NOTIFY pgrst, 'reload schema';
