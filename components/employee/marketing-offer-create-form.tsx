@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FEATURE_OPTIONS,
@@ -44,9 +44,21 @@ function newListingId(): string {
   return `listing-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-export function MarketingOfferCreateForm() {
+function featuresJsonToSet(rec: unknown): Set<FeatureKey> {
+  const s = new Set<FeatureKey>();
+  if (!rec || typeof rec !== "object") return s;
+  const o = rec as Record<string, unknown>;
+  for (const { key } of FEATURE_OPTIONS) {
+    if (o[key] === true) s.add(key);
+  }
+  return s;
+}
+
+export function MarketingOfferCreateForm({ editListingId }: { editListingId?: string } = {}) {
   const router = useRouter();
-  const [listingId] = useState(newListingId);
+  const [listingId] = useState(() => (editListingId?.trim() ? editListingId.trim() : newListingId()));
+  const [loadReady, setLoadReady] = useState(!editListingId);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
@@ -73,6 +85,66 @@ export function MarketingOfferCreateForm() {
   const [okIsPreview, setOkIsPreview] = useState(false);
 
   const uploadingMedia = uploadingGallery || uploadingVideo;
+
+  useEffect(() => {
+    if (!editListingId?.trim()) return;
+    let cancelled = false;
+    (async () => {
+      setLoadError(null);
+      const res = await fetch(
+        `/api/employee/marketing/offers/detail?listingId=${encodeURIComponent(editListingId.trim())}`
+      );
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        listing?: Record<string, unknown>;
+        error?: string;
+      };
+      if (cancelled) return;
+      if (!res.ok || !data.ok || !data.listing) {
+        setLoadError(data.error ?? "تعذر تحميل بيانات العرض.");
+        setLoadReady(true);
+        return;
+      }
+      const row = data.listing;
+      setTitle(String(row.title ?? ""));
+      setPropertyType(String(row.property_type ?? ""));
+      setCity(String(row.city ?? ""));
+      setDistrict(String(row.district ?? ""));
+      setListingMode(row.listing_mode === "rent" ? "rent" : "sale");
+      const sec = String(row.offer_section ?? "industrial");
+      setOfferSection(
+        OFFER_SECTION_FORM_OPTIONS.some((o) => o.value === sec) ? (sec as OfferSectionKey) : "industrial"
+      );
+      setPrice(row.price != null && row.price !== "" ? String(row.price) : "");
+      setAreaSqm(row.area_sqm != null && row.area_sqm !== "" ? String(row.area_sqm) : "");
+      setPaymentMethod(
+        PAYMENT_METHOD_OPTIONS.some((o) => o.value === String(row.payment_method))
+          ? (String(row.payment_method) as PaymentMethodValue)
+          : "cash"
+      );
+      setHazardLevel(
+        row.hazard_level === "high" || row.hazard_level === "medium" || row.hazard_level === "low"
+          ? (row.hazard_level as "high" | "medium" | "low")
+          : ""
+      );
+      setLatitude(row.latitude != null ? String(row.latitude) : "");
+      setLongitude(row.longitude != null ? String(row.longitude) : "");
+      setDescription(String(row.description ?? ""));
+      setVideoUrl(row.video_url != null ? String(row.video_url) : "");
+      setFeaturesPick(featuresJsonToSet(row.features));
+
+      let urls: string[] = Array.isArray(row.gallery_urls)
+        ? (row.gallery_urls as unknown[]).map((x) => String(x ?? "").trim()).filter(Boolean)
+        : [];
+      const main = row.main_image_url != null ? String(row.main_image_url).trim() : "";
+      if (main && !urls.includes(main)) urls = [main, ...urls];
+      setGalleryUrls(urls.slice(0, 8));
+      setLoadReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [editListingId]);
 
   const showHazard = useMemo(
     () => PROPERTY_TYPES_WITH_HAZARD.has(propertyType.trim()),
@@ -234,43 +306,63 @@ export function MarketingOfferCreateForm() {
       }
       const mainImageUrl = galleryUrls[0] ?? "";
 
-      const res = await fetch("/api/employee/marketing/offers/create", {
+      const payload = {
+        listingId,
+        title: title.trim(),
+        propertyType: propertyType.trim(),
+        city: city.trim(),
+        district: district.trim(),
+        listingMode,
+        offerSection,
+        price: price.trim(),
+        areaSqm: area || undefined,
+        paymentMethod,
+        hazardLevel: showHazard ? hazardLevel : undefined,
+        latitude: latStr || undefined,
+        longitude: lngStr || undefined,
+        features: buildFeaturesRecord(featuresPick),
+        galleryUrls,
+        mainImageUrl,
+        videoUrl: videoUrl.trim() || undefined,
+        description: description.trim()
+      };
+
+      const isEdit = Boolean(editListingId?.trim());
+      const res = await fetch(isEdit ? "/api/employee/marketing/offers/update" : "/api/employee/marketing/offers/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId,
-          title: title.trim(),
-          propertyType: propertyType.trim(),
-          city: city.trim(),
-          district: district.trim(),
-          listingMode,
-          offerSection,
-          price: price.trim(),
-          areaSqm: area || undefined,
-          paymentMethod,
-          hazardLevel: showHazard ? hazardLevel : undefined,
-          latitude: latStr || undefined,
-          longitude: lngStr || undefined,
-          features: buildFeaturesRecord(featuresPick),
-          galleryUrls,
-          mainImageUrl,
-          videoUrl: videoUrl.trim() || undefined,
-          description: description.trim()
-        })
+        body: JSON.stringify(payload)
       });
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; preview?: boolean };
       if (!res.ok || !j.ok) {
-        throw new Error(j.error || "تعذّر تسجيل العرض.");
+        throw new Error(j.error || (isEdit ? "تعذّر حفظ التعديلات." : "تعذّر تسجيل العرض."));
       }
+      setOkIsPreview(Boolean(j.preview));
       setOk(true);
       setTimeout(() => {
-        router.push("/employee/marketing");
+        router.push(isEdit ? "/employee/marketing-archive" : "/employee/marketing");
         router.refresh();
       }, 800);
     } catch (err) {
       setError(err instanceof Error ? err.message : "حدث خطأ غير متوقع.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  if (editListingId?.trim()) {
+    if (!loadReady) {
+      return (
+        <div className="flex items-center gap-2 rounded-2xl border border-ink-900/10 bg-white p-8 text-sm text-ink-900/75">
+          <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+          جاري تحميل بيانات العرض…
+        </div>
+      );
+    }
+    if (loadError) {
+      return (
+        <div className="rounded-2xl border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>
+      );
     }
   }
 
@@ -630,7 +722,9 @@ export function MarketingOfferCreateForm() {
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           {okIsPreview
             ? "تم تسجيل العرض (وضع معاينة — بدون حفظ في قاعدة البيانات). جارٍ الرجوع…"
-            : "تم حفظ العرض في قاعدة البيانات. جارٍ الرجوع لغرفة التسويق…"}
+            : editListingId
+              ? "تم حفظ التعديلات. جارٍ الرجوع لأرشيف العروض…"
+              : "تم حفظ العرض في قاعدة البيانات. جارٍ الرجوع لغرفة التسويق…"}
         </div>
       ) : null}
 
@@ -640,7 +734,13 @@ export function MarketingOfferCreateForm() {
           disabled={loading || uploadingMedia}
           className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-brand-400 disabled:opacity-60"
         >
-          {loading ? "جاري الحفظ…" : uploadingMedia ? "انتظر انتهاء الرفع…" : "حفظ العرض"}
+          {loading
+            ? "جاري الحفظ…"
+            : uploadingMedia
+              ? "انتظر انتهاء الرفع…"
+              : editListingId
+                ? "حفظ التعديلات"
+                : "حفظ العرض"}
         </button>
       </div>
     </form>

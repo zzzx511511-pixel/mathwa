@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { OFFER_SECTION_FORM_OPTIONS, type OfferSectionKey } from "@/lib/marketing/offer-section";
 
 type ListingRow = Record<string, unknown>;
@@ -35,6 +35,15 @@ export function MarketingListingsManager() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const publishedRows = useMemo(
+    () => rows.filter((r) => String(r.status ?? "") === "published"),
+    [rows]
+  );
+  const archivedRows = useMemo(
+    () => rows.filter((r) => String(r.status ?? "") === "archived"),
+    [rows]
+  );
 
   async function onDelete(id: string) {
     if (!confirm("حذف هذا العرض نهائياً من قاعدة البيانات؟ لا يمكن التراجع.")) return;
@@ -86,10 +95,105 @@ export function MarketingListingsManager() {
     );
   }
 
+  function renderPublishedRow(row: ListingRow) {
+    const id = String(row.id ?? "");
+    const title = String(row.title ?? "—");
+    const sec = row.offer_section as OfferSectionKey | undefined;
+    return (
+      <li
+        key={id}
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-900/10 bg-[#faf8f5] px-4 py-3"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-ink-900">{title}</p>
+          <p className="text-xs text-ink-900/60">
+            القسم: {sectionLabel(sec)} ·{" "}
+            <span className="text-emerald-800">منشور</span>
+            {" · "}
+            <Link href={`/offers/${id}`} className="text-brand-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              معاينة الرابط
+            </Link>
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={archivingId === id || deletingId === id}
+            onClick={() => void onArchive(id, true)}
+            className="shrink-0 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-60"
+          >
+            {archivingId === id ? "جارٍ التحديث…" : "أرشفة"}
+          </button>
+          <button
+            type="button"
+            disabled={deletingId === id || archivingId === id}
+            onClick={() => void onDelete(id)}
+            className="shrink-0 rounded-lg border border-red-500/50 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-100 disabled:opacity-60"
+          >
+            {deletingId === id ? "جارٍ الحذف…" : "حذف نهائي"}
+          </button>
+          <Link
+            href={`/employee/marketing-offers/${id}/edit`}
+            className="shrink-0 rounded-lg border border-brand-500/40 bg-brand-50 px-3 py-2 text-xs font-bold text-brand-900 hover:bg-brand-100"
+          >
+            تعديل
+          </Link>
+        </div>
+      </li>
+    );
+  }
+
+  function renderArchivedRow(row: ListingRow) {
+    const id = String(row.id ?? "");
+    const title = String(row.title ?? "—");
+    const sec = row.offer_section as OfferSectionKey | undefined;
+    return (
+      <li
+        key={id}
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-900/10 bg-[#faf8f5] px-4 py-3"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-ink-900">{title}</p>
+          <p className="text-xs text-ink-900/60">
+            القسم: {sectionLabel(sec)} · <span className="text-amber-800">مؤرشف (مخفي عن الموقع)</span>
+            {" · "}
+            <Link href={`/offers/${id}`} className="text-brand-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              معاينة الرابط
+            </Link>
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={archivingId === id || deletingId === id}
+            onClick={() => void onArchive(id, false)}
+            className="shrink-0 rounded-lg border border-emerald-500/50 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 disabled:opacity-60"
+          >
+            {archivingId === id ? "جارٍ التحديث…" : "إعادة نشر"}
+          </button>
+          <button
+            type="button"
+            disabled={deletingId === id || archivingId === id}
+            onClick={() => void onDelete(id)}
+            className="shrink-0 rounded-lg border border-red-500/50 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-100 disabled:opacity-60"
+          >
+            {deletingId === id ? "جارٍ الحذف…" : "حذف نهائي"}
+          </button>
+          <Link
+            href={`/employee/marketing-offers/${id}/edit`}
+            className="shrink-0 rounded-lg border border-brand-500/40 bg-brand-50 px-3 py-2 text-xs font-bold text-brand-900 hover:bg-brand-100"
+          >
+            تعديل
+          </Link>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <section className="rounded-2xl border border-ink-900/10 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-lg font-bold text-brand-400">عروض التسويق المحفوظة</h3>
+        <h3 className="text-lg font-bold text-brand-400">إدارة العروض التسويقية</h3>
         <button
           type="button"
           onClick={() => void load()}
@@ -101,68 +205,27 @@ export function MarketingListingsManager() {
       {error ? (
         <div className="mt-4 rounded-xl border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       ) : null}
-      {rows.length === 0 ? (
-        <p className="mt-4 text-sm text-ink-900/70">لا توجد عروض في الجدول بعد، أو فشل الاتصال بـ Supabase.</p>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {rows.map((row) => {
-            const id = String(row.id ?? "");
-            const title = String(row.title ?? "—");
-            const sec = row.offer_section as OfferSectionKey | undefined;
-            const st = String(row.status ?? "published");
-            const isArchived = st === "archived";
-            return (
-              <li
-                key={id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-900/10 bg-[#faf8f5] px-4 py-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-ink-900">{title}</p>
-                  <p className="text-xs text-ink-900/60">
-                    القسم: {sectionLabel(sec)} ·{" "}
-                    <span className={isArchived ? "text-amber-800" : "text-emerald-800"}>
-                      {isArchived ? "مؤرشف (مخفي عن الموقع)" : "منشور"}
-                    </span>{" "}
-                    ·{" "}
-                    <Link href={`/offers/${id}`} className="text-brand-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                      معاينة الرابط
-                    </Link>
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {!isArchived ? (
-                    <button
-                      type="button"
-                      disabled={archivingId === id || deletingId === id}
-                      onClick={() => void onArchive(id, true)}
-                      className="shrink-0 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-60"
-                    >
-                      {archivingId === id ? "جارٍ التحديث…" : "أرشفة"}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={archivingId === id || deletingId === id}
-                      onClick={() => void onArchive(id, false)}
-                      className="shrink-0 rounded-lg border border-emerald-500/50 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 disabled:opacity-60"
-                    >
-                      {archivingId === id ? "جارٍ التحديث…" : "إعادة النشر"}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    disabled={deletingId === id || archivingId === id}
-                    onClick={() => void onDelete(id)}
-                    className="shrink-0 rounded-lg border border-red-500/50 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-100 disabled:opacity-60"
-                  >
-                    {deletingId === id ? "جارٍ الحذف…" : "حذف نهائي"}
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+
+      <div className="mt-6 space-y-6">
+        <div>
+          <h4 className="text-sm font-bold text-ink-900">العروض المنشورة</h4>
+          {publishedRows.length === 0 ? (
+            <p className="mt-2 text-sm text-ink-900/70">لا توجد عروض منشورة حالياً.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">{publishedRows.map((row) => renderPublishedRow(row))}</ul>
+          )}
+        </div>
+
+        <div className="border-t border-ink-900/10 pt-6">
+          <h4 className="text-sm font-bold text-ink-900">العروض المؤرشفة</h4>
+          {archivedRows.length === 0 ? (
+            <p className="mt-2 text-sm text-ink-900/70">لا توجد عروض مؤرشفة.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">{archivedRows.map((row) => renderArchivedRow(row))}</ul>
+          )}
+        </div>
+      </div>
+
     </section>
   );
 }
