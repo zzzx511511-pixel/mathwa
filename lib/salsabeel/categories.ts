@@ -38,7 +38,7 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     slug: "salons",
     label: "صالونات",
-    icon: "💇‍♀️",
+    icon: "💅",
     count: 255,
     color: "#9D174D",
     bg: "#FCE7F3",
@@ -47,7 +47,7 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     slug: "malls",
     label: "مجمعات",
-    icon: "🏪",
+    icon: "🏙️",
     count: 0,
     color: "#065F46",
     bg: "#D1FAE5",

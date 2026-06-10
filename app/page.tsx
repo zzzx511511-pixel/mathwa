@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
-import { getTopRated, getMostVisited } from "@/lib/salsabeel/data";
+import { getMostVisited } from "@/lib/salsabeel/data";
 import { PlaceCard } from "@/components/salsabeel/place-card";
 import { RegionsFilter } from "@/components/salsabeel/regions-filter";
 import { ContactForm } from "@/components/salsabeel/contact-form";
@@ -37,7 +37,6 @@ const GRAD_DEEP = "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%
 const GLOW      = "rgba(56,189,248,0.35)";
 
 export default function HomePage() {
-  const topRated    = getTopRated(6);
   const mostVisited = getMostVisited(6);
 
   return (
@@ -175,28 +174,6 @@ export default function HomePage() {
                   {CAT_DESC[cat.slug]}
                 </p>
               </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════ TOP RATED ══ */}
-      <section className="px-5 py-16" style={{ background: "#fff" }}>
-        <div className="mx-auto max-w-screen-xl">
-          <div className="mb-8 flex items-end justify-between">
-            <div>
-              <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
-                الأعلى تقييماً
-              </p>
-              <h2 className="text-3xl font-black text-ink-900">⭐ الأماكن الأكثر إعجاباً</h2>
-            </div>
-            <Link href="/places" className="text-sm font-bold transition hover:underline" style={{ color: "#0ea5e9" }}>
-              عرض الكل
-            </Link>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {topRated.map((place) => (
-              <PlaceCard key={place.id} place={place} />
             ))}
           </div>
         </div>
