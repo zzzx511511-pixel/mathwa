@@ -3,7 +3,7 @@ import type { Place } from "@/lib/salsabeel/types";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "./rating-stars";
 
-function formatVisits(n: number) {
+function fmt(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
   return n.toString();
 }
@@ -13,31 +13,31 @@ export function PlaceCard({ place }: { place: Place }) {
   return (
     <Link
       href={`/places/${place.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-sal-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
+      className="group flex flex-col overflow-hidden rounded-3xl transition hover:-translate-y-1 hover:shadow-xl"
+      style={{ border: "1px solid #e0f2fe", background: "#fff" }}
     >
-      {/* Gradient image placeholder */}
-      <div
-        className={`relative h-36 bg-gradient-to-br ${place.gradient} flex items-end p-3`}
-      >
+      {/* Gradient hero */}
+      <div className={`relative h-36 bg-gradient-to-br ${place.gradient} flex items-end p-3`}>
         {place.isWomenOnly && (
-          <span className="absolute right-2 top-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">
+          <span className="absolute right-2 top-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
             نسائية فقط
           </span>
         )}
-        <div className="flex items-center gap-1.5">
-          {cat && (
-            <span
-              className="rounded-full px-2 py-0.5 text-[11px] font-bold"
-              style={{ background: cat.bg, color: cat.color }}
-            >
-              {cat.label}
-            </span>
-          )}
-        </div>
+        {cat && (
+          <span
+            className="rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow"
+            style={{ background: cat.bg, color: cat.color }}
+          >
+            {cat.icon} {cat.label}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="font-bold text-ink-900 group-hover:text-sal-700 transition-colors">
+        <h3
+          className="font-black text-ink-900 transition-colors group-hover:text-sal-500"
+          style={{ fontFamily: "Tajawal, sans-serif" }}
+        >
           {place.name}
         </h3>
 
@@ -45,24 +45,24 @@ export function PlaceCard({ place }: { place: Place }) {
           <RatingStars rating={place.rating} />
           <span className="flex items-center gap-1 text-[11px] text-ink-600">
             <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
             </svg>
-            {formatVisits(place.visits)} زيارة
+            {fmt(place.visits)}
           </span>
         </div>
 
-        <p className="line-clamp-2 text-xs text-ink-600 leading-relaxed">{place.description}</p>
+        <p className="line-clamp-2 text-xs leading-relaxed text-ink-600">{place.description}</p>
 
         <div className="mt-auto flex flex-wrap gap-1 pt-1">
           {place.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="rounded-md bg-sal-50 px-2 py-0.5 text-[10px] font-medium text-sal-700">
+            <span key={tag} className="rounded-lg bg-sal-50 px-2 py-0.5 text-[10px] font-medium text-sal-700">
               {tag}
             </span>
           ))}
         </div>
 
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-sal-600 font-medium">
+        <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-sal-500">
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />

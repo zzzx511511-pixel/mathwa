@@ -1,14 +1,56 @@
 import { ReactNode } from "react";
+import Link from "next/link";
 import { SalsabeelHeader } from "./salsabeel-header";
+import { LogoDrop } from "@/components/salsabeel/logo";
+
+const FOOTER_LINKS = [
+  { href: "/#categories", label: "التصنيفات" },
+  { href: "/#how",        label: "كيف يعمل" },
+  { href: "/#regions",    label: "المناطق" },
+  { href: "/#contact",    label: "تواصل معنا" },
+  { href: "mailto:salsabelapp@gmail.com", label: "salsabelapp@gmail.com" },
+];
 
 export function MainShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-sal-50">
+    <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
       <SalsabeelHeader />
-      <main className="mx-auto w-full max-w-screen-xl px-4 py-8">{children}</main>
-      <footer className="mt-12 border-t border-sal-800 bg-sal-900 px-4 py-8 text-center text-sm text-white/60">
-        <p className="font-bold text-white text-base">سلسبيل</p>
-        <p className="mt-1">اكتشف أفضل الأماكن حولك • جميع الحقوق محفوظة © 2025</p>
+      <main className="w-full">{children}</main>
+
+      <footer style={{ background: "#082f49", padding: "60px 40px 40px" }}>
+        <div className="mx-auto max-w-screen-xl text-center">
+          {/* Logo */}
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <LogoDrop size="sm" />
+            <span
+              className="text-xl font-black text-white"
+              style={{ fontFamily: "Tajawal, sans-serif" }}
+            >
+              سل<span style={{ color: "#38bdf8" }}>س</span>بيل
+            </span>
+          </div>
+
+          <p className="mb-8 text-sm text-white/40" style={{ letterSpacing: "2px" }}>
+            اختر بثقة • قيّم بصدق
+          </p>
+
+          <ul className="mb-8 flex flex-wrap justify-center gap-x-7 gap-y-2">
+            {FOOTER_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="text-sm text-white/50 transition hover:text-sal-400"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <p className="text-xs text-white/25">
+            © 2025 سلسبيل — جميع الحقوق محفوظة
+          </p>
+        </div>
       </footer>
     </div>
   );

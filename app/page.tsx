@@ -2,137 +2,315 @@ import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
 import { getTopRated, getMostVisited } from "@/lib/salsabeel/data";
 import { PlaceCard } from "@/components/salsabeel/place-card";
-import { CategoryCard } from "@/components/salsabeel/category-card";
+import { RegionsFilter } from "@/components/salsabeel/regions-filter";
+import { ContactForm } from "@/components/salsabeel/contact-form";
+import { LogoDrop } from "@/components/salsabeel/logo";
 
 export const dynamic = "force-static";
 
+/* ── Cat descriptions matching the landing HTML ─── */
+const CAT_DESC: Record<string, string> = {
+  cafes:       "specialty coffee فقط — نخبة كافيهات الرياض مع تقييم دقيق لكل تجربة",
+  restaurants: "من الراقي إلى الشعبي — دليل شامل لأفضل مطاعم الرياض بكل أنواعها",
+  clinics:     "اختر عيادتك بثقة بناءً على تقييمات حقيقية ونسب قبول موثوقة",
+  salons:      "أفضل الصالونات النسائية في الرياض بأسعار معقولة وخدمة ممتازة",
+  malls:       "مجمعات تسوق وترفيه متكاملة تجمع أبرز الماركات والمطاعم والسينما",
+};
+
+const CAT_SUB: Record<string, string> = {
+  cafes:       "specialty coffee متخصص",
+  restaurants: "مطاعم الرياض بكل أنواعها",
+  clinics:     "أسنان • تجميل • علاج طبيعي",
+  salons:      "صالونات نسائية",
+  malls:       "تسوق وترفيه",
+};
+
+const STEPS = [
+  { n: "١", title: "بحث شامل",     desc: "نجمع التقييمات من عدة مصادر لكل مكان ونحللها بدقة" },
+  { n: "٢", title: "تقييم موثوق",  desc: "نجمع النجمات ونسبة القبول والرفض ورأي الناس في جملة واحدة" },
+  { n: "٣", title: "تحديث مستمر", desc: "نتابع الأكثر زيارة خلال 28 يوماً لنعطيك الأحدث دائماً" },
+  { n: "٤", title: "توسع مستمر",  desc: "سلسبيل في نمو دائم — نضيف تصنيفات ومناطق جديدة باستمرار" },
+];
+
+const GRAD      = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
+const GRAD_DEEP = "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)";
+const GLOW      = "rgba(56,189,248,0.35)";
+
 export default function HomePage() {
-  const topRated   = getTopRated(6);
+  const topRated    = getTopRated(6);
   const mostVisited = getMostVisited(6);
 
   return (
-    <div className="space-y-12">
+    <>
+      {/* ══════════════════════════════════ HERO ══ */}
+      <section
+        id="hero"
+        className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-5 py-32 text-center"
+        style={{ background: GRAD_DEEP }}
+      >
+        {/* Floating decorative orbs */}
+        <div
+          aria-hidden
+          className="anim-float pointer-events-none absolute -left-24 -top-24 h-[480px] w-[480px] rounded-full"
+          style={{ background: "rgba(56,189,248,0.07)" }}
+        />
+        <div
+          aria-hidden
+          className="anim-float-slow pointer-events-none absolute -bottom-32 -right-20 h-[560px] w-[560px] rounded-full"
+          style={{ background: "rgba(56,189,248,0.05)" }}
+        />
 
-      {/* ── Hero ────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sal-900 via-sal-800 to-sal-700 px-6 py-20 text-white lg:px-14">
-        {/* decorative circles */}
-        <div aria-hidden className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-sal-600/30 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-10 -right-10 h-56 w-56 rounded-full bg-gold-500/20 blur-2xl" />
-
-        <div className="relative z-10 mx-auto max-w-2xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm backdrop-blur">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-gold-400" />
-            اكتشف ما حولك الآن
+        <div className="relative z-10 flex max-w-2xl flex-col items-center gap-5">
+          {/* Badge */}
+          <div
+            className="anim-fade-up inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-bold tracking-wide"
+            style={{
+              background: "rgba(56,189,248,0.12)",
+              borderColor: "rgba(56,189,248,0.3)",
+              color: "#38bdf8",
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-sal-400" />
+            تقييمات الرياض الأولى ✦
           </div>
 
-          <h1 className="text-5xl font-extrabold leading-tight tracking-tight md:text-6xl">
-            سلسبيل
+          {/* Logo icon */}
+          <div className="anim-fade-up-d1">
+            <LogoDrop size="lg" />
+          </div>
+
+          {/* Title */}
+          <h1
+            className="anim-fade-up-d1 text-6xl font-black leading-tight text-white md:text-8xl"
+            style={{ fontFamily: "Tajawal, sans-serif" }}
+          >
+            اختر بثقة
+            <br />
+            <span style={{ color: "#38bdf8" }}>قيّم بصدق</span>
           </h1>
-          <p className="mt-3 text-xl font-medium text-sal-200">
-            دليلك لأفضل الأماكن في المملكة
-          </p>
-          <p className="mt-2 text-sm text-white/70">
-            كافيهات • مطاعم • عيادات • صالونات • مجمعات
+
+          <p className="anim-fade-up-d2 max-w-xl text-lg leading-relaxed text-white/60">
+            سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات
+            والمجمعات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="anim-fade-up-d3 flex flex-wrap justify-center gap-4">
             <Link
-              href="/category/cafes"
-              className="rounded-xl bg-gold-500 px-6 py-3 font-bold text-sal-900 shadow hover:bg-gold-400 transition"
+              href="#categories"
+              className="inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-base font-black text-white shadow-lg transition hover:-translate-y-0.5"
+              style={{ background: GRAD, boxShadow: `0 8px 30px ${GLOW}` }}
             >
-              استكشف الكافيهات
+              🔍 استكشف الأماكن
             </Link>
             <Link
-              href="/category/restaurants"
-              className="rounded-xl border border-white/30 bg-white/10 px-6 py-3 font-semibold backdrop-blur hover:bg-white/20 transition"
+              href="#contact"
+              className="rounded-2xl border px-8 py-4 text-base font-bold text-white transition hover:bg-white/15"
+              style={{ background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.2)" }}
             >
-              تصفح المطاعم
+              تواصل معنا
             </Link>
           </div>
+        </div>
+      </section>
 
-          {/* quick stats */}
-          <div className="mt-10 grid grid-cols-3 gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+      {/* ══════════════════════════════════ STATS ══ */}
+      <div
+        className="flex flex-wrap justify-center gap-14 px-10 py-14"
+        style={{ background: "#fff", borderBottom: "1px solid #e0f2fe" }}
+      >
+        {[
+          { num: "5",  label: "تصنيفات رئيسية" },
+          { num: "5",  label: "مناطق في الرياض" },
+          { num: "✦",  label: "تقييمات موثوقة ودقيقة" },
+          { num: "∞",  label: "توسع مستمر في التغطية" },
+        ].map((s) => (
+          <div key={s.label} className="text-center">
+            <p className="text-5xl font-black leading-none" style={{ color: "#0ea5e9" }}>
+              {s.num}
+            </p>
+            <p className="mt-2 text-sm font-medium text-ink-600">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ══════════════════════════════════ CATEGORIES ══ */}
+      <section id="categories" className="scroll-mt-20 px-5 py-24">
+        <div className="mx-auto max-w-screen-xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            التصنيفات
+          </p>
+          <h2 className="mb-3 text-4xl font-black text-ink-900">كل ما تحتاجه في مكان واحد</h2>
+          <p className="mb-14 max-w-xl text-base leading-relaxed text-ink-600">
+            سلسبيل يغطي أهم تصنيفات الخدمات في الرياض بتقييمات دقيقة ومعلومات موثوقة.
+          </p>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                className="group relative overflow-hidden rounded-3xl border p-8 transition hover:-translate-y-1 hover:shadow-xl"
+                style={{ background: "#fff", borderColor: "#e0f2fe" }}
+              >
+                {/* Corner gradient accent */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-bl-[80px]"
+                  style={{ background: GRAD, opacity: 0.07 }}
+                />
+                {cat.badge && (
+                  <span
+                    className="mb-3 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white"
+                    style={{ background: cat.color }}
+                  >
+                    {cat.badge}
+                  </span>
+                )}
+                <span className="mb-4 block text-5xl">{cat.icon}</span>
+                <p className="text-xl font-black text-ink-900">{cat.label}</p>
+                <p className="mt-1 text-sm font-bold" style={{ color: "#0ea5e9" }}>
+                  {CAT_SUB[cat.slug] ?? (cat.count > 0 ? `+${cat.count}` : "")}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-ink-600">
+                  {CAT_DESC[cat.slug]}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════ TOP RATED ══ */}
+      <section className="px-5 py-16" style={{ background: "#fff" }}>
+        <div className="mx-auto max-w-screen-xl">
+          <div className="mb-8 flex items-end justify-between">
             <div>
-              <p className="text-2xl font-extrabold text-gold-400">+1,200</p>
-              <p className="text-xs text-white/60">مكان مسجّل</p>
+              <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+                الأعلى تقييماً
+              </p>
+              <h2 className="text-3xl font-black text-ink-900">⭐ الأماكن الأكثر إعجاباً</h2>
             </div>
+            <Link href="/places" className="text-sm font-bold transition hover:underline" style={{ color: "#0ea5e9" }}>
+              عرض الكل
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {topRated.map((place) => (
+              <PlaceCard key={place.id} place={place} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════ MOST VISITED ══ */}
+      <section className="px-5 py-16" style={{ background: "#f0f9ff" }}>
+        <div className="mx-auto max-w-screen-xl">
+          <div className="mb-8 flex items-end justify-between">
             <div>
-              <p className="text-2xl font-extrabold text-gold-400">5</p>
-              <p className="text-xs text-white/60">تصنيفات</p>
+              <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+                الأكثر زيارة
+              </p>
+              <h2 className="text-3xl font-black text-ink-900">🔥 الوجهات التي لا يفوتها أحد</h2>
             </div>
-            <div>
-              <p className="text-2xl font-extrabold text-gold-400">+50k</p>
-              <p className="text-xs text-white/60">زيارة شهرية</p>
-            </div>
+            <Link href="/places" className="text-sm font-bold transition hover:underline" style={{ color: "#0ea5e9" }}>
+              عرض الكل
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {mostVisited.map((place) => (
+              <PlaceCard key={place.id} place={place} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Categories ──────────────────────────────────────────────── */}
-      <section>
-        <div className="mb-6 flex items-end justify-between">
+      {/* ══════════════════════════════════ HOW IT WORKS ══ */}
+      <section id="how" className="scroll-mt-20 px-5 py-24" style={{ background: GRAD_DEEP }}>
+        <div className="mx-auto max-w-screen-xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#38bdf8" }}>
+            كيف يعمل
+          </p>
+          <h2 className="mb-3 text-4xl font-black text-white">بحث شامل ونتائج موثوقة</h2>
+          <p className="mb-14 max-w-xl text-base leading-relaxed text-white/55">
+            فريق سلسبيل يجمع ويحلل آلاف التقييمات من مصادر متعددة ليقدم لك خلاصة موثوقة ودقيقة.
+          </p>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((step) => (
+              <div
+                key={step.n}
+                className="rounded-2xl p-7"
+                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(56,189,248,0.2)" }}
+              >
+                <div
+                  className="mb-5 flex h-11 w-11 items-center justify-center rounded-full text-lg font-black text-white"
+                  style={{ background: GRAD, boxShadow: `0 4px 16px ${GLOW}` }}
+                >
+                  {step.n}
+                </div>
+                <p className="mb-2 text-lg font-black text-white">{step.title}</p>
+                <p className="text-sm leading-relaxed text-white/50">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════ REGIONS ══ */}
+      <section id="regions" className="scroll-mt-20 px-5 py-24" style={{ background: "#fff" }}>
+        <div className="mx-auto max-w-screen-xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            التغطية الجغرافية
+          </p>
+          <h2 className="mb-3 text-4xl font-black text-ink-900">الرياض كاملة بين يديك</h2>
+          <p className="mb-12 max-w-xl text-base leading-relaxed text-ink-600">
+            نغطي الرياض بكاملها — من شمالها إلى جنوبها، من شرقها إلى غربها.
+          </p>
+          <RegionsFilter />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════ CONTACT ══ */}
+      <section id="contact" className="scroll-mt-20 px-5 py-24" style={{ background: "#f0f9ff" }}>
+        <div className="mx-auto grid max-w-screen-xl gap-16 lg:grid-cols-2 lg:items-center">
+          {/* Info */}
           <div>
-            <h2 className="text-2xl font-extrabold text-ink-900">التصنيفات</h2>
-            <p className="text-sm text-ink-600 mt-0.5">اختر التصنيف الذي يناسبك</p>
+            <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+              تواصل معنا
+            </p>
+            <h2 className="mb-4 text-4xl font-black leading-tight text-ink-900">
+              هل أنت مؤسسة أو فرد؟
+              <br />
+              نسعد بتواصلك
+            </h2>
+            <p className="mb-8 max-w-sm text-base leading-relaxed text-ink-600">
+              آراؤك واقتراحاتك تسعدنا — سواء كنت تريد إضافة مكان أو لديك فكرة تطوير أو تريد الإعلان.
+            </p>
+
+            {[
+              { icon: "📧", label: "البريد الإلكتروني", value: "salsabelapp@gmail.com" },
+              { icon: "📍", label: "التغطية",           value: "الرياض — المملكة العربية السعودية" },
+              { icon: "⚡", label: "وقت الرد",          value: "خلال 24 ساعة" },
+            ].map((item) => (
+              <div key={item.label} className="mb-6 flex items-start gap-4">
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl"
+                  style={{ background: GRAD, boxShadow: `0 4px 14px ${GLOW}` }}
+                >
+                  {item.icon}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-ink-600">{item.label}</p>
+                  <p className="mt-0.5 text-base font-bold text-ink-900">{item.value}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-          {CATEGORIES.map((cat) => (
-            <CategoryCard key={cat.slug} cat={cat} />
-          ))}
+
+          {/* Form */}
+          <ContactForm />
         </div>
       </section>
-
-      {/* ── Top Rated ───────────────────────────────────────────────── */}
-      <section>
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-extrabold text-ink-900">⭐ الأعلى تقييماً</h2>
-            <p className="text-sm text-ink-600 mt-0.5">الأماكن الأكثر إعجاباً من الزوار</p>
-          </div>
-          <Link href="/places" className="text-sm font-semibold text-sal-600 hover:underline">
-            عرض الكل
-          </Link>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topRated.map((place) => (
-            <PlaceCard key={place.id} place={place} />
-          ))}
-        </div>
-      </section>
-
-      {/* ── Most Visited ────────────────────────────────────────────── */}
-      <section>
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-extrabold text-ink-900">🔥 الأكثر زيارة</h2>
-            <p className="text-sm text-ink-600 mt-0.5">الوجهات التي لا يفوتها أحد</p>
-          </div>
-          <Link href="/places" className="text-sm font-semibold text-sal-600 hover:underline">
-            عرض الكل
-          </Link>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {mostVisited.map((place) => (
-            <PlaceCard key={place.id} place={place} />
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA Banner ──────────────────────────────────────────────── */}
-      <section className="rounded-3xl bg-gradient-to-l from-sal-700 to-sal-900 p-8 text-center text-white">
-        <h3 className="text-2xl font-extrabold">هل لديك مكان تريد إضافته؟</h3>
-        <p className="mt-2 text-sal-200 text-sm">
-          أضف مكانك في سلسبيل وتواصل مع آلاف الزوار يومياً
-        </p>
-        <Link
-          href="/admin"
-          className="mt-5 inline-block rounded-xl bg-gold-500 px-8 py-3 font-bold text-sal-900 hover:bg-gold-400 transition shadow"
-        >
-          لوحة التحكم
-        </Link>
-      </section>
-
-    </div>
+    </>
   );
 }

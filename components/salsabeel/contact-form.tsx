@@ -1,0 +1,96 @@
+"use client";
+
+import { useState } from "react";
+
+export function ContactForm() {
+  const [form, setForm] = useState({ name: "", email: "", type: "", message: "" });
+  const [sent, setSent] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.type || !form.message) return;
+    setSent(true);
+    setForm({ name: "", email: "", type: "", message: "" });
+    setTimeout(() => setSent(false), 4000);
+  }
+
+  const inputCls =
+    "w-full rounded-xl border border-sal-100 bg-sal-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-sal-500 focus:outline-none transition";
+
+  return (
+    <div
+      className="rounded-3xl p-8 shadow-lg"
+      style={{
+        background: "#fff",
+        border: "1px solid #e0f2fe",
+        boxShadow: "0 20px 60px rgba(14,165,233,0.08)",
+      }}
+    >
+      <h3 className="text-2xl font-black text-ink-900">أرسل لنا رسالة</h3>
+      <p className="mt-1 text-sm text-ink-600">سنرد عليك في أقرب وقت ممكن</p>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <div>
+          <label className="mb-1.5 block text-xs font-bold text-ink-800">الاسم</label>
+          <input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="اسمك الكريم"
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-bold text-ink-800">البريد الإلكتروني</label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            placeholder="بريدك الإلكتروني"
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-bold text-ink-800">نوع التواصل</label>
+          <select
+            value={form.type}
+            onChange={(e) => setForm({ ...form, type: e.target.value })}
+            className={inputCls}
+          >
+            <option value="">اختر...</option>
+            <option>إضافة مكان</option>
+            <option>اقتراح أو فكرة تطوير</option>
+            <option>إعلان ومؤسسة</option>
+            <option>ملاحظة أو رأي</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-bold text-ink-800">رسالتك</label>
+          <textarea
+            rows={4}
+            value={form.message}
+            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            placeholder="اكتب رسالتك هنا..."
+            className={`${inputCls} resize-none`}
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="mt-2 w-full rounded-xl py-3.5 text-base font-black text-white transition hover:-translate-y-0.5"
+          style={{
+            background: "linear-gradient(135deg,#38bdf8 0%,#0ea5e9 55%,#0369a1 100%)",
+            boxShadow: "0 6px 20px rgba(56,189,248,0.35)",
+          }}
+        >
+          إرسال الرسالة ✦
+        </button>
+
+        {sent && (
+          <div className="rounded-xl bg-green-50 px-4 py-3 text-center text-sm font-bold text-green-700">
+            ✓ تم إرسال رسالتك بنجاح!
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}

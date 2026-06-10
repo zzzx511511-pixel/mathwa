@@ -16,7 +16,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   const places = getByCategory(cat.slug);
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-screen-xl space-y-8 px-5 py-10">
 
       {/* Header */}
       <div

@@ -110,7 +110,7 @@ export default function AdminPage() {
     : places.filter((p) => p.category === filterCat);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-screen-xl space-y-6 px-5 py-10">
 
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">

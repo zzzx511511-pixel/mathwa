@@ -21,7 +21,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
   const cat = getCategoryMeta(place.category);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8 px-4 py-10">
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-ink-600">
