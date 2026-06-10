@@ -9,25 +9,39 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Extracted palette from provided docs.
-        brand: {
-          50: "#F5EDD8", // warm paper
-          100: "#F0F7F0", // soft background
-          300: "#2E74B5", // primary blue
-          400: "#1F4D78", // deep blue
-          500: "#0563C1" // accent blue
+        sal: {
+          50:  "#F0FDFA",
+          100: "#CCFBF1",
+          200: "#99F6E4",
+          300: "#5EEAD4",
+          400: "#2DD4BF",
+          500: "#14B8A6",
+          600: "#0D9488",
+          700: "#0F766E",
+          800: "#115E59",
+          900: "#134E4A",
         },
         gold: {
-          400: "#B8860B",
-          500: "#E8C96A"
+          300: "#FCD34D",
+          400: "#FBBF24",
+          500: "#F59E0B",
+          600: "#D97706",
         },
         ink: {
-          900: "#2C1F14",
-          800: "#3D2B1F"
+          900: "#0F172A",
+          800: "#1E293B",
+          700: "#334155",
+          600: "#475569",
+          400: "#94A3B8",
         },
-        sage: {
-          DEFAULT: "#2D7A55"
-        }
+        // backward compat
+        brand: {
+          50:  "#F0FDFA",
+          100: "#CCFBF1",
+          300: "#0D9488",
+          400: "#0F766E",
+          500: "#115E59",
+        },
       }
     }
   },

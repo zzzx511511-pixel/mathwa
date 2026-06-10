@@ -3,8 +3,8 @@ import "./globals.css";
 import { MainShell } from "@/components/layout/main-shell";
 
 export const metadata: Metadata = {
-  title: "مثوى العقارية",
-  description: "نظام إدارة العقارات الشامل لشركة مثوى العقارية"
+  title: "سلسبيل – اكتشف أفضل الأماكن",
+  description: "سلسبيل – منصة اكتشاف الأماكن: كافيهات ومطاعم وعيادات وصالونات ومجمعات في مدن المملكة"
 };
 
 export const viewport: Viewport = {
@@ -14,17 +14,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html dir="rtl" lang="ar">
       <body
-        className="min-h-screen bg-brand-100 text-ink-900 antialiased"
+        className="min-h-screen antialiased"
         style={{
-          backgroundColor: "#F0F7F0",
-          color: "#2C1F14",
-          fontFamily: "ui-sans-serif, system-ui, sans-serif"
+          backgroundColor: "#F0FDFA",
+          color: "#0F172A",
+          fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif"
         }}
       >
         <MainShell>{children}</MainShell>
