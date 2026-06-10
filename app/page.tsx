@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
-import { getMostVisited } from "@/lib/salsabeel/data";
-import { PlaceCard } from "@/components/salsabeel/place-card";
 import { RegionsFilter } from "@/components/salsabeel/regions-filter";
 import { ContactForm } from "@/components/salsabeel/contact-form";
 import { LogoDrop } from "@/components/salsabeel/logo";
 
 export const dynamic = "force-static";
 
-/* ── Cat descriptions matching the landing HTML ─── */
+/* ── Category descriptions ─── */
 const CAT_DESC: Record<string, string> = {
   cafes:       "specialty coffee فقط — نخبة كافيهات الرياض مع تقييم دقيق لكل تجربة",
   restaurants: "من الراقي إلى الشعبي — دليل شامل لأفضل مطاعم الرياض بكل أنواعها",
@@ -37,8 +35,6 @@ const GRAD_DEEP = "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%
 const GLOW      = "rgba(56,189,248,0.35)";
 
 export default function HomePage() {
-  const mostVisited = getMostVisited(6);
-
   return (
     <>
       {/* ══════════════════════════════════ HERO ══ */}
@@ -95,7 +91,7 @@ export default function HomePage() {
 
           <div className="anim-fade-up-d3 flex flex-wrap justify-center gap-4">
             <Link
-              href="#categories"
+              href="/places"
               className="inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-base font-black text-white shadow-lg transition hover:-translate-y-0.5"
               style={{ background: GRAD, boxShadow: `0 8px 30px ${GLOW}` }}
             >
@@ -138,10 +134,21 @@ export default function HomePage() {
           <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
             التصنيفات
           </p>
-          <h2 className="mb-3 text-4xl font-black text-ink-900">كل ما تحتاجه في مكان واحد</h2>
-          <p className="mb-14 max-w-xl text-base leading-relaxed text-ink-600">
-            سلسبيل يغطي أهم تصنيفات الخدمات في الرياض بتقييمات دقيقة ومعلومات موثوقة.
-          </p>
+          <div className="mb-14 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-4xl font-black text-ink-900">كل ما تحتاجه في مكان واحد</h2>
+              <p className="mt-2 max-w-xl text-base leading-relaxed text-ink-600">
+                سلسبيل يغطي أهم تصنيفات الخدمات في الرياض بتقييمات دقيقة ومعلومات موثوقة.
+              </p>
+            </div>
+            <Link
+              href="/places"
+              className="inline-flex shrink-0 items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black text-white shadow transition hover:-translate-y-0.5"
+              style={{ background: GRAD, boxShadow: `0 8px 24px ${GLOW}` }}
+            >
+              🔍 استكشف الأماكن
+            </Link>
+          </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {CATEGORIES.map((cat) => (
@@ -174,28 +181,6 @@ export default function HomePage() {
                   {CAT_DESC[cat.slug]}
                 </p>
               </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════ MOST VISITED ══ */}
-      <section className="px-5 py-16" style={{ background: "#f0f9ff" }}>
-        <div className="mx-auto max-w-screen-xl">
-          <div className="mb-8 flex items-end justify-between">
-            <div>
-              <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
-                الأكثر زيارة
-              </p>
-              <h2 className="text-3xl font-black text-ink-900">🔥 الوجهات التي لا يفوتها أحد</h2>
-            </div>
-            <Link href="/places" className="text-sm font-bold transition hover:underline" style={{ color: "#0ea5e9" }}>
-              عرض الكل
-            </Link>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {mostVisited.map((place) => (
-              <PlaceCard key={place.id} place={place} />
             ))}
           </div>
         </div>
