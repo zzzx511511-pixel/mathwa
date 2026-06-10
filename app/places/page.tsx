@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
-import { getMostVisited, PLACES } from "@/lib/salsabeel/data";
+import { getMostVisited, getTopRated, PLACES } from "@/lib/salsabeel/data";
 import { PlaceCard } from "@/components/salsabeel/place-card";
 
 export const dynamic = "force-static";
@@ -9,6 +9,7 @@ const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
 const GLOW = "rgba(56,189,248,0.3)";
 
 export default function PlacesPage() {
+  const topRated    = getTopRated(6);
   const mostVisited = getMostVisited(6);
 
   return (
@@ -82,6 +83,23 @@ export default function PlacesPage() {
                   {cat.count > 0 ? `${cat.count}+ مكان مُقيَّم` : "قريباً"}
                 </p>
               </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Top Rated ───────────────────────────────── */}
+        <section id="top-rated">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="mb-2 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+                الأعلى تقييماً
+              </p>
+              <h2 className="text-3xl font-black text-ink-900">⭐ الأماكن الأكثر إعجاباً</h2>
+            </div>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {topRated.map((place) => (
+              <PlaceCard key={place.id} place={place} />
             ))}
           </div>
         </section>
