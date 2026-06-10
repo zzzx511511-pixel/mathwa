@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { FavoritesClient } from "./favorites-client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "مفضلاتي | مثوى العقارية",
   description: "العروض العقارية المحفوظة في مفضلتك."

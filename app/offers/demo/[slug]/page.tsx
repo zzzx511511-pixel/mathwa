@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
 import { BackButton } from "@/components/layout/back-button";
 import { OfferPublicToolbar } from "@/components/offers/offer-public-toolbar";
-import { getAllSampleOfferSlugs, getSampleOfferDetail } from "@/lib/site/sample-offer-demos";
+import { getSampleOfferDetail } from "@/lib/site/sample-offer-demos";
 
-export function generateStaticParams() {
-  return getAllSampleOfferSlugs().map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
 export default function SampleOfferDemoPage({
   params
