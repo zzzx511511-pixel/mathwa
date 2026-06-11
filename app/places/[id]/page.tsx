@@ -83,7 +83,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
             href={`tel:${mainBranch.phone}`}
             className="inline-flex items-center gap-2 rounded-2xl border border-sal-200 bg-white px-5 py-2.5 text-sm font-bold text-sal-700 shadow-sm transition hover:bg-sal-50"
           >
-            📞 اتصل
+            📞 {mainBranch.phone}
           </a>
         )}
         {place.instagramUrl && (
@@ -172,6 +172,59 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
           style={{ background: "#fefce8", border: "1px solid #fde047", color: "#713f12" }}
         >
           {place.opinion}
+        </div>
+      )}
+
+      {/* Acceptance / Rejection rates */}
+      {(place.acceptanceRate !== undefined || place.rejectionRate !== undefined) && (
+        <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm space-y-4">
+          <h2 className="text-lg font-extrabold text-ink-900">📊 تقييم الزوار</h2>
+          {place.acceptanceRate !== undefined && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-green-700">نسبة القبول</span>
+                <span className="font-extrabold text-green-700 text-base">{place.acceptanceRate}%</span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-3 rounded-full bg-green-500 transition-all"
+                  style={{ width: `${place.acceptanceRate}%` }}
+                />
+              </div>
+            </div>
+          )}
+          {place.rejectionRate !== undefined && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-red-600">نسبة الرفض</span>
+                <span className="font-extrabold text-red-600 text-base">{place.rejectionRate}%</span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-3 rounded-full bg-red-400 transition-all"
+                  style={{ width: `${place.rejectionRate}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Photos gallery */}
+      {place.photos && place.photos.length > 0 && (
+        <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {place.photos.map((photo, i) => (
+              <a key={i} href={photo} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={photo}
+                  alt={`${place.name} - صورة ${i + 1}`}
+                  className="aspect-video w-full rounded-2xl object-cover transition hover:opacity-90 hover:shadow-md"
+                />
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

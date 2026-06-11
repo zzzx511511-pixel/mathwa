@@ -1,21 +1,104 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { PLACES as INITIAL_PLACES } from "@/lib/salsabeel/data";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import type { Place, Category } from "@/lib/salsabeel/types";
 
-type EditState = Omit<Partial<Place>, "tags"> & { id: string; tags?: string | string[] };
+const ADMIN_PW = "salsabeel2025";
+const SESSION_KEY = "sal_admin_auth";
 
+type EditState = Omit<Partial<Place>, "tags" | "photos" | "videos"> & {
+  id: string;
+  tags?: string | string[];
+  photos?: string[];
+  videos?: string[];
+};
+
+// ── Password Gate ────────────────────────────────────────────────────────────
+function PasswordGate({ onAuth }: { onAuth: () => void }) {
+  const [pw, setPw] = useState("");
+  const [error, setError] = useState(false);
+
+  function tryLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      onAuth();
+    } else {
+      setError(true);
+      setPw("");
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-sal-50 px-4">
+      <div className="w-full max-w-sm rounded-3xl border border-sal-100 bg-white p-8 shadow-xl space-y-6">
+        <div className="text-center">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-sal-100 text-3xl">
+            🔒
+          </div>
+          <h1 className="text-xl font-extrabold text-ink-900">لوحة التحكم</h1>
+          <p className="mt-1 text-sm text-ink-600">أدخل كلمة المرور للمتابعة</p>
+        </div>
+        <form onSubmit={tryLogin} className="space-y-4">
+          <input
+            type="password"
+            value={pw}
+            onChange={(e) => { setPw(e.target.value); setError(false); }}
+            placeholder="كلمة المرور"
+            autoFocus
+            className={`w-full rounded-2xl border px-4 py-3 text-sm text-center tracking-widest focus:outline-none ${
+              error ? "border-red-400 bg-red-50" : "border-sal-200 focus:border-sal-500"
+            }`}
+          />
+          {error && (
+            <p className="text-center text-xs font-semibold text-red-600">كلمة المرور غير صحيحة</p>
+          )}
+          <button
+            type="submit"
+            className="w-full rounded-2xl bg-sal-600 py-3 text-sm font-bold text-white hover:bg-sal-700 transition"
+          >
+            دخول
+          </button>
+        </form>
+        <div className="text-center">
+          <Link href="/" className="text-xs text-ink-500 hover:text-sal-600">
+            ← العودة للموقع
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Admin Dashboard ─────────────────────────────────────────────────────
 export default function AdminPage() {
+  const [authed, setAuthed] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem(SESSION_KEY) === "1") setAuthed(true);
+    setChecked(true);
+  }, []);
+
+  if (!checked) return null;
+  if (!authed) return <PasswordGate onAuth={() => setAuthed(true)} />;
+
+  return <AdminDashboard />;
+}
+
+function AdminDashboard() {
   const [places, setPlaces]         = useState<Place[]>(INITIAL_PLACES);
   const [editingId, setEditingId]   = useState<string | null>(null);
   const [editForm, setEditForm]     = useState<EditState | null>(null);
   const [deleteId, setDeleteId]     = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState<string>("all");
   const [tab, setTab]               = useState<"places" | "add">("places");
+  const [videoUrlInput, setVideoUrlInput] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Add form state ──────────────────────────────────────────────────
   const [newForm, setNewForm] = useState({
@@ -31,14 +114,20 @@ export default function AdminPage() {
   // ── Edit helpers ────────────────────────────────────────────────────
   function startEdit(place: Place) {
     setEditingId(place.id);
+    setVideoUrlInput("");
     setEditForm({
       id: place.id,
       name: place.name,
       category: place.category,
       description: place.description,
+      opinion: place.opinion ?? "",
       rating: place.rating,
+      acceptanceRate: place.acceptanceRate,
+      rejectionRate: place.rejectionRate,
       tags: place.tags,
       isWomenOnly: place.isWomenOnly,
+      photos: place.photos ? [...place.photos] : [],
+      videos: place.videos ? [...place.videos] : [],
     });
   }
 
@@ -52,8 +141,13 @@ export default function AdminPage() {
               name: editForm.name ?? p.name,
               category: editForm.category ?? p.category,
               description: editForm.description ?? p.description,
+              opinion: (editForm.opinion as string)?.trim() || undefined,
               rating: Number(editForm.rating ?? p.rating),
+              acceptanceRate: editForm.acceptanceRate !== undefined ? Number(editForm.acceptanceRate) : p.acceptanceRate,
+              rejectionRate: editForm.rejectionRate !== undefined ? Number(editForm.rejectionRate) : p.rejectionRate,
               isWomenOnly: editForm.isWomenOnly,
+              photos: editForm.photos ?? p.photos,
+              videos: editForm.videos ?? p.videos,
               tags: typeof editForm.tags === "string"
                 ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
                 : editForm.tags ?? p.tags,
@@ -63,11 +157,49 @@ export default function AdminPage() {
     );
     setEditingId(null);
     setEditForm(null);
+    setVideoUrlInput("");
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditForm(null);
+    setVideoUrlInput("");
+  }
+
+  // ── Photo upload helper ─────────────────────────────────────────────
+  function handlePhotoUpload(files: FileList | null) {
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        setEditForm((prev) =>
+          prev ? { ...prev, photos: [...(prev.photos ?? []), dataUrl] } : prev
+        );
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removePhoto(index: number) {
+    setEditForm((prev) =>
+      prev ? { ...prev, photos: (prev.photos ?? []).filter((_, i) => i !== index) } : prev
+    );
+  }
+
+  function addVideo() {
+    const url = videoUrlInput.trim();
+    if (!url) return;
+    setEditForm((prev) =>
+      prev ? { ...prev, videos: [...(prev.videos ?? []), url] } : prev
+    );
+    setVideoUrlInput("");
+  }
+
+  function removeVideo(index: number) {
+    setEditForm((prev) =>
+      prev ? { ...prev, videos: (prev.videos ?? []).filter((_, i) => i !== index) } : prev
+    );
   }
 
   // ── Delete helpers ──────────────────────────────────────────────────
@@ -104,6 +236,12 @@ export default function AdminPage() {
     setTab("places");
   }
 
+  // ── Logout ──────────────────────────────────────────────────────────
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    window.location.reload();
+  }
+
   // ── Filtered list ───────────────────────────────────────────────────
   const filtered = filterCat === "all"
     ? places
@@ -118,9 +256,17 @@ export default function AdminPage() {
           <h1 className="text-2xl font-extrabold text-ink-900">لوحة التحكم</h1>
           <p className="text-sm text-ink-600">{places.length} مكان مسجّل</p>
         </div>
-        <Link href="/" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-          ← العودة للموقع
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
+            ← العودة للموقع
+          </Link>
+          <button
+            onClick={logout}
+            className="rounded-xl border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition"
+          >
+            خروج
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -157,7 +303,7 @@ export default function AdminPage() {
           onClick={() => setTab("add")}
           className={`rounded-xl px-5 py-2.5 text-sm font-bold transition ${
             tab === "add"
-              ? "bg-gold-500 text-sal-900 shadow"
+              ? "bg-amber-400 text-amber-900 shadow"
               : "border border-sal-200 bg-white text-sal-700 hover:bg-sal-50"
           }`}
         >
@@ -324,8 +470,10 @@ export default function AdminPage() {
                       {isEditing && editForm ? (
                         <>
                           {/* Inline edit row */}
-                          <td className="px-4 py-3" colSpan={5}>
+                          <td className="px-4 py-4" colSpan={5}>
                             <div className="grid gap-3 sm:grid-cols-2">
+
+                              {/* Name */}
                               <div>
                                 <label className="mb-1 block text-xs font-semibold text-ink-700">الاسم</label>
                                 <input
@@ -334,6 +482,8 @@ export default function AdminPage() {
                                   className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
                                 />
                               </div>
+
+                              {/* Category */}
                               <div>
                                 <label className="mb-1 block text-xs font-semibold text-ink-700">التصنيف</label>
                                 <select
@@ -346,6 +496,8 @@ export default function AdminPage() {
                                   ))}
                                 </select>
                               </div>
+
+                              {/* Description */}
                               <div className="sm:col-span-2">
                                 <label className="mb-1 block text-xs font-semibold text-ink-700">الوصف</label>
                                 <textarea
@@ -355,8 +507,22 @@ export default function AdminPage() {
                                   className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none resize-none"
                                 />
                               </div>
+
+                              {/* Opinion */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">رأي الناس (المربع الأصفر)</label>
+                                <textarea
+                                  value={(editForm.opinion as string) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, opinion: e.target.value })}
+                                  rows={2}
+                                  placeholder="ما يقوله الزوار عن المكان..."
+                                  className="w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none resize-none"
+                                />
+                              </div>
+
+                              {/* Rating */}
                               <div>
-                                <label className="mb-1 block text-xs font-semibold text-ink-700">التقييم</label>
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">التقييم (0–5)</label>
                                 <input
                                   type="number" min={0} max={5} step={0.1}
                                   value={editForm.rating ?? ""}
@@ -364,6 +530,8 @@ export default function AdminPage() {
                                   className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
                                 />
                               </div>
+
+                              {/* Tags */}
                               <div>
                                 <label className="mb-1 block text-xs font-semibold text-ink-700">الوسوم (مفصولة بفاصلة)</label>
                                 <input
@@ -372,9 +540,105 @@ export default function AdminPage() {
                                   className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
                                 />
                               </div>
+
+                              {/* Acceptance Rate */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-green-700">نسبة القبول % (0–100)</label>
+                                <input
+                                  type="number" min={0} max={100}
+                                  value={editForm.acceptanceRate ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, acceptanceRate: e.target.value === "" ? undefined : Number(e.target.value) })}
+                                  placeholder="مثال: 88"
+                                  className="w-full rounded-xl border border-green-300 bg-green-50 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+                                />
+                              </div>
+
+                              {/* Rejection Rate */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-red-600">نسبة الرفض % (0–100)</label>
+                                <input
+                                  type="number" min={0} max={100}
+                                  value={editForm.rejectionRate ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, rejectionRate: e.target.value === "" ? undefined : Number(e.target.value) })}
+                                  placeholder="مثال: 12"
+                                  className="w-full rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm focus:border-red-500 focus:outline-none"
+                                />
+                              </div>
+
+                              {/* Photos */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">صور المكان</label>
+                                <input
+                                  ref={fileInputRef}
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={(e) => handlePhotoUpload(e.target.files)}
+                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sal-100 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-sal-700"
+                                />
+                                {(editForm.photos ?? []).length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {(editForm.photos ?? []).map((photo, i) => (
+                                      <div key={i} className="relative">
+                                        <img
+                                          src={photo}
+                                          alt=""
+                                          className="h-20 w-20 rounded-xl object-cover"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => removePhoto(i)}
+                                          className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Videos */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">روابط الفيديوهات</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    value={videoUrlInput}
+                                    onChange={(e) => setVideoUrlInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addVideo())}
+                                    placeholder="https://youtube.com/..."
+                                    className="flex-1 rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
+                                    dir="ltr"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={addVideo}
+                                    className="rounded-xl bg-sal-600 px-4 py-2 text-xs font-bold text-white hover:bg-sal-700 transition"
+                                  >
+                                    إضافة
+                                  </button>
+                                </div>
+                                {(editForm.videos ?? []).length > 0 && (
+                                  <div className="mt-2 space-y-1.5">
+                                    {(editForm.videos ?? []).map((vid, i) => (
+                                      <div key={i} className="flex items-center gap-2 rounded-xl bg-sal-50 px-3 py-2 text-xs">
+                                        <span className="flex-1 truncate text-ink-700" dir="ltr">{vid}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeVideo(i)}
+                                          className="font-bold text-red-500 hover:text-red-700"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
                             </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-4">
                             <div className="flex flex-col gap-2">
                               <button
                                 onClick={saveEdit}
@@ -404,6 +668,16 @@ export default function AdminPage() {
                                 </span>
                               )}
                               <p className="mt-0.5 line-clamp-1 text-xs text-ink-600">{place.description}</p>
+                              {(place.acceptanceRate !== undefined || place.rejectionRate !== undefined) && (
+                                <div className="mt-1 flex gap-3 text-[10px] font-semibold">
+                                  {place.acceptanceRate !== undefined && (
+                                    <span className="text-green-600">✓ {place.acceptanceRate}%</span>
+                                  )}
+                                  {place.rejectionRate !== undefined && (
+                                    <span className="text-red-500">✗ {place.rejectionRate}%</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </td>
                           <td className="hidden px-4 py-3 sm:table-cell">
@@ -427,19 +701,15 @@ export default function AdminPage() {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-center gap-2">
-                              {/* Edit button — independent per row */}
                               <button
                                 onClick={() => startEdit(place)}
                                 className="rounded-lg border border-sal-200 bg-sal-50 px-3 py-1.5 text-xs font-bold text-sal-700 hover:border-sal-400 hover:bg-sal-100 transition"
-                                title="تعديل"
                               >
                                 ✏️ تعديل
                               </button>
-                              {/* Delete button — independent per row */}
                               <button
                                 onClick={() => confirmDelete(place.id)}
                                 className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:border-red-300 hover:bg-red-100 transition"
-                                title="حذف"
                               >
                                 🗑️ حذف
                               </button>
