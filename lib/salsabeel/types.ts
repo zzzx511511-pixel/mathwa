@@ -21,11 +21,16 @@ export type Place = {
   rating: number;
   visits: number;
   visits28d?: number;
+  acceptanceRate?: number;
+  rejectionRate?: number;
   priceRange?: string;
   instagramUrl?: string;
+  photos?: string[];
+  videos?: string[];
   gradient: string;
   tags: string[];
   isWomenOnly?: boolean;
   branches: Branch[];
   createdAt: string;
 };
+
