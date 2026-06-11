@@ -84,12 +84,6 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         <div className="rounded-2xl border border-sal-100 bg-white p-12 text-center">
           <p className="text-4xl mb-3">{cat.icon}</p>
           <p className="font-semibold text-ink-700">لا توجد أماكن مضافة في هذا التصنيف بعد</p>
-          <Link
-            href="/admin"
-            className="mt-4 inline-block rounded-xl bg-sal-600 px-5 py-2 text-sm font-bold text-white hover:bg-sal-700"
-          >
-            أضف المكان الأول
-          </Link>
         </div>
       )}
 

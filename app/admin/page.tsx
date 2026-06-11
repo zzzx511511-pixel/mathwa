@@ -7,7 +7,7 @@ import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import type { Place, Category } from "@/lib/salsabeel/types";
 
-const ADMIN_PW = "salsabeel2025";
+const ADMIN_PW = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
 const SESSION_KEY = "sal_admin_auth";
 
 type EditState = Omit<Partial<Place>, "tags" | "photos" | "videos"> & {
@@ -24,7 +24,7 @@ function PasswordGate({ onAuth }: { onAuth: () => void }) {
 
   function tryLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (pw === ADMIN_PW) {
+    if (ADMIN_PW && pw === ADMIN_PW) {
       sessionStorage.setItem(SESSION_KEY, "1");
       onAuth();
     } else {
