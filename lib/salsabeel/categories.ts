@@ -42,7 +42,6 @@ export const CATEGORIES: CategoryMeta[] = [
     count: 255,
     color: "#9D174D",
     bg: "#FCE7F3",
-    badge: "نسائية فقط",
   },
   {
     slug: "malls",

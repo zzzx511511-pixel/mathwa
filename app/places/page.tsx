@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
-import { getMostVisited, getTopRated, PLACES } from "@/lib/salsabeel/data";
-import { PlaceCard } from "@/components/salsabeel/place-card";
+import { PLACES } from "@/lib/salsabeel/data";
+import { PlacesExplorer } from "@/components/salsabeel/places-explorer";
 
 export const dynamic = "force-static";
 
@@ -9,9 +9,6 @@ const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
 const GLOW = "rgba(56,189,248,0.3)";
 
 export default function PlacesPage() {
-  const topRated    = getTopRated(6);
-  const mostVisited = getMostVisited(6);
-
   return (
     <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
 
@@ -31,7 +28,7 @@ export default function PlacesPage() {
             كل ما تحتاجه في مكان واحد
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-base text-white/60">
-            اختر التصنيف الذي يناسبك أو تصفح الأكثر زيارة مباشرة
+            ابحث عن أي مكان أو فلتر حسب المنطقة
           </p>
         </div>
       </div>
@@ -41,15 +38,11 @@ export default function PlacesPage() {
         {/* ── Categories ──────────────────────────────── */}
         <section id="categories">
           <div className="mb-8">
-            <p
-              className="mb-2 text-sm font-bold uppercase tracking-widest"
-              style={{ color: "#0ea5e9" }}
-            >
+            <p className="mb-2 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
               التصنيفات
             </p>
             <h2 className="text-3xl font-black text-ink-900">تصفح حسب التصنيف</h2>
           </div>
-
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {CATEGORIES.map((cat) => (
               <Link
@@ -58,7 +51,6 @@ export default function PlacesPage() {
                 className="group relative overflow-hidden rounded-3xl border p-6 text-center transition hover:-translate-y-1 hover:shadow-xl"
                 style={{ background: "#fff", borderColor: "#e0f2fe" }}
               >
-                {/* Corner accent */}
                 <div
                   aria-hidden
                   className="pointer-events-none absolute right-0 top-0 h-16 w-16 rounded-bl-[64px]"
@@ -87,56 +79,14 @@ export default function PlacesPage() {
           </div>
         </section>
 
-        {/* ── Top Rated ───────────────────────────────── */}
-        <section id="top-rated">
-          <div className="mb-8 flex items-end justify-between">
-            <div>
-              <p className="mb-2 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
-                الأعلى تقييماً
-              </p>
-              <h2 className="text-3xl font-black text-ink-900">⭐ الأماكن الأكثر إعجاباً</h2>
-            </div>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {topRated.map((place) => (
-              <PlaceCard key={place.id} place={place} />
-            ))}
-          </div>
-        </section>
+        {/* ── Interactive Explorer (search + region + places) ── */}
+        <PlacesExplorer allPlaces={PLACES} />
 
-        {/* ── Most Visited ────────────────────────────── */}
-        <section id="most-visited">
-          <div className="mb-8 flex items-end justify-between">
-            <div>
-              <p
-                className="mb-2 text-sm font-bold uppercase tracking-widest"
-                style={{ color: "#0ea5e9" }}
-              >
-                الأكثر زيارة
-              </p>
-              <h2 className="text-3xl font-black text-ink-900">
-                🔥 الوجهات التي لا يفوتها أحد
-              </h2>
-            </div>
-            <span className="text-sm text-ink-600">
-              {PLACES.length} مكان
-            </span>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {mostVisited.map((place) => (
-              <PlaceCard key={place.id} place={place} />
-            ))}
-          </div>
-        </section>
-
-        {/* ── All Places Quick Links ───────────────────── */}
+        {/* ── Quick Links ──────────────────────────────── */}
         <section>
           <div className="rounded-3xl p-8 text-center text-white" style={{ background: GRAD, boxShadow: `0 20px 60px ${GLOW}` }}>
             <h3 className="text-2xl font-black">اكتشف المزيد</h3>
-            <p className="mt-2 text-white/80 text-sm">
-              تصفح الأماكن حسب التصنيف وابحث عن أقرب فرع إليك
-            </p>
+            <p className="mt-2 text-white/80 text-sm">تصفح الأماكن حسب التصنيف</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               {CATEGORIES.map((cat) => (
                 <Link

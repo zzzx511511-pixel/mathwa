@@ -50,14 +50,14 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           )}
         </div>
         <Link
-          href="/"
+          href="/places"
           className="inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white transition"
           style={{ color: cat.color }}
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
           </svg>
-          الرئيسية
+          استكشف الأماكن
         </Link>
       </div>
 

@@ -18,11 +18,6 @@ export function PlaceCard({ place }: { place: Place }) {
     >
       {/* Gradient hero */}
       <div className={`relative h-36 bg-gradient-to-br ${place.gradient} flex items-end p-3`}>
-        {place.isWomenOnly && (
-          <span className="absolute right-2 top-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
-            نسائية فقط
-          </span>
-        )}
         {cat && (
           <span
             className="rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow"
