@@ -1,4 +1,5 @@
 export type Category = "cafes" | "restaurants" | "clinics" | "salons" | "malls";
+export type Region = "شمال" | "جنوب" | "شرق" | "غرب" | "وسط";
 
 export type Branch = {
   id: string;
@@ -14,9 +15,14 @@ export type Place = {
   id: string;
   name: string;
   category: Category;
+  region?: Region;
   description: string;
+  opinion?: string;
   rating: number;
   visits: number;
+  visits28d?: number;
+  priceRange?: string;
+  instagramUrl?: string;
   gradient: string;
   tags: string[];
   isWomenOnly?: boolean;
