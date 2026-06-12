@@ -4,6 +4,7 @@ import { getPlaceById, PLACES } from "@/lib/salsabeel/data";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import { BranchPanel } from "@/components/salsabeel/branch-panel";
+import { PlaceImage } from "@/components/salsabeel/place-image";
 
 export function generateStaticParams() {
   return PLACES.map((p) => ({ id: p.id }));
@@ -38,19 +39,27 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
       </nav>
 
       {/* Hero */}
-      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${place.gradient} h-56 md:h-72 flex items-end p-6`}>
-        <div className="flex flex-wrap items-center gap-3">
-          {cat && (
-            <span
-              className="rounded-full px-3 py-1 text-sm font-bold shadow"
-              style={{ background: cat.bg, color: cat.color }}
-            >
-              {cat.icon} {cat.label}
+      <div className="relative overflow-hidden rounded-3xl h-56 md:h-72">
+        <PlaceImage
+          photos={place.photos}
+          category={place.category}
+          name={place.name}
+          className="h-full w-full"
+        />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+          <div className="flex flex-wrap items-center gap-3">
+            {cat && (
+              <span
+                className="rounded-full px-3 py-1 text-sm font-bold shadow"
+                style={{ background: cat.bg, color: cat.color }}
+              >
+                {cat.icon} {cat.label}
+              </span>
+            )}
+            <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white backdrop-blur">
+              {place.branches.length} {place.branches.length === 1 ? "فرع" : "فروع"}
             </span>
-          )}
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white backdrop-blur">
-            {place.branches.length} {place.branches.length === 1 ? "فرع" : "فروع"}
-          </span>
+          </div>
         </div>
       </div>
 

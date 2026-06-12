@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Place } from "@/lib/salsabeel/types";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "./rating-stars";
+import { PlaceImage } from "./place-image";
 
 function fmt(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
@@ -16,11 +17,17 @@ export function PlaceCard({ place }: { place: Place }) {
       className="group flex flex-col overflow-hidden rounded-3xl transition hover:-translate-y-1 hover:shadow-xl"
       style={{ border: "1px solid #e0f2fe", background: "#fff" }}
     >
-      {/* Gradient hero */}
-      <div className={`relative h-36 bg-gradient-to-br ${place.gradient} flex items-end p-3`}>
+      {/* Hero image / placeholder */}
+      <div className="relative h-36">
+        <PlaceImage
+          photos={place.photos}
+          category={place.category}
+          name={place.name}
+          className="h-full w-full"
+        />
         {cat && (
           <span
-            className="rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow"
+            className="absolute bottom-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow"
             style={{ background: cat.bg, color: cat.color }}
           >
             {cat.icon} {cat.label}
