@@ -1,12 +1,28 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { Branch } from "@/lib/salsabeel/types";
 
-export function BranchPanel({ branches }: { branches: Branch[] }) {
+export function BranchPanel({
+  branches,
+  placeId,
+  placeName,
+}: {
+  branches: Branch[];
+  placeId: string;
+  placeName: string;
+}) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const active = branches.find((b) => b.id === selected);
+
+  function mapsHref(branch: Branch) {
+    if (branch.mapsUrl) return branch.mapsUrl;
+    return `https://maps.google.com/?q=${encodeURIComponent(
+      placeName + " " + branch.name + " " + branch.address + "، الرياض"
+    )}`;
+  }
 
   return (
     <div className="space-y-4">
@@ -63,9 +79,9 @@ export function BranchPanel({ branches }: { branches: Branch[] }) {
             )}
           </div>
 
-          {active.mapsUrl && (
+          <div className="flex flex-wrap gap-2 pt-1">
             <a
-              href={active.mapsUrl}
+              href={mapsHref(active)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-xl bg-sal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sal-700 transition"
@@ -75,7 +91,13 @@ export function BranchPanel({ branches }: { branches: Branch[] }) {
               </svg>
               افتح الخريطة
             </a>
-          )}
+            <Link
+              href={`/places/${placeId}/branches/${active.id}`}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition"
+            >
+              صفحة الفرع ←
+            </Link>
+          </div>
         </div>
       )}
     </div>

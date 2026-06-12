@@ -78,7 +78,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
         )}
         {!mainBranch?.mapsUrl && mainBranch?.address && (
           <a
-            href={`https://maps.google.com/?q=${encodeURIComponent(mainBranch.address + "، الرياض")}`}
+            href={`https://maps.google.com/?q=${encodeURIComponent(place.name + " " + mainBranch.address + "، الرياض")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
@@ -174,8 +174,8 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      {/* Yellow opinion box — no title */}
-      {place.opinion && (
+      {/* Yellow opinion box — only shown when ratings are positive */}
+      {place.opinion && (place.rejectionRate === undefined || place.rejectionRate <= 30) && (
         <div
           className="rounded-2xl p-5 text-sm leading-relaxed font-medium"
           style={{ background: "#fefce8", border: "1px solid #fde047", color: "#713f12" }}
@@ -241,7 +241,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
       <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 فروع {place.name}</h2>
         <p className="mb-4 text-sm text-ink-600">اضغط على الفرع لعرض عنوانه وتفاصيله</p>
-        <BranchPanel branches={place.branches} />
+        <BranchPanel branches={place.branches} placeId={place.id} placeName={place.name} />
       </div>
 
       {/* Back */}

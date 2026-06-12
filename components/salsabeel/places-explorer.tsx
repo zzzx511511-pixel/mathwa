@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { Place, Region } from "@/lib/salsabeel/types";
 import { PlaceCard } from "./place-card";
 
@@ -14,9 +15,21 @@ const REGIONS: { label: string; value: Region | "all" }[] = [
 ];
 
 export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const initialRegion = (searchParams.get("region") as Region | null) ?? "all";
+
   const [search, setSearch] = useState("");
-  const [region, setRegion] = useState<Region | "all">("all");
+  const [region, setRegion] = useState<Region | "all">(initialRegion);
   const [period, setPeriod] = useState<"all" | "28d">("all");
+
+  function handleRegionChange(v: Region | "all") {
+    setRegion(v);
+    const params = new URLSearchParams();
+    if (v !== "all") params.set("region", v);
+    router.replace(`/places${params.toString() ? "?" + params : ""}`, { scroll: false });
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim();
@@ -83,7 +96,7 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
           {REGIONS.map((r) => (
             <button
               key={r.value}
-              onClick={() => setRegion(r.value)}
+              onClick={() => handleRegionChange(r.value)}
               className="rounded-xl px-4 py-1.5 text-sm font-bold transition"
               style={
                 region === r.value

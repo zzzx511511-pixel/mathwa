@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
 import { PLACES } from "@/lib/salsabeel/data";
@@ -80,7 +81,9 @@ export default function PlacesPage() {
         </section>
 
         {/* ── Interactive Explorer (search + region + places) ── */}
-        <PlacesExplorer allPlaces={PLACES} />
+        <Suspense fallback={<div className="py-10 text-center text-sm text-ink-600">جاري التحميل...</div>}>
+          <PlacesExplorer allPlaces={PLACES} />
+        </Suspense>
 
         {/* ── Quick Links ──────────────────────────────── */}
         <section>

@@ -3,15 +3,37 @@
 import { useState } from "react";
 
 export function ContactForm() {
-  const [form, setForm] = useState({ name: "", email: "", type: "", message: "" });
-  const [sent, setSent] = useState(false);
+  const [form, setForm]   = useState({ name: "", email: "", type: "", message: "" });
+  const [sent, setSent]   = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email || !form.type || !form.message) return;
-    setSent(true);
-    setForm({ name: "", email: "", type: "", message: "" });
-    setTimeout(() => setSent(false), 4000);
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "حدث خطأ، حاول مرة أخرى.");
+      } else {
+        setSent(true);
+        setForm({ name: "", email: "", type: "", message: "" });
+        setTimeout(() => setSent(false), 5000);
+      }
+    } catch {
+      setError("تعذّر الاتصال بالخادم، تحقق من الاتصال وأعد المحاولة.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const inputCls =
@@ -37,6 +59,7 @@ export function ContactForm() {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="اسمك الكريم"
             className={inputCls}
+            maxLength={100}
           />
         </div>
         <div>
@@ -47,6 +70,7 @@ export function ContactForm() {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="بريدك الإلكتروني"
             className={inputCls}
+            maxLength={200}
           />
         </div>
         <div>
@@ -71,23 +95,30 @@ export function ContactForm() {
             onChange={(e) => setForm({ ...form, message: e.target.value })}
             placeholder="اكتب رسالتك هنا..."
             className={`${inputCls} resize-none`}
+            maxLength={2000}
           />
         </div>
 
         <button
           type="submit"
-          className="mt-2 w-full rounded-xl py-3.5 text-base font-black text-white transition hover:-translate-y-0.5"
+          disabled={loading}
+          className="mt-2 w-full rounded-xl py-3.5 text-base font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             background: "linear-gradient(135deg,#38bdf8 0%,#0ea5e9 55%,#0369a1 100%)",
             boxShadow: "0 6px 20px rgba(56,189,248,0.35)",
           }}
         >
-          إرسال الرسالة ✦
+          {loading ? "جاري الإرسال..." : "إرسال الرسالة ✦"}
         </button>
 
         {sent && (
           <div className="rounded-xl bg-green-50 px-4 py-3 text-center text-sm font-bold text-green-700">
             ✓ تم إرسال رسالتك بنجاح!
+          </div>
+        )}
+        {error && (
+          <div className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm font-bold text-red-600">
+            {error}
           </div>
         )}
       </form>
