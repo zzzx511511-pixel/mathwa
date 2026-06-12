@@ -22,7 +22,7 @@ export default function BranchDetailPage({
   const mapsHref = branch.mapsUrl
     ? branch.mapsUrl
     : `https://maps.google.com/?q=${encodeURIComponent(
-        place.name + " " + branch.name + " " + branch.address + "، الرياض"
+        `${place.name} ${branch.address} الرياض`
       )}`;
 
   return (

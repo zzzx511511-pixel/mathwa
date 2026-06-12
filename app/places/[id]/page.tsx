@@ -78,7 +78,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
         )}
         {!mainBranch?.mapsUrl && mainBranch?.address && (
           <a
-            href={`https://maps.google.com/?q=${encodeURIComponent(place.name + " " + mainBranch.address + "، الرياض")}`}
+            href={`https://maps.google.com/?q=${encodeURIComponent(`${place.name} ${mainBranch.address} الرياض`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
