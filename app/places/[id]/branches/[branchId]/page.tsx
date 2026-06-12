@@ -42,6 +42,11 @@ export default function BranchDetailPage({
         <div>
           <p className="text-xs font-semibold text-sal-500 uppercase tracking-wider mb-1">{place.name}</p>
           <h1 className="text-2xl font-extrabold text-ink-900">{branch.name}</h1>
+          {place.region && (
+            <span className="mt-1.5 inline-block rounded-full bg-sal-50 px-3 py-0.5 text-xs font-bold text-sal-700">
+              📍 {place.region} الرياض
+            </span>
+          )}
         </div>
 
         <div className="space-y-3">

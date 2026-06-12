@@ -241,7 +241,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
       <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 فروع {place.name}</h2>
         <p className="mb-4 text-sm text-ink-600">اضغط على الفرع لعرض عنوانه وتفاصيله</p>
-        <BranchPanel branches={place.branches} placeId={place.id} placeName={place.name} />
+        <BranchPanel branches={place.branches} placeId={place.id} />
       </div>
 
       {/* Back */}
