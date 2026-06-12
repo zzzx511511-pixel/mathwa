@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
-import { RegionsFilter } from "@/components/salsabeel/regions-filter";
+import { getRegionCounts } from "@/lib/salsabeel/data";
 import { ContactForm } from "@/components/salsabeel/contact-form";
 import { LogoDrop } from "@/components/salsabeel/logo";
 
@@ -226,9 +226,44 @@ export default function HomePage() {
           </p>
           <h2 className="mb-3 text-4xl font-black text-ink-900">الرياض كاملة بين يديك</h2>
           <p className="mb-12 max-w-xl text-base leading-relaxed text-ink-600">
-            نغطي الرياض بكاملها — من شمالها إلى جنوبها، من شرقها إلى غربها.
+            نغطي جميع مناطق الرياض — اختر التصنيف الذي يناسبك ثم فلتر بالمنطقة من داخله.
           </p>
-          <RegionsFilter />
+
+          {/* Region coverage grid (informational) */}
+          {(() => {
+            const counts = getRegionCounts();
+            const REGION_TILES = [
+              { value: "شمال", label: "شمال الرياض", icon: "⬆️" },
+              { value: "جنوب", label: "جنوب الرياض", icon: "⬇️" },
+              { value: "شرق",  label: "شرق الرياض",  icon: "➡️" },
+              { value: "غرب",  label: "غرب الرياض",  icon: "⬅️" },
+              { value: "وسط",  label: "وسط الرياض",  icon: "🎯" },
+            ];
+            return (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {REGION_TILES.map((r) => (
+                  <div
+                    key={r.value}
+                    className="flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-5 text-center"
+                    style={{ background: "#f0f9ff", borderColor: "#e0f2fe" }}
+                  >
+                    <span className="text-2xl">{r.icon}</span>
+                    <p className="text-sm font-bold" style={{ color: "#0c4a6e" }}>{r.label}</p>
+                    <p className="text-xs font-semibold" style={{ color: "#0ea5e9" }}>
+                      {counts[r.value] ?? 0}+ مكان
+                    </p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          <p className="mt-6 text-center text-sm text-ink-500">
+            لتصفية الأماكن بالمنطقة —{" "}
+            <a href="#categories" className="font-semibold underline" style={{ color: "#0ea5e9" }}>
+              اختر تصنيفاً أولاً ↑
+            </a>
+          </p>
         </div>
       </section>
 

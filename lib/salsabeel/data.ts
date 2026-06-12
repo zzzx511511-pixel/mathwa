@@ -1420,3 +1420,11 @@ export function getByCategory(category: Category, limit?: number): Place[] {
 export function getPlaceById(id: string): Place | undefined {
   return PLACES.find((p) => p.id === id);
 }
+
+export function getRegionCounts(): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const p of PLACES) {
+    if (p.region) counts[p.region] = (counts[p.region] ?? 0) + 1;
+  }
+  return counts;
+}

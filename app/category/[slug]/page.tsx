@@ -1,8 +1,9 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { getByCategory } from "@/lib/salsabeel/data";
-import { PlaceCard } from "@/components/salsabeel/place-card";
+import { CategoryExplorer } from "@/components/salsabeel/category-explorer";
 import type { Category } from "@/lib/salsabeel/types";
 
 export function generateStaticParams() {
@@ -18,7 +19,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   return (
     <div className="mx-auto max-w-screen-xl space-y-8 px-5 py-10">
 
-      {/* Header */}
+      {/* ── Header ── */}
       <div
         className="flex flex-col gap-4 rounded-2xl p-6 sm:flex-row sm:items-center"
         style={{ background: cat.bg }}
@@ -29,6 +30,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         >
           {cat.icon}
         </div>
+
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-extrabold" style={{ color: cat.color }}>
@@ -45,14 +47,16 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           </div>
           {cat.count > 0 && (
             <p className="mt-1 text-sm font-medium opacity-70" style={{ color: cat.color }}>
-              {places.length} مكان متاح {cat.count > places.length ? `(من أصل +${cat.count})` : ""}
+              {places.length} مكان متاح
+              {cat.count > places.length ? ` (من أصل +${cat.count})` : ""}
             </p>
           )}
         </div>
+
         <div className="flex flex-wrap gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white transition"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-4 py-2 text-sm font-semibold transition hover:bg-white"
             style={{ color: cat.color }}
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -62,7 +66,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           </Link>
           <Link
             href="/places"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white transition"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-4 py-2 text-sm font-semibold transition hover:bg-white"
             style={{ color: cat.color }}
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -73,21 +77,12 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      {/* Places grid */}
-      {places.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {places.map((place) => (
-            <PlaceCard key={place.id} place={place} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-sal-100 bg-white p-12 text-center">
-          <p className="text-4xl mb-3">{cat.icon}</p>
-          <p className="font-semibold text-ink-700">لا توجد أماكن مضافة في هذا التصنيف بعد</p>
-        </div>
-      )}
+      {/* ── Category explorer with region filter ── */}
+      <Suspense>
+        <CategoryExplorer places={places} cat={cat} />
+      </Suspense>
 
-      {/* Other categories */}
+      {/* ── Other categories ── */}
       <div className="rounded-2xl border border-sal-100 bg-white p-5">
         <p className="mb-3 text-sm font-semibold text-ink-700">تصنيفات أخرى</p>
         <div className="flex flex-wrap gap-2">
