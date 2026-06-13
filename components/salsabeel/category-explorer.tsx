@@ -49,7 +49,8 @@ export function CategoryExplorer({
     return bySpec.filter((p) =>
       normalize(p.name).includes(q) ||
       normalize(p.description ?? "").includes(q) ||
-      p.tags.some((t) => normalize(t).includes(q))
+      p.tags.some((t) => normalize(t).includes(q)) ||
+      (p.keywords ?? []).some((k) => normalize(k).includes(q))
     );
   }, [places, active, search, spec]);
 

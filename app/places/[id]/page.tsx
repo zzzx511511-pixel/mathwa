@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPlaceById, PLACES } from "@/lib/salsabeel/data";
+import { getPlaceById } from "@/lib/salsabeel/data";
 import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
@@ -8,9 +8,7 @@ import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 
-export function generateStaticParams() {
-  return PLACES.map((p) => ({ id: p.id }));
-}
+export const dynamic = "force-dynamic";
 
 function formatVisits(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
@@ -71,9 +69,9 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-3">
-        {mainBranch?.mapsUrl && (
+        {(place.mapsUrl || mainBranch?.mapsUrl) && (
           <a
-            href={mainBranch.mapsUrl}
+            href={(place.mapsUrl ?? mainBranch?.mapsUrl)!}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
@@ -82,7 +80,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
             📍 الموقع
           </a>
         )}
-        {!mainBranch?.mapsUrl && mainBranch?.address && (
+        {!place.mapsUrl && !mainBranch?.mapsUrl && mainBranch?.address && (
           <a
             href={`https://maps.google.com/?q=${encodeURIComponent(`${place.name} ${mainBranch.address} الرياض`)}`}
             target="_blank"

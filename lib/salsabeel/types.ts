@@ -42,6 +42,8 @@ export type Place = {
   phone?: string;
   instagramUrl?: string;
   website?: string;
+  mapsUrl?: string;
+  keywords?: string[];
   photos?: string[];
   videos?: string[];
   gradient: string;

@@ -12,9 +12,10 @@ import { LocationPicker } from "@/components/salsabeel/location-picker";
 const ADMIN_PW = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
 const SESSION_KEY = "sal_admin_auth";
 
-type EditState = Omit<Partial<Place>, "tags" | "photos" | "videos" | "branches"> & {
+type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" | "branches"> & {
   id: string;
   tags?: string | string[];
+  keywords?: string | string[];
   photos?: string[];
   videos?: string[];
   branches?: Branch[];
@@ -133,10 +134,12 @@ function AdminDashboard() {
     rating: "4.5",
     visits: "0",
     tags: "",
+    keywords: "",
     isWomenOnly: false,
     phone: "",
     instagramUrl: "",
     website: "",
+    mapsUrl: "",
     branchAddress: "",
     branchCity: "الرياض",
     branchMapsUrl: "",
@@ -159,10 +162,12 @@ function AdminDashboard() {
       acceptanceRate: place.acceptanceRate,
       rejectionRate: place.rejectionRate,
       tags: place.tags,
+      keywords: place.keywords ?? [],
       isWomenOnly: place.isWomenOnly,
       phone: place.phone ?? "",
       instagramUrl: place.instagramUrl ?? "",
       website: place.website ?? "",
+      mapsUrl: place.mapsUrl ?? "",
       photos: place.photos ? [...place.photos] : [],
       videos: place.videos ? [...place.videos] : [],
       branches: place.branches ? place.branches.map((b) => ({ ...b })) : [],
@@ -187,6 +192,12 @@ function AdminDashboard() {
       phone: (editForm.phone as string)?.trim() || undefined,
       instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
       website: (editForm.website as string)?.trim() || undefined,
+      mapsUrl: (editForm.mapsUrl as string)?.trim() || undefined,
+      keywords: Array.isArray(editForm.keywords)
+        ? (editForm.keywords as string[]).filter(Boolean)
+        : typeof editForm.keywords === "string"
+          ? (editForm.keywords as string).split(",").map((k) => k.trim()).filter(Boolean)
+          : original.keywords,
       photos: editForm.photos ?? original.photos,
       videos: editForm.videos ?? original.videos,
       branches: editForm.branches ?? original.branches,
@@ -327,8 +338,10 @@ function AdminDashboard() {
       phone: newForm.phone.trim() || undefined,
       instagramUrl: newForm.instagramUrl.trim() || undefined,
       website: newForm.website.trim() || undefined,
+      mapsUrl: newForm.mapsUrl.trim() || undefined,
       gradient: gradients[Math.floor(Math.random() * gradients.length)],
       tags: newForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
+      keywords: newForm.keywords.split(",").map((k) => k.trim()).filter(Boolean),
       isWomenOnly: newForm.isWomenOnly,
       branches: firstBranch ? [firstBranch] : [],
       createdAt: new Date().toISOString().split("T")[0],
@@ -341,8 +354,8 @@ function AdminDashboard() {
     }).catch(() => {});
     setNewForm({
       name: "", category: "cafes", region: "", description: "",
-      rating: "4.5", visits: "0", tags: "", isWomenOnly: false,
-      phone: "", instagramUrl: "", website: "",
+      rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
+      phone: "", instagramUrl: "", website: "", mapsUrl: "",
       branchAddress: "", branchCity: "الرياض", branchMapsUrl: "",
     });
     setTab("places");
@@ -531,6 +544,23 @@ function AdminDashboard() {
                 className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
                 placeholder="https://..."
                 dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">كلمات بحث إضافية (مفصولة بفاصلة)</label>
+              <input
+                value={newForm.keywords}
+                onChange={(e) => setNewForm({ ...newForm, keywords: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                placeholder="مثال: برجر كينج, Burger King, وجبات سريعة"
+              />
+              <p className="mt-1 text-[10px] text-ink-500">أضف كلمات بالعربي والإنجليزي لتحسين نتائج البحث</p>
+            </div>
+            <div className="sm:col-span-2">
+              <LocationPicker
+                value={newForm.mapsUrl}
+                searchHint={newForm.name}
+                onSelect={(url) => setNewForm({ ...newForm, mapsUrl: url })}
               />
             </div>
             {newForm.category === "salons" && (
@@ -776,6 +806,26 @@ function AdminDashboard() {
                                   className="w-full rounded-xl border border-blue-300 bg-blue-50 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
                                   placeholder="https://..."
                                   dir="ltr"
+                                />
+                              </div>
+
+                              {/* Keywords */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">كلمات بحث إضافية (مفصولة بفاصلة)</label>
+                                <input
+                                  value={Array.isArray(editForm.keywords) ? (editForm.keywords as string[]).join(", ") : (editForm.keywords as string | undefined) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, keywords: e.target.value })}
+                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
+                                  placeholder="مثال: برجر كينج, Burger King, وجبات سريعة"
+                                />
+                              </div>
+
+                              {/* Place location picker */}
+                              <div className="sm:col-span-2">
+                                <LocationPicker
+                                  value={(editForm.mapsUrl as string) ?? ""}
+                                  searchHint={editForm.name ?? ""}
+                                  onSelect={(url) => setEditForm({ ...editForm, mapsUrl: url || undefined })}
                                 />
                               </div>
 

@@ -48,7 +48,8 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
         !q ||
         normalize(p.name).includes(q) ||
         normalize(p.description).includes(q) ||
-        p.tags.some((t) => normalize(t).includes(q));
+        p.tags.some((t) => normalize(t).includes(q)) ||
+        (p.keywords ?? []).some((k) => normalize(k).includes(q));
       const matchRegion = region === "all" || p.region === region;
       return matchSearch && matchRegion;
     });
