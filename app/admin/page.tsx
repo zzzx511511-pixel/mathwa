@@ -167,7 +167,9 @@ function AdminDashboard() {
     website: "",
     mapsUrl: "",
     branchAddress: "",
+    branchNeighborhood: "",
     branchCity: "الرياض",
+    branchOpeningHours: "",
     branchMapsUrl: "",
   });
 
@@ -349,7 +351,9 @@ function AdminDashboard() {
           id: `${ts}-b1`,
           name: "الفرع الرئيسي",
           address: newForm.branchAddress.trim(),
+          neighborhood: newForm.branchNeighborhood.trim() || undefined,
           city: newForm.branchCity.trim() || "الرياض",
+          openingHours: newForm.branchOpeningHours.trim() || undefined,
           mapsUrl: newForm.branchMapsUrl.trim() || undefined,
         }
       : null;
@@ -382,7 +386,7 @@ function AdminDashboard() {
       name: "", category: "cafes", region: "", description: "",
       rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
       phone: "", instagramUrl: "", website: "", mapsUrl: "",
-      branchAddress: "", branchCity: "الرياض", branchMapsUrl: "",
+      branchAddress: "", branchNeighborhood: "", branchCity: "الرياض", branchOpeningHours: "", branchMapsUrl: "",
     });
     setTab("places");
   }
@@ -621,12 +625,21 @@ function AdminDashboard() {
               <p className="text-xs font-bold text-sal-700">📍 الفرع الرئيسي (اختياري)</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-ink-700">عنوان الفرع (حي / شارع)</label>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">الحي</label>
+                  <input
+                    value={newForm.branchNeighborhood}
+                    onChange={(e) => setNewForm({ ...newForm, branchNeighborhood: e.target.value })}
+                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                    placeholder="مثال: حي النرجس"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">العنوان النصي (الشارع أو الطريق)</label>
                   <input
                     value={newForm.branchAddress}
                     onChange={(e) => setNewForm({ ...newForm, branchAddress: e.target.value })}
                     className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
-                    placeholder="مثال: حي النرجس، طريق أنس بن مالك"
+                    placeholder="مثال: طريق أنس بن مالك"
                   />
                 </div>
                 <div>
@@ -636,6 +649,15 @@ function AdminDashboard() {
                     onChange={(e) => setNewForm({ ...newForm, branchCity: e.target.value })}
                     className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
                     placeholder="الرياض"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">ساعات العمل</label>
+                  <input
+                    value={newForm.branchOpeningHours}
+                    onChange={(e) => setNewForm({ ...newForm, branchOpeningHours: e.target.value })}
+                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                    placeholder="مثال: 8ص–12م يومياً"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -903,6 +925,55 @@ function AdminDashboard() {
                                   searchHint={editForm.name ?? ""}
                                   onSelect={(url) => setEditForm({ ...editForm, mapsUrl: url || undefined })}
                                 />
+                              </div>
+
+                              {/* Main branch quick fields */}
+                              <div className="sm:col-span-2 rounded-xl border border-sal-200 bg-sal-50 p-4 space-y-3">
+                                <p className="text-xs font-bold text-sal-700">📍 بيانات الفرع الرئيسي</p>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  <div>
+                                    <label className="mb-1 block text-[10px] font-semibold text-ink-600">الحي</label>
+                                    <input
+                                      value={editForm.branches?.[0]?.neighborhood ?? ""}
+                                      onChange={(e) => setEditForm((f) => {
+                                        if (!f) return f;
+                                        const branches = [...(f.branches ?? [])];
+                                        if (branches[0]) branches[0] = { ...branches[0], neighborhood: e.target.value || undefined };
+                                        return { ...f, branches };
+                                      })}
+                                      placeholder="مثال: حي النرجس"
+                                      className="w-full rounded-lg border border-sal-200 bg-white px-3 py-2 text-xs focus:border-sal-500 focus:outline-none"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="mb-1 block text-[10px] font-semibold text-ink-600">العنوان النصي (الشارع أو الطريق)</label>
+                                    <input
+                                      value={editForm.branches?.[0]?.address ?? ""}
+                                      onChange={(e) => setEditForm((f) => {
+                                        if (!f) return f;
+                                        const branches = [...(f.branches ?? [])];
+                                        if (branches[0]) branches[0] = { ...branches[0], address: e.target.value };
+                                        return { ...f, branches };
+                                      })}
+                                      placeholder="مثال: طريق أنس بن مالك"
+                                      className="w-full rounded-lg border border-sal-200 bg-white px-3 py-2 text-xs focus:border-sal-500 focus:outline-none"
+                                    />
+                                  </div>
+                                  <div className="sm:col-span-2">
+                                    <label className="mb-1 block text-[10px] font-semibold text-ink-600">ساعات العمل</label>
+                                    <input
+                                      value={editForm.branches?.[0]?.openingHours ?? ""}
+                                      onChange={(e) => setEditForm((f) => {
+                                        if (!f) return f;
+                                        const branches = [...(f.branches ?? [])];
+                                        if (branches[0]) branches[0] = { ...branches[0], openingHours: e.target.value || undefined };
+                                        return { ...f, branches };
+                                      })}
+                                      placeholder="مثال: 8ص–12م يومياً"
+                                      className="w-full rounded-lg border border-sal-200 bg-white px-3 py-2 text-xs focus:border-sal-500 focus:outline-none"
+                                    />
+                                  </div>
+                                </div>
                               </div>
 
                               {/* Acceptance Rate */}
