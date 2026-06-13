@@ -3,6 +3,7 @@ import { CATEGORIES } from "@/lib/salsabeel/categories";
 import { getRegionCounts } from "@/lib/salsabeel/data";
 import { ContactForm } from "@/components/salsabeel/contact-form";
 import { LogoDrop } from "@/components/salsabeel/logo";
+import { HomeSearch } from "@/components/salsabeel/home-search";
 
 export const dynamic = "force-static";
 
@@ -88,6 +89,10 @@ export default function HomePage() {
             سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات
             والمجمعات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
           </p>
+
+          <div className="anim-fade-up-d3 w-full flex justify-center">
+            <HomeSearch />
+          </div>
 
           <div className="anim-fade-up-d3 flex flex-wrap justify-center gap-4">
             <Link

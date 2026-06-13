@@ -5,16 +5,18 @@ import Link from "next/link";
 import { PLACES as INITIAL_PLACES } from "@/lib/salsabeel/data";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
-import type { Place, Category } from "@/lib/salsabeel/types";
+import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
+import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 
 const ADMIN_PW = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
 const SESSION_KEY = "sal_admin_auth";
 
-type EditState = Omit<Partial<Place>, "tags" | "photos" | "videos"> & {
+type EditState = Omit<Partial<Place>, "tags" | "photos" | "videos" | "branches"> & {
   id: string;
   tags?: string | string[];
   photos?: string[];
   videos?: string[];
+  branches?: Branch[];
 };
 
 // ── Password Gate ────────────────────────────────────────────────────────────
@@ -100,25 +102,38 @@ function AdminDashboard() {
   const [videoUrlInput, setVideoUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Branch editing state (inside edit form)
+  const [newBranch, setNewBranch] = useState<Partial<Branch>>({});
+  const [editBranchId, setEditBranchId] = useState<string | null>(null);
+
   // ── Add form state ──────────────────────────────────────────────────
   const [newForm, setNewForm] = useState({
     name: "",
     category: "cafes" as Category,
+    region: "" as Region | "",
     description: "",
     rating: "4.5",
     visits: "0",
     tags: "",
     isWomenOnly: false,
+    phone: "",
+    instagramUrl: "",
+    website: "",
+    branchAddress: "",
+    branchCity: "الرياض",
   });
 
   // ── Edit helpers ────────────────────────────────────────────────────
   function startEdit(place: Place) {
     setEditingId(place.id);
     setVideoUrlInput("");
+    setNewBranch({});
+    setEditBranchId(null);
     setEditForm({
       id: place.id,
       name: place.name,
       category: place.category,
+      region: place.region,
       description: place.description,
       opinion: place.opinion ?? "",
       rating: place.rating,
@@ -126,8 +141,12 @@ function AdminDashboard() {
       rejectionRate: place.rejectionRate,
       tags: place.tags,
       isWomenOnly: place.isWomenOnly,
+      phone: place.phone ?? "",
+      instagramUrl: place.instagramUrl ?? "",
+      website: place.website ?? "",
       photos: place.photos ? [...place.photos] : [],
       videos: place.videos ? [...place.videos] : [],
+      branches: place.branches ? place.branches.map((b) => ({ ...b })) : [],
     });
   }
 
@@ -140,14 +159,19 @@ function AdminDashboard() {
               ...p,
               name: editForm.name ?? p.name,
               category: editForm.category ?? p.category,
+              region: (editForm.region as Region) || undefined,
               description: editForm.description ?? p.description,
               opinion: (editForm.opinion as string)?.trim() || undefined,
               rating: Number(editForm.rating ?? p.rating),
               acceptanceRate: editForm.acceptanceRate !== undefined ? Number(editForm.acceptanceRate) : p.acceptanceRate,
               rejectionRate: editForm.rejectionRate !== undefined ? Number(editForm.rejectionRate) : p.rejectionRate,
               isWomenOnly: editForm.isWomenOnly,
+              phone: (editForm.phone as string)?.trim() || undefined,
+              instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
+              website: (editForm.website as string)?.trim() || undefined,
               photos: editForm.photos ?? p.photos,
               videos: editForm.videos ?? p.videos,
+              branches: editForm.branches ?? p.branches,
               tags: typeof editForm.tags === "string"
                 ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
                 : editForm.tags ?? p.tags,
@@ -158,12 +182,51 @@ function AdminDashboard() {
     setEditingId(null);
     setEditForm(null);
     setVideoUrlInput("");
+    setNewBranch({});
+    setEditBranchId(null);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditForm(null);
     setVideoUrlInput("");
+    setNewBranch({});
+    setEditBranchId(null);
+  }
+
+  // ── Branch helpers ──────────────────────────────────────────────────
+  function addBranchToEdit() {
+    if (!newBranch.address?.trim()) return;
+    const branch: Branch = {
+      id: `b-${Date.now()}`,
+      name: newBranch.name?.trim() || `فرع ${(editForm?.branches?.length ?? 0) + 1}`,
+      address: newBranch.address.trim(),
+      city: newBranch.city?.trim() || "الرياض",
+      phone: newBranch.phone?.trim() || undefined,
+      openingHours: newBranch.openingHours?.trim() || undefined,
+      mapsUrl: newBranch.mapsUrl?.trim() || undefined,
+    };
+    setEditForm((prev) => prev ? { ...prev, branches: [...(prev.branches ?? []), branch] } : prev);
+    setNewBranch({});
+  }
+
+  function removeBranchFromEdit(branchId: string) {
+    setEditForm((prev) =>
+      prev ? { ...prev, branches: (prev.branches ?? []).filter((b) => b.id !== branchId) } : prev
+    );
+  }
+
+  function updateBranchInEdit(branchId: string, field: keyof Branch, value: string) {
+    setEditForm((prev) =>
+      prev
+        ? {
+            ...prev,
+            branches: (prev.branches ?? []).map((b) =>
+              b.id === branchId ? { ...b, [field]: value || undefined } : b
+            ),
+          }
+        : prev
+    );
   }
 
   // ── Photo upload helper ─────────────────────────────────────────────
@@ -218,21 +281,39 @@ function AdminDashboard() {
       "from-amber-700 to-amber-500",
       "from-pink-600 to-rose-400",
     ];
+    const ts = Date.now();
+    const firstBranch: Branch | null = newForm.branchAddress.trim()
+      ? {
+          id: `${ts}-b1`,
+          name: "الفرع الرئيسي",
+          address: newForm.branchAddress.trim(),
+          city: newForm.branchCity.trim() || "الرياض",
+        }
+      : null;
     const newPlace: Place = {
-      id: `custom-${Date.now()}`,
+      id: `custom-${ts}`,
       name: newForm.name.trim(),
       category: newForm.category,
+      region: (newForm.region as Region) || undefined,
       description: newForm.description.trim(),
       rating: Math.min(5, Math.max(0, Number(newForm.rating) || 4.5)),
       visits: Math.max(0, Number(newForm.visits) || 0),
+      phone: newForm.phone.trim() || undefined,
+      instagramUrl: newForm.instagramUrl.trim() || undefined,
+      website: newForm.website.trim() || undefined,
       gradient: gradients[Math.floor(Math.random() * gradients.length)],
       tags: newForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
       isWomenOnly: newForm.isWomenOnly,
-      branches: [],
+      branches: firstBranch ? [firstBranch] : [],
       createdAt: new Date().toISOString().split("T")[0],
     };
     setPlaces((prev) => [newPlace, ...prev]);
-    setNewForm({ name: "", category: "cafes", description: "", rating: "4.5", visits: "0", tags: "", isWomenOnly: false });
+    setNewForm({
+      name: "", category: "cafes", region: "", description: "",
+      rating: "4.5", visits: "0", tags: "", isWomenOnly: false,
+      phone: "", instagramUrl: "", website: "",
+      branchAddress: "", branchCity: "الرياض",
+    });
     setTab("places");
   }
 
@@ -378,6 +459,49 @@ function AdminDashboard() {
                 placeholder="مثال: قهوة, عائلي, هادئ"
               />
             </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">المنطقة</label>
+              <select
+                value={newForm.region}
+                onChange={(e) => setNewForm({ ...newForm, region: e.target.value as Region | "" })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+              >
+                <option value="">— بدون منطقة —</option>
+                {(["شمال","جنوب","شرق","غرب","وسط"] as Region[]).map((r) => (
+                  <option key={r} value={r}>{r} الرياض</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">هاتف المنشأة</label>
+              <input
+                value={newForm.phone}
+                onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                placeholder="05xxxxxxxx"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">انستقرام (رابط كامل)</label>
+              <input
+                value={newForm.instagramUrl}
+                onChange={(e) => setNewForm({ ...newForm, instagramUrl: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                placeholder="https://instagram.com/..."
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">الموقع الإلكتروني</label>
+              <input
+                value={newForm.website}
+                onChange={(e) => setNewForm({ ...newForm, website: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                placeholder="https://..."
+                dir="ltr"
+              />
+            </div>
             {newForm.category === "salons" && (
               <div className="flex items-center gap-2">
                 <input
@@ -390,6 +514,31 @@ function AdminDashboard() {
                 <label htmlFor="womenOnly" className="text-sm font-medium text-ink-700">نسائية فقط</label>
               </div>
             )}
+
+            {/* First branch */}
+            <div className="sm:col-span-2 rounded-xl border border-sal-200 bg-sal-50 p-4 space-y-3">
+              <p className="text-xs font-bold text-sal-700">📍 الفرع الرئيسي (اختياري)</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">عنوان الفرع (حي / شارع)</label>
+                  <input
+                    value={newForm.branchAddress}
+                    onChange={(e) => setNewForm({ ...newForm, branchAddress: e.target.value })}
+                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                    placeholder="مثال: حي النرجس، طريق أنس بن مالك"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">المدينة</label>
+                  <input
+                    value={newForm.branchCity}
+                    onChange={(e) => setNewForm({ ...newForm, branchCity: e.target.value })}
+                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                    placeholder="الرياض"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <div className="mt-5 flex gap-3">
             <button
@@ -541,6 +690,57 @@ function AdminDashboard() {
                                 />
                               </div>
 
+                              {/* Region */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">المنطقة</label>
+                                <select
+                                  value={(editForm.region as string) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, region: e.target.value as Region | undefined })}
+                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
+                                >
+                                  <option value="">— بدون منطقة —</option>
+                                  {(["شمال","جنوب","شرق","غرب","وسط"] as Region[]).map((r) => (
+                                    <option key={r} value={r}>{r} الرياض</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              {/* Phone */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">هاتف المنشأة</label>
+                                <input
+                                  value={(editForm.phone as string) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
+                                  placeholder="05xxxxxxxx"
+                                  dir="ltr"
+                                />
+                              </div>
+
+                              {/* Instagram */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-pink-600">انستقرام (رابط كامل)</label>
+                                <input
+                                  value={(editForm.instagramUrl as string) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, instagramUrl: e.target.value })}
+                                  className="w-full rounded-xl border border-pink-300 bg-pink-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
+                                  placeholder="https://instagram.com/..."
+                                  dir="ltr"
+                                />
+                              </div>
+
+                              {/* Website */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-blue-600">الموقع الإلكتروني</label>
+                                <input
+                                  value={(editForm.website as string) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                                  className="w-full rounded-xl border border-blue-300 bg-blue-50 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                                  placeholder="https://..."
+                                  dir="ltr"
+                                />
+                              </div>
+
                               {/* Acceptance Rate */}
                               <div>
                                 <label className="mb-1 block text-xs font-semibold text-green-700">نسبة القبول % (0–100)</label>
@@ -634,6 +834,135 @@ function AdminDashboard() {
                                     ))}
                                   </div>
                                 )}
+                              </div>
+
+                              {/* ── Branches ── */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-2 block text-xs font-semibold text-ink-700">📍 الفروع</label>
+                                <div className="space-y-2">
+                                  {(editForm.branches ?? []).map((branch) => (
+                                    <div key={branch.id} className="rounded-xl border border-sal-200 bg-sal-50 p-3">
+                                      {editBranchId === branch.id ? (
+                                        <div className="space-y-2">
+                                          <div className="grid gap-2 sm:grid-cols-2">
+                                            <input
+                                              value={branch.name}
+                                              onChange={(e) => updateBranchInEdit(branch.id, "name", e.target.value)}
+                                              placeholder="اسم الفرع"
+                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                            />
+                                            <input
+                                              value={branch.address}
+                                              onChange={(e) => updateBranchInEdit(branch.id, "address", e.target.value)}
+                                              placeholder="العنوان"
+                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                            />
+                                            <input
+                                              value={branch.city}
+                                              onChange={(e) => updateBranchInEdit(branch.id, "city", e.target.value)}
+                                              placeholder="المدينة"
+                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                            />
+                                            <input
+                                              value={branch.phone ?? ""}
+                                              onChange={(e) => updateBranchInEdit(branch.id, "phone", e.target.value)}
+                                              placeholder="الهاتف"
+                                              dir="ltr"
+                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                            />
+                                            <input
+                                              value={branch.openingHours ?? ""}
+                                              onChange={(e) => updateBranchInEdit(branch.id, "openingHours", e.target.value)}
+                                              placeholder="ساعات العمل"
+                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                            />
+                                            <input
+                                              value={branch.mapsUrl ?? ""}
+                                              onChange={(e) => updateBranchInEdit(branch.id, "mapsUrl", e.target.value)}
+                                              placeholder="رابط الخريطة (اختياري)"
+                                              dir="ltr"
+                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                            />
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditBranchId(null)}
+                                            className="rounded-lg bg-sal-600 px-3 py-1 text-[11px] font-bold text-white"
+                                          >
+                                            ✓ تم
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div>
+                                            <p className="text-xs font-bold text-ink-900">{branch.name}</p>
+                                            <p className="text-[11px] text-ink-600">{branch.address}، {branch.city}</p>
+                                            {branch.phone && <p className="text-[11px] text-ink-500" dir="ltr">{branch.phone}</p>}
+                                            {branch.openingHours && <p className="text-[11px] text-ink-500">⏰ {branch.openingHours}</p>}
+                                          </div>
+                                          <div className="flex gap-1 shrink-0">
+                                            <button
+                                              type="button"
+                                              onClick={() => setEditBranchId(branch.id)}
+                                              className="rounded-lg border border-sal-200 px-2 py-1 text-[11px] font-bold text-sal-700 hover:bg-white transition"
+                                            >✏️</button>
+                                            <button
+                                              type="button"
+                                              onClick={() => removeBranchFromEdit(branch.id)}
+                                              className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 transition"
+                                            >🗑️</button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+
+                                  {/* Add new branch form */}
+                                  <div className="rounded-xl border border-dashed border-sal-300 bg-white p-3 space-y-2">
+                                    <p className="text-[11px] font-bold text-sal-600">➕ إضافة فرع جديد</p>
+                                    <div className="grid gap-2 sm:grid-cols-2">
+                                      <input
+                                        value={newBranch.name ?? ""}
+                                        onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
+                                        placeholder="اسم الفرع"
+                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                      />
+                                      <input
+                                        value={newBranch.address ?? ""}
+                                        onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
+                                        placeholder="العنوان *"
+                                        className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                      />
+                                      <input
+                                        value={newBranch.city ?? "الرياض"}
+                                        onChange={(e) => setNewBranch({ ...newBranch, city: e.target.value })}
+                                        placeholder="المدينة"
+                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                      />
+                                      <input
+                                        value={newBranch.phone ?? ""}
+                                        onChange={(e) => setNewBranch({ ...newBranch, phone: e.target.value })}
+                                        placeholder="هاتف الفرع"
+                                        dir="ltr"
+                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                      />
+                                      <input
+                                        value={newBranch.openingHours ?? ""}
+                                        onChange={(e) => setNewBranch({ ...newBranch, openingHours: e.target.value })}
+                                        placeholder="ساعات العمل"
+                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                      />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={addBranchToEdit}
+                                      disabled={!newBranch.address?.trim()}
+                                      className="rounded-lg bg-sal-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-sal-700 disabled:opacity-40 transition"
+                                    >
+                                      إضافة الفرع
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
 
                             </div>

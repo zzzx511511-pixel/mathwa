@@ -19,8 +19,9 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
   const router = useRouter();
 
   const initialRegion = (searchParams.get("region") as Region | null) ?? "all";
+  const initialQuery  = searchParams.get("q") ?? "";
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialQuery);
   const [region, setRegion] = useState<Region | "all">(initialRegion);
   const [period, setPeriod] = useState<"all" | "28d">("all");
 

@@ -98,6 +98,40 @@ export default function BranchDetailPage({
         >
           📍 افتح في الخريطة
         </a>
+
+        {/* Place-level contact links */}
+        {(place.instagramUrl || place.website || place.phone) && (
+          <div className="flex flex-wrap gap-2 border-t border-sal-100 pt-4">
+            {place.phone && (
+              <a
+                href={`tel:${place.phone}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-sal-200 bg-sal-50 px-4 py-2 text-sm font-bold text-sal-700 transition hover:bg-sal-100"
+              >
+                📞 <span dir="ltr">{place.phone}</span>
+              </a>
+            )}
+            {place.instagramUrl && (
+              <a
+                href={place.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-bold text-pink-700 transition hover:bg-pink-100"
+              >
+                📸 انستقرام
+              </a>
+            )}
+            {place.website && (
+              <a
+                href={place.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
+              >
+                🌐 الموقع
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Back to place */}

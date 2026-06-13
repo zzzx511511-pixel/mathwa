@@ -5,6 +5,7 @@ import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
+import { BackButton } from "@/components/salsabeel/back-button";
 
 export function generateStaticParams() {
   return PLACES.map((p) => ({ id: p.id }));
@@ -144,12 +145,18 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
               </div>
             </div>
           )}
-          {mainBranch?.phone && (
+          {(place.phone || mainBranch?.phone) && (
             <div className="flex items-start gap-3 rounded-xl bg-sal-50 p-3">
               <span className="text-xl">📞</span>
               <div>
                 <p className="text-xs font-semibold text-ink-600">الهاتف</p>
-                <p className="text-sm font-bold text-ink-900" dir="ltr">{mainBranch.phone}</p>
+                <a
+                  href={`tel:${place.phone ?? mainBranch?.phone}`}
+                  className="text-sm font-bold text-sal-700 hover:underline"
+                  dir="ltr"
+                >
+                  {place.phone ?? mainBranch?.phone}
+                </a>
               </div>
             </div>
           )}
@@ -172,6 +179,40 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
             </div>
           )}
         </div>
+
+        {/* Social / contact links */}
+        {(place.instagramUrl || place.website || place.phone) && (
+          <div className="flex flex-wrap gap-2 border-t border-sal-50 pt-4">
+            {place.phone && (
+              <a
+                href={`tel:${place.phone}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-sal-200 bg-sal-50 px-4 py-2 text-sm font-bold text-sal-700 transition hover:bg-sal-100"
+              >
+                📞 <span dir="ltr">{place.phone}</span>
+              </a>
+            )}
+            {place.instagramUrl && (
+              <a
+                href={place.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-bold text-pink-700 transition hover:bg-pink-100"
+              >
+                📸 انستقرام
+              </a>
+            )}
+            {place.website && (
+              <a
+                href={place.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
+              >
+                🌐 الموقع الإلكتروني
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Yellow opinion box — only shown when ratings are positive */}
@@ -246,17 +287,10 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
 
       {/* Back */}
       <div className="text-center">
-        {cat && (
-          <Link
-            href={`/category/${cat.slug}`}
-            className="inline-flex items-center gap-2 rounded-xl border border-sal-200 bg-white px-6 py-2.5 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-            عودة لـ {cat.label}
-          </Link>
-        )}
+        <BackButton
+          fallbackHref={cat ? `/category/${cat.slug}` : "/places"}
+          label={cat ? `عودة لـ ${cat.label}` : "عودة"}
+        />
       </div>
     </div>
   );
