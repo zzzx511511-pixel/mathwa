@@ -201,12 +201,14 @@ function AdminDashboard() {
     if (!newBranch.address?.trim()) return;
     const branch: Branch = {
       id: `b-${Date.now()}`,
-      name: newBranch.name?.trim() || `فرع ${(editForm?.branches?.length ?? 0) + 1}`,
-      address: newBranch.address.trim(),
-      city: newBranch.city?.trim() || "الرياض",
-      phone: newBranch.phone?.trim() || undefined,
-      openingHours: newBranch.openingHours?.trim() || undefined,
-      mapsUrl: newBranch.mapsUrl?.trim() || undefined,
+      name:         newBranch.name?.trim()         || `فرع ${(editForm?.branches?.length ?? 0) + 1}`,
+      address:      newBranch.address.trim(),
+      city:         newBranch.city?.trim()          || "الرياض",
+      neighborhood: newBranch.neighborhood?.trim()  || undefined,
+      region:       newBranch.region                || undefined,
+      phone:        newBranch.phone?.trim()         || undefined,
+      openingHours: newBranch.openingHours?.trim()  || undefined,
+      mapsUrl:      newBranch.mapsUrl?.trim()       || undefined,
     };
     setEditForm((prev) => prev ? { ...prev, branches: [...(prev.branches ?? []), branch] } : prev);
     setNewBranch({});
@@ -218,15 +220,10 @@ function AdminDashboard() {
     );
   }
 
-  function updateBranchInEdit(branchId: string, field: keyof Branch, value: string) {
+  function updateBranchInEdit(branchId: string, updates: Partial<Branch>) {
     setEditForm((prev) =>
       prev
-        ? {
-            ...prev,
-            branches: (prev.branches ?? []).map((b) =>
-              b.id === branchId ? { ...b, [field]: value || undefined } : b
-            ),
-          }
+        ? { ...prev, branches: (prev.branches ?? []).map((b) => b.id === branchId ? { ...b, ...updates } : b) }
         : prev
     );
   }
@@ -848,78 +845,143 @@ function AdminDashboard() {
 
                               {/* ── Branches ── */}
                               <div className="sm:col-span-2">
-                                <label className="mb-2 block text-xs font-semibold text-ink-700">📍 الفروع</label>
+                                <div className="mb-2 flex items-center justify-between">
+                                  <label className="text-xs font-semibold text-ink-700">
+                                    📍 الفروع
+                                    <span className="mr-2 rounded-full bg-sal-100 px-2 py-0.5 text-[10px] font-bold text-sal-700">
+                                      {(editForm.branches ?? []).length}
+                                    </span>
+                                  </label>
+                                </div>
                                 <div className="space-y-2">
-                                  {(editForm.branches ?? []).map((branch) => (
-                                    <div key={branch.id} className="rounded-xl border border-sal-200 bg-sal-50 p-3">
+
+                                  {/* ── existing branches ── */}
+                                  {(editForm.branches ?? []).map((branch, idx) => (
+                                    <div key={branch.id} className="rounded-xl border border-sal-200 bg-sal-50 overflow-hidden">
                                       {editBranchId === branch.id ? (
-                                        <div className="space-y-2">
+                                        /* ── edit mode ── */
+                                        <div className="p-3 space-y-3">
+                                          <p className="text-[11px] font-bold text-sal-600">تعديل الفرع {idx + 1}</p>
                                           <div className="grid gap-2 sm:grid-cols-2">
-                                            <input
-                                              value={branch.name}
-                                              onChange={(e) => updateBranchInEdit(branch.id, "name", e.target.value)}
-                                              placeholder="اسم الفرع"
-                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                            />
-                                            <input
-                                              value={branch.address}
-                                              onChange={(e) => updateBranchInEdit(branch.id, "address", e.target.value)}
-                                              placeholder="العنوان"
-                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                            />
-                                            <input
-                                              value={branch.city}
-                                              onChange={(e) => updateBranchInEdit(branch.id, "city", e.target.value)}
-                                              placeholder="المدينة"
-                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                            />
-                                            <input
-                                              value={branch.phone ?? ""}
-                                              onChange={(e) => updateBranchInEdit(branch.id, "phone", e.target.value)}
-                                              placeholder="الهاتف"
-                                              dir="ltr"
-                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                            />
-                                            <input
-                                              value={branch.openingHours ?? ""}
-                                              onChange={(e) => updateBranchInEdit(branch.id, "openingHours", e.target.value)}
-                                              placeholder="ساعات العمل"
-                                              className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                            />
+                                            {/* Name */}
+                                            <div>
+                                              <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">اسم الفرع</label>
+                                              <input
+                                                value={branch.name}
+                                                onChange={(e) => updateBranchInEdit(branch.id, { name: e.target.value })}
+                                                placeholder="مثال: فرع حي النرجس"
+                                                className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                              />
+                                            </div>
+                                            {/* Region */}
+                                            <div>
+                                              <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">المنطقة</label>
+                                              <select
+                                                value={branch.region ?? ""}
+                                                onChange={(e) => updateBranchInEdit(branch.id, { region: (e.target.value as Region) || undefined })}
+                                                className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                              >
+                                                <option value="">— اختر —</option>
+                                                {(["شمال","جنوب","شرق","غرب","وسط"] as Region[]).map((r) => (
+                                                  <option key={r} value={r}>{r} الرياض</option>
+                                                ))}
+                                              </select>
+                                            </div>
+                                            {/* Neighborhood */}
+                                            <div>
+                                              <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">الحي</label>
+                                              <input
+                                                value={branch.neighborhood ?? ""}
+                                                onChange={(e) => updateBranchInEdit(branch.id, { neighborhood: e.target.value || undefined })}
+                                                placeholder="مثال: حي النرجس"
+                                                className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                              />
+                                            </div>
+                                            {/* Address */}
+                                            <div>
+                                              <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">العنوان النصي</label>
+                                              <input
+                                                value={branch.address}
+                                                onChange={(e) => updateBranchInEdit(branch.id, { address: e.target.value })}
+                                                placeholder="الشارع أو الطريق"
+                                                className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                              />
+                                            </div>
+                                            {/* Phone */}
+                                            <div>
+                                              <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">الهاتف</label>
+                                              <input
+                                                value={branch.phone ?? ""}
+                                                onChange={(e) => updateBranchInEdit(branch.id, { phone: e.target.value || undefined })}
+                                                placeholder="05xxxxxxxx"
+                                                dir="ltr"
+                                                className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                              />
+                                            </div>
+                                            {/* Hours */}
+                                            <div>
+                                              <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">ساعات العمل</label>
+                                              <input
+                                                value={branch.openingHours ?? ""}
+                                                onChange={(e) => updateBranchInEdit(branch.id, { openingHours: e.target.value || undefined })}
+                                                placeholder="مثال: 8ص–12م"
+                                                className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                              />
+                                            </div>
                                           </div>
-                                          <div className="mt-2">
-                                            <LocationPicker
-                                              value={branch.mapsUrl}
-                                              searchHint={editForm?.name ?? ""}
-                                              onSelect={(url) => updateBranchInEdit(branch.id, "mapsUrl", url)}
-                                            />
-                                          </div>
+                                          {/* Location picker */}
+                                          <LocationPicker
+                                            value={branch.mapsUrl}
+                                            searchHint={`${editForm?.name ?? ""} ${branch.neighborhood ?? ""}`}
+                                            onSelect={(url) => updateBranchInEdit(branch.id, { mapsUrl: url || undefined })}
+                                          />
                                           <button
                                             type="button"
                                             onClick={() => setEditBranchId(null)}
-                                            className="mt-2 rounded-lg bg-sal-600 px-3 py-1 text-[11px] font-bold text-white"
+                                            className="rounded-lg bg-sal-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-sal-700 transition"
                                           >
-                                            ✓ تم
+                                            ✓ تم التعديل
                                           </button>
                                         </div>
                                       ) : (
-                                        <div className="flex items-start justify-between gap-2">
-                                          <div>
-                                            <p className="text-xs font-bold text-ink-900">{branch.name}</p>
-                                            <p className="text-[11px] text-ink-600">{branch.address}، {branch.city}</p>
-                                            {branch.phone && <p className="text-[11px] text-ink-500" dir="ltr">{branch.phone}</p>}
-                                            {branch.openingHours && <p className="text-[11px] text-ink-500">⏰ {branch.openingHours}</p>}
+                                        /* ── collapsed view ── */
+                                        <div className="flex items-start justify-between gap-2 px-3 py-2.5">
+                                          <div className="min-w-0 flex-1">
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                              <p className="text-xs font-bold text-ink-900">{branch.name}</p>
+                                              {branch.region && (
+                                                <span className="rounded-full bg-sal-100 px-2 py-0.5 text-[10px] font-bold text-sal-700">
+                                                  {branch.region} الرياض
+                                                </span>
+                                              )}
+                                              {branch.mapsUrl && (
+                                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                                                  📍 موقع محدد
+                                                </span>
+                                              )}
+                                            </div>
+                                            <p className="mt-0.5 text-[11px] text-ink-600">
+                                              {branch.neighborhood ? `${branch.neighborhood}، ` : ""}{branch.address}
+                                            </p>
+                                            <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
+                                              {branch.phone && (
+                                                <p className="text-[11px] text-ink-500" dir="ltr">📞 {branch.phone}</p>
+                                              )}
+                                              {branch.openingHours && (
+                                                <p className="text-[11px] text-ink-500">⏰ {branch.openingHours}</p>
+                                              )}
+                                            </div>
                                           </div>
-                                          <div className="flex gap-1 shrink-0">
+                                          <div className="flex shrink-0 gap-1">
                                             <button
                                               type="button"
                                               onClick={() => setEditBranchId(branch.id)}
-                                              className="rounded-lg border border-sal-200 px-2 py-1 text-[11px] font-bold text-sal-700 hover:bg-white transition"
-                                            >✏️</button>
+                                              className="rounded-lg border border-sal-200 bg-white px-2 py-1 text-[11px] font-bold text-sal-700 hover:border-sal-400 transition"
+                                            >✏️ تعديل</button>
                                             <button
                                               type="button"
                                               onClick={() => removeBranchFromEdit(branch.id)}
-                                              className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 transition"
+                                              className="rounded-lg border border-red-100 bg-white px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 transition"
                                             >🗑️</button>
                                           </div>
                                         </div>
@@ -927,58 +989,92 @@ function AdminDashboard() {
                                     </div>
                                   ))}
 
-                                  {/* Add new branch form */}
-                                  <div className="rounded-xl border border-dashed border-sal-300 bg-white p-3 space-y-2">
-                                    <p className="text-[11px] font-bold text-sal-600">➕ إضافة فرع جديد</p>
+                                  {/* ── add new branch ── */}
+                                  <div className="rounded-xl border-2 border-dashed border-sal-300 bg-white p-4 space-y-3">
+                                    <p className="text-xs font-bold text-sal-600">➕ إضافة فرع جديد</p>
                                     <div className="grid gap-2 sm:grid-cols-2">
-                                      <input
-                                        value={newBranch.name ?? ""}
-                                        onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
-                                        placeholder="اسم الفرع"
-                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                      />
-                                      <input
-                                        value={newBranch.address ?? ""}
-                                        onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
-                                        placeholder="العنوان *"
-                                        className="rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                      />
-                                      <input
-                                        value={newBranch.city ?? "الرياض"}
-                                        onChange={(e) => setNewBranch({ ...newBranch, city: e.target.value })}
-                                        placeholder="المدينة"
-                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                      />
-                                      <input
-                                        value={newBranch.phone ?? ""}
-                                        onChange={(e) => setNewBranch({ ...newBranch, phone: e.target.value })}
-                                        placeholder="هاتف الفرع"
-                                        dir="ltr"
-                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                      />
-                                      <input
-                                        value={newBranch.openingHours ?? ""}
-                                        onChange={(e) => setNewBranch({ ...newBranch, openingHours: e.target.value })}
-                                        placeholder="ساعات العمل"
-                                        className="rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
-                                      />
+                                      {/* Name */}
+                                      <div>
+                                        <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">اسم الفرع</label>
+                                        <input
+                                          value={newBranch.name ?? ""}
+                                          onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
+                                          placeholder="مثال: فرع حي الياسمين"
+                                          className="w-full rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                        />
+                                      </div>
+                                      {/* Region */}
+                                      <div>
+                                        <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">المنطقة *</label>
+                                        <select
+                                          value={newBranch.region ?? ""}
+                                          onChange={(e) => setNewBranch({ ...newBranch, region: (e.target.value as Region) || undefined })}
+                                          className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                        >
+                                          <option value="">— اختر المنطقة —</option>
+                                          {(["شمال","جنوب","شرق","غرب","وسط"] as Region[]).map((r) => (
+                                            <option key={r} value={r}>{r} الرياض</option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                      {/* Neighborhood */}
+                                      <div>
+                                        <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">الحي</label>
+                                        <input
+                                          value={newBranch.neighborhood ?? ""}
+                                          onChange={(e) => setNewBranch({ ...newBranch, neighborhood: e.target.value })}
+                                          placeholder="مثال: حي الياسمين"
+                                          className="w-full rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                        />
+                                      </div>
+                                      {/* Address */}
+                                      <div>
+                                        <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">العنوان النصي *</label>
+                                        <input
+                                          value={newBranch.address ?? ""}
+                                          onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
+                                          placeholder="الشارع أو الطريق"
+                                          className="w-full rounded-lg border border-sal-300 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                        />
+                                      </div>
+                                      {/* Phone */}
+                                      <div>
+                                        <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">هاتف الفرع</label>
+                                        <input
+                                          value={newBranch.phone ?? ""}
+                                          onChange={(e) => setNewBranch({ ...newBranch, phone: e.target.value })}
+                                          placeholder="05xxxxxxxx"
+                                          dir="ltr"
+                                          className="w-full rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                        />
+                                      </div>
+                                      {/* Hours */}
+                                      <div>
+                                        <label className="mb-0.5 block text-[10px] font-semibold text-ink-600">ساعات العمل</label>
+                                        <input
+                                          value={newBranch.openingHours ?? ""}
+                                          onChange={(e) => setNewBranch({ ...newBranch, openingHours: e.target.value })}
+                                          placeholder="مثال: 8ص–12م يومياً"
+                                          className="w-full rounded-lg border border-sal-200 px-3 py-1.5 text-xs focus:border-sal-500 focus:outline-none"
+                                        />
+                                      </div>
                                     </div>
-                                    <div className="sm:col-span-2">
-                                      <LocationPicker
-                                        value={newBranch.mapsUrl}
-                                        searchHint={editForm?.name ?? ""}
-                                        onSelect={(url) => setNewBranch({ ...newBranch, mapsUrl: url || undefined })}
-                                      />
-                                    </div>
+                                    {/* Location picker */}
+                                    <LocationPicker
+                                      value={newBranch.mapsUrl}
+                                      searchHint={`${editForm?.name ?? ""} ${newBranch.neighborhood ?? ""}`}
+                                      onSelect={(url) => setNewBranch({ ...newBranch, mapsUrl: url || undefined })}
+                                    />
                                     <button
                                       type="button"
                                       onClick={addBranchToEdit}
                                       disabled={!newBranch.address?.trim()}
-                                      className="rounded-lg bg-sal-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-sal-700 disabled:opacity-40 transition"
+                                      className="rounded-xl bg-sal-600 px-5 py-2 text-xs font-bold text-white hover:bg-sal-700 disabled:opacity-40 transition"
                                     >
-                                      إضافة الفرع
+                                      ✓ إضافة الفرع
                                     </button>
                                   </div>
+
                                 </div>
                               </div>
 

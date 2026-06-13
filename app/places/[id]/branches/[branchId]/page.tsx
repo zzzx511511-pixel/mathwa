@@ -42,11 +42,18 @@ export default function BranchDetailPage({
         <div>
           <p className="text-xs font-semibold text-sal-500 uppercase tracking-wider mb-1">{place.name}</p>
           <h1 className="text-2xl font-extrabold text-ink-900">{branch.name}</h1>
-          {place.region && (
-            <span className="mt-1.5 inline-block rounded-full bg-sal-50 px-3 py-0.5 text-xs font-bold text-sal-700">
-              📍 {place.region} الرياض
-            </span>
-          )}
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {(branch.region ?? place.region) && (
+              <span className="rounded-full bg-sal-50 px-3 py-0.5 text-xs font-bold text-sal-700">
+                📍 {branch.region ?? place.region} الرياض
+              </span>
+            )}
+            {branch.neighborhood && (
+              <span className="rounded-full bg-ink-50 px-3 py-0.5 text-xs font-semibold text-ink-600">
+                {branch.neighborhood}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -55,7 +62,9 @@ export default function BranchDetailPage({
             <span className="text-xl">📍</span>
             <div>
               <p className="text-xs font-semibold text-ink-600">العنوان</p>
-              <p className="text-sm font-bold text-ink-900">{branch.address}، {branch.city}</p>
+              <p className="text-sm font-bold text-ink-900">
+                {branch.neighborhood ? `${branch.neighborhood}، ` : ""}{branch.address}، {branch.city}
+              </p>
             </div>
           </div>
 

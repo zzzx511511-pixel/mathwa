@@ -19,6 +19,8 @@ export type Branch = {
   name: string;
   address: string;
   city: string;
+  neighborhood?: string;
+  region?: Region;
   phone?: string;
   mapsUrl?: string;
   openingHours?: string;
