@@ -103,6 +103,32 @@ function AdminDashboard() {
   const [tab, setTab]               = useState<"places" | "add">("places");
   const [videoUrlInput, setVideoUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [aiLoading, setAiLoading] = useState<string | null>(null); // field key being generated
+
+  async function generateWithAI(
+    field: "description" | "opinion",
+    name: string,
+    category: string,
+    tags: string,
+    onResult: (text: string) => void,
+  ) {
+    if (!name.trim()) return;
+    const key = `${field}`;
+    setAiLoading(key);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, category, tags, field }),
+      });
+      const data = await res.json();
+      if (data.text) onResult(data.text);
+    } catch {
+      // silently fail
+    } finally {
+      setAiLoading(null);
+    }
+  }
 
   // Branch editing state (inside edit form)
   const [newBranch, setNewBranch] = useState<Partial<Branch>>({});
@@ -463,7 +489,21 @@ function AdminDashboard() {
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs font-semibold text-ink-700">الوصف</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-xs font-semibold text-ink-700">الوصف</label>
+                <button
+                  type="button"
+                  disabled={!newForm.name.trim() || aiLoading === "description"}
+                  onClick={() =>
+                    generateWithAI("description", newForm.name, newForm.category, newForm.tags, (text) =>
+                      setNewForm((f) => ({ ...f, description: text }))
+                    )
+                  }
+                  className="flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-40 transition"
+                >
+                  {aiLoading === "description" ? "⏳ جاري التوليد..." : "✨ توليد بالذكاء الاصطناعي"}
+                </button>
+              </div>
               <textarea
                 value={newForm.description}
                 onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
@@ -716,7 +756,25 @@ function AdminDashboard() {
 
                               {/* Description */}
                               <div className="sm:col-span-2">
-                                <label className="mb-1 block text-xs font-semibold text-ink-700">الوصف</label>
+                                <div className="mb-1 flex items-center justify-between">
+                                  <label className="text-xs font-semibold text-ink-700">الوصف</label>
+                                  <button
+                                    type="button"
+                                    disabled={!editForm.name?.trim() || aiLoading === "description"}
+                                    onClick={() =>
+                                      generateWithAI(
+                                        "description",
+                                        editForm.name ?? "",
+                                        editForm.category ?? "cafes",
+                                        Array.isArray(editForm.tags) ? (editForm.tags as string[]).join(", ") : (editForm.tags as string | undefined) ?? "",
+                                        (text) => setEditForm((f) => f ? { ...f, description: text } : f)
+                                      )
+                                    }
+                                    className="flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-40 transition"
+                                  >
+                                    {aiLoading === "description" ? "⏳ جاري التوليد..." : "✨ توليد بالذكاء الاصطناعي"}
+                                  </button>
+                                </div>
                                 <textarea
                                   value={editForm.description ?? ""}
                                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -727,7 +785,25 @@ function AdminDashboard() {
 
                               {/* Opinion */}
                               <div className="sm:col-span-2">
-                                <label className="mb-1 block text-xs font-semibold text-ink-700">رأي الناس (المربع الأصفر)</label>
+                                <div className="mb-1 flex items-center justify-between">
+                                  <label className="text-xs font-semibold text-ink-700">رأي الناس (المربع الأصفر)</label>
+                                  <button
+                                    type="button"
+                                    disabled={!editForm.name?.trim() || aiLoading === "opinion"}
+                                    onClick={() =>
+                                      generateWithAI(
+                                        "opinion",
+                                        editForm.name ?? "",
+                                        editForm.category ?? "cafes",
+                                        Array.isArray(editForm.tags) ? (editForm.tags as string[]).join(", ") : (editForm.tags as string | undefined) ?? "",
+                                        (text) => setEditForm((f) => f ? { ...f, opinion: text } : f)
+                                      )
+                                    }
+                                    className="flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-40 transition"
+                                  >
+                                    {aiLoading === "opinion" ? "⏳ جاري التوليد..." : "✨ توليد بالذكاء الاصطناعي"}
+                                  </button>
+                                </div>
                                 <textarea
                                   value={(editForm.opinion as string) ?? ""}
                                   onChange={(e) => setEditForm({ ...editForm, opinion: e.target.value })}
