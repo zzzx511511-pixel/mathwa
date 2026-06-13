@@ -7,6 +7,15 @@ import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import type { CategoryMeta } from "@/lib/salsabeel/categories";
 import { PlaceCard } from "./place-card";
 
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .replace(/[ً-ٟ]/g, "");
+}
+
 const REGIONS = [
   { value: "all",  label: "🗺️ الكل" },
   { value: "شمال", label: "⬆️ شمال" },
@@ -36,8 +45,12 @@ export function CategoryExplorer({
       p.specialization?.includes(spec) || p.tags.includes(spec)
     );
     if (!search.trim()) return bySpec;
-    const q = search.trim().toLowerCase();
-    return bySpec.filter((p) => p.name.toLowerCase().includes(q));
+    const q = normalize(search.trim());
+    return bySpec.filter((p) =>
+      normalize(p.name).includes(q) ||
+      normalize(p.description ?? "").includes(q) ||
+      p.tags.some((t) => normalize(t).includes(q))
+    );
   }, [places, active, search, spec]);
 
   function setRegion(value: string) {

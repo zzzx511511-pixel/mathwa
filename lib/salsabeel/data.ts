@@ -1428,3 +1428,10 @@ export function getRegionCounts(): Record<string, number> {
   }
   return counts;
 }
+
+// Merges static PLACES with Supabase custom places (dedup by id)
+export function mergePlaces(custom: Place[]): Place[] {
+  const staticIds = new Set(PLACES.map((p) => p.id));
+  const fresh = custom.filter((p) => !staticIds.has(p.id));
+  return [...PLACES, ...fresh];
+}

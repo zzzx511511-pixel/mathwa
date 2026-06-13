@@ -5,6 +5,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import type { Place, Region } from "@/lib/salsabeel/types";
 import { PlaceCard } from "./place-card";
 
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .replace(/[ً-ٟ]/g, "");
+}
+
 const REGIONS: { label: string; value: Region | "all" }[] = [
   { label: "الكل", value: "all" },
   { label: "شمال", value: "شمال" },
@@ -33,13 +42,13 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
   }
 
   const filtered = useMemo(() => {
-    const q = search.trim();
+    const q = normalize(search.trim());
     return allPlaces.filter((p) => {
       const matchSearch =
         !q ||
-        p.name.includes(q) ||
-        p.description.includes(q) ||
-        p.tags.some((t) => t.includes(q));
+        normalize(p.name).includes(q) ||
+        normalize(p.description).includes(q) ||
+        p.tags.some((t) => normalize(t).includes(q));
       const matchRegion = region === "all" || p.region === region;
       return matchSearch && matchRegion;
     });

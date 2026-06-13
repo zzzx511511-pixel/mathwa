@@ -2,19 +2,20 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
-import { getByCategory } from "@/lib/salsabeel/data";
+import { getByCategory, mergePlaces } from "@/lib/salsabeel/data";
+import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
 import { CategoryExplorer } from "@/components/salsabeel/category-explorer";
 import type { Category } from "@/lib/salsabeel/types";
 
-export function generateStaticParams() {
-  return CATEGORIES.map((c) => ({ slug: c.slug }));
-}
+export const dynamic = "force-dynamic";
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
+export default async function CategoryPage({ params }: { params: { slug: string } }) {
   const cat = getCategoryMeta(params.slug as Category);
   if (!cat) notFound();
 
-  const places = getByCategory(cat.slug);
+  const custom = await getCustomPlaces();
+  const allPlaces = mergePlaces(custom);
+  const places = allPlaces.filter((p) => p.category === cat.slug);
 
   return (
     <div className="mx-auto max-w-screen-xl space-y-8 px-5 py-10">

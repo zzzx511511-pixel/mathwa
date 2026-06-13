@@ -107,6 +107,23 @@ function AdminDashboard() {
   const [newBranch, setNewBranch] = useState<Partial<Branch>>({});
   const [editBranchId, setEditBranchId] = useState<string | null>(null);
 
+  // Load custom places from Supabase on mount
+  useEffect(() => {
+    fetch("/api/places")
+      .then((r) => r.json())
+      .then((custom: Place[]) => {
+        const staticIds = new Set(INITIAL_PLACES.map((p) => p.id));
+        const fresh = custom.filter((p) => !staticIds.has(p.id));
+        if (fresh.length > 0)
+          setPlaces((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const toAdd = fresh.filter((p) => !existingIds.has(p.id));
+            return toAdd.length > 0 ? [...toAdd, ...prev] : prev;
+          });
+      })
+      .catch(() => {});
+  }, []);
+
   // ── Add form state ──────────────────────────────────────────────────
   const [newForm, setNewForm] = useState({
     name: "",
@@ -154,38 +171,40 @@ function AdminDashboard() {
 
   function saveEdit() {
     if (!editForm) return;
-    setPlaces((prev) =>
-      prev.map((p) =>
-        p.id === editForm.id
-          ? {
-              ...p,
-              name: editForm.name ?? p.name,
-              category: editForm.category ?? p.category,
-              region: (editForm.region as Region) || undefined,
-              description: editForm.description ?? p.description,
-              opinion: (editForm.opinion as string)?.trim() || undefined,
-              rating: Number(editForm.rating ?? p.rating),
-              acceptanceRate: editForm.acceptanceRate !== undefined ? Number(editForm.acceptanceRate) : p.acceptanceRate,
-              rejectionRate: editForm.rejectionRate !== undefined ? Number(editForm.rejectionRate) : p.rejectionRate,
-              isWomenOnly: editForm.isWomenOnly,
-              phone: (editForm.phone as string)?.trim() || undefined,
-              instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
-              website: (editForm.website as string)?.trim() || undefined,
-              photos: editForm.photos ?? p.photos,
-              videos: editForm.videos ?? p.videos,
-              branches: editForm.branches ?? p.branches,
-              tags: typeof editForm.tags === "string"
-                ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
-                : editForm.tags ?? p.tags,
-            }
-          : p
-      )
-    );
+    const original = places.find((p) => p.id === editForm.id);
+    if (!original) return;
+    const updated: Place = {
+      ...original,
+      name: editForm.name ?? original.name,
+      category: editForm.category ?? original.category,
+      region: (editForm.region as Region) || undefined,
+      description: editForm.description ?? original.description,
+      opinion: (editForm.opinion as string)?.trim() || undefined,
+      rating: Number(editForm.rating ?? original.rating),
+      acceptanceRate: editForm.acceptanceRate !== undefined ? Number(editForm.acceptanceRate) : original.acceptanceRate,
+      rejectionRate: editForm.rejectionRate !== undefined ? Number(editForm.rejectionRate) : original.rejectionRate,
+      isWomenOnly: editForm.isWomenOnly,
+      phone: (editForm.phone as string)?.trim() || undefined,
+      instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
+      website: (editForm.website as string)?.trim() || undefined,
+      photos: editForm.photos ?? original.photos,
+      videos: editForm.videos ?? original.videos,
+      branches: editForm.branches ?? original.branches,
+      tags: typeof editForm.tags === "string"
+        ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
+        : editForm.tags ?? original.tags,
+    };
+    setPlaces((prev) => prev.map((p) => p.id === updated.id ? updated : p));
     setEditingId(null);
     setEditForm(null);
     setVideoUrlInput("");
     setNewBranch({});
     setEditBranchId(null);
+    fetch("/api/places", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    }).catch(() => {});
   }
 
   function cancelEdit() {
@@ -267,8 +286,15 @@ function AdminDashboard() {
   // ── Delete helpers ──────────────────────────────────────────────────
   function confirmDelete(id: string) { setDeleteId(id); }
   function doDelete() {
-    if (deleteId) setPlaces((prev) => prev.filter((p) => p.id !== deleteId));
+    if (!deleteId) return;
+    const id = deleteId;
+    setPlaces((prev) => prev.filter((p) => p.id !== id));
     setDeleteId(null);
+    fetch("/api/places", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    }).catch(() => {});
   }
   function cancelDelete() { setDeleteId(null); }
 
@@ -308,6 +334,11 @@ function AdminDashboard() {
       createdAt: new Date().toISOString().split("T")[0],
     };
     setPlaces((prev) => [newPlace, ...prev]);
+    fetch("/api/places", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPlace),
+    }).catch(() => {});
     setNewForm({
       name: "", category: "cafes", region: "", description: "",
       rating: "4.5", visits: "0", tags: "", isWomenOnly: false,

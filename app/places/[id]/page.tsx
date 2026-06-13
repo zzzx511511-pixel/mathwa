@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPlaceById, PLACES } from "@/lib/salsabeel/data";
+import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import { BranchPanel } from "@/components/salsabeel/branch-panel";
@@ -16,8 +17,12 @@ function formatVisits(n: number) {
   return n.toString();
 }
 
-export default function PlaceDetailPage({ params }: { params: { id: string } }) {
-  const place = getPlaceById(params.id);
+export default async function PlaceDetailPage({ params }: { params: { id: string } }) {
+  let place = getPlaceById(params.id) ?? null;
+  if (!place) {
+    const custom = await getCustomPlaces();
+    place = custom.find((p) => p.id === params.id) ?? null;
+  }
   if (!place) notFound();
 
   const cat = getCategoryMeta(place.category);
