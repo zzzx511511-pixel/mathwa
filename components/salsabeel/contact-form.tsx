@@ -25,6 +25,9 @@ export function ContactForm() {
       if (!res.ok) {
         setError(data.error ?? "حدث خطأ، حاول مرة أخرى.");
       } else {
+        if (data.warning) {
+          console.warn("[Contact] Web3Forms warning:", data.warning);
+        }
         setSent(true);
         setForm({ name: "", email: "", type: "", message: "" });
         setTimeout(() => setSent(false), 5000);

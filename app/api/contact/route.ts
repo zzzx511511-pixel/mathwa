@@ -87,8 +87,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 2. Send via Web3Forms (optional — requires WEB3FORMS_KEY)
-  const web3key = process.env.WEB3FORMS_KEY;
+  // 2. Send via Web3Forms — reads WEB3FORMS_KEY first, falls back to NEXT_PUBLIC_WEB3FORMS_KEY
+  const web3key = process.env.WEB3FORMS_KEY ?? process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+  let web3formsError = "";
   if (web3key) {
     attempted++;
     try {
@@ -99,20 +100,24 @@ export async function POST(req: NextRequest) {
           access_key: web3key,
           name,
           email,
+          replyto: email,
           subject: `[سلسبيل] رسالة جديدة: ${type}`,
-          message,
-          from_name: "سلسبيل",
+          message: `نوع التواصل: ${type}\n\nالرسالة:\n${message}\n\n---\nمن: ${name} (${email})`,
+          from_name: name,
+          botcheck: "",
         }),
       });
-      // Web3Forms returns { success: true/false } — check both HTTP status and body
       const data = await res.json() as { success?: boolean; message?: string };
       if (res.ok && data.success) {
         succeeded++;
+        console.log("Web3Forms OK:", data.message);
       } else {
-        lastError = `web3forms:${data.message ?? res.status}`;
-        console.error("Web3Forms error:", data);
+        web3formsError = data.message ?? String(res.status);
+        lastError = `web3forms:${web3formsError}`;
+        console.error("Web3Forms rejected:", JSON.stringify(data), "HTTP:", res.status);
       }
     } catch (e) {
+      web3formsError = "network error";
       lastError = "web3forms:network";
       console.error("Web3Forms network error:", e);
     }
@@ -125,11 +130,13 @@ export async function POST(req: NextRequest) {
 
   if (succeeded === 0) {
     console.error("All contact integrations failed. Last error:", lastError);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقاً." },
-      { status: 500 }
-    );
+    // Return the actual Web3Forms message so the caller can surface it
+    const userMessage = web3formsError
+      ? `فشل الإرسال عبر Web3Forms: ${web3formsError}`
+      : "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقاً.";
+    return NextResponse.json({ error: userMessage }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  // Supabase succeeded but Web3Forms may have failed — surface the warning
+  return NextResponse.json({ ok: true, ...(web3formsError ? { warning: web3formsError } : {}) });
 }
