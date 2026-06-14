@@ -31,6 +31,18 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   const displayAddress      = place.address      ?? mainBranch?.address;
   const displayOpeningHours = place.openingHours ?? mainBranch?.openingHours;
 
+  // Map URL: prefer address-based search when the place has its own address fields,
+  // so a stale mapsUrl from a branch never leaks into the parent map button.
+  const placeMapsHref = (place.address || place.neighborhood)
+    ? `https://maps.google.com/?q=${encodeURIComponent(
+        [place.name, place.neighborhood, place.address, "الرياض"].filter(Boolean).join(" ")
+      )}`
+    : place.mapsUrl
+      ? place.mapsUrl
+      : (mainBranch?.address
+          ? `https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`
+          : null);
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
 
@@ -74,9 +86,9 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-3">
-        {place.mapsUrl ? (
+        {placeMapsHref && (
           <a
-            href={place.mapsUrl}
+            href={placeMapsHref}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
@@ -84,17 +96,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
           >
             📍 الموقع
           </a>
-        ) : mainBranch?.address ? (
-          <a
-            href={`https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
-            style={{ background: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)" }}
-          >
-            📍 الموقع
-          </a>
-        ) : null}
+        )}
         {mainBranch?.phone && (
           <a
             href={`tel:${mainBranch.phone}`}
