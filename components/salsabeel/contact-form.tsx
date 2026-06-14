@@ -16,18 +16,23 @@ export function ContactForm() {
     setError("");
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          access_key: "b7ff20af-56b7-4a2b-84f5-693a643ba6f7",
+          name: form.name,
+          email: form.email,
+          replyto: form.email,
+          subject: `[سلسبيل] رسالة جديدة: ${form.type}`,
+          message: `نوع التواصل: ${form.type}\n\nالرسالة:\n${form.message}`,
+          botcheck: "",
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "حدث خطأ، حاول مرة أخرى.");
+      const data = await res.json() as { success?: boolean; message?: string };
+      if (!res.ok || !data.success) {
+        setError(data.message ?? "حدث خطأ، حاول مرة أخرى.");
       } else {
-        if (data.warning) {
-          console.warn("[Contact] Web3Forms warning:", data.warning);
-        }
         setSent(true);
         setForm({ name: "", email: "", type: "", message: "" });
         setTimeout(() => setSent(false), 5000);
