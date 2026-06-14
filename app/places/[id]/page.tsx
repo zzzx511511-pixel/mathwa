@@ -69,9 +69,9 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-3">
-        {(place.mapsUrl || mainBranch?.mapsUrl) && (
+        {place.mapsUrl ? (
           <a
-            href={(place.mapsUrl ?? mainBranch?.mapsUrl)!}
+            href={place.mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
@@ -79,10 +79,9 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
           >
             📍 الموقع
           </a>
-        )}
-        {!place.mapsUrl && !mainBranch?.mapsUrl && mainBranch?.address && (
+        ) : mainBranch?.address ? (
           <a
-            href={`https://maps.google.com/?q=${encodeURIComponent(`${place.name} ${mainBranch.address} الرياض`)}`}
+            href={`https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
@@ -90,7 +89,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
           >
             📍 الموقع
           </a>
-        )}
+        ) : null}
         {mainBranch?.phone && (
           <a
             href={`tel:${mainBranch.phone}`}

@@ -113,8 +113,7 @@ function AdminDashboard() {
     onResult: (text: string) => void,
   ) {
     if (!name.trim()) return;
-    const key = `${field}`;
-    setAiLoading(key);
+    setAiLoading(field);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -123,6 +122,40 @@ function AdminDashboard() {
       });
       const data = await res.json();
       if (data.text) onResult(data.text);
+    } catch {
+      // silently fail
+    } finally {
+      setAiLoading(null);
+    }
+  }
+
+  async function generateAllWithAI(
+    name: string,
+    category: string,
+    region: string,
+    tags: string,
+  ) {
+    if (!name.trim()) return;
+    setAiLoading("all");
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, category, region, tags, field: "all" }),
+      });
+      const data = await res.json() as {
+        description?: string;
+        opinion?: string;
+        tags?: string;
+        keywords?: string;
+      };
+      setNewForm((f) => ({
+        ...f,
+        description: data.description ?? f.description,
+        opinion:     data.opinion     ?? f.opinion,
+        tags:        data.tags        ?? f.tags,
+        keywords:    data.keywords    ?? f.keywords,
+      }));
     } catch {
       // silently fail
     } finally {
@@ -157,6 +190,7 @@ function AdminDashboard() {
     category: "cafes" as Category,
     region: "" as Region | "",
     description: "",
+    opinion: "",
     rating: "4.5",
     visits: "0",
     tags: "",
@@ -363,6 +397,7 @@ function AdminDashboard() {
       category: newForm.category,
       region: (newForm.region as Region) || undefined,
       description: newForm.description.trim(),
+      opinion: newForm.opinion.trim() || undefined,
       rating: Math.min(5, Math.max(0, Number(newForm.rating) || 4.5)),
       visits: Math.max(0, Number(newForm.visits) || 0),
       phone: newForm.phone.trim() || undefined,
@@ -383,7 +418,7 @@ function AdminDashboard() {
       body: JSON.stringify(newPlace),
     }).catch(() => {});
     setNewForm({
-      name: "", category: "cafes", region: "", description: "",
+      name: "", category: "cafes", region: "", description: "", opinion: "",
       rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
       phone: "", instagramUrl: "", website: "", mapsUrl: "",
       branchAddress: "", branchNeighborhood: "", branchCity: "الرياض", branchOpeningHours: "", branchMapsUrl: "",
@@ -469,7 +504,19 @@ function AdminDashboard() {
       {/* ── ADD TAB ──────────────────────────────────────────────────── */}
       {tab === "add" && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-xl font-extrabold text-ink-900">إضافة مكان جديد</h2>
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-extrabold text-ink-900">إضافة مكان جديد</h2>
+            <button
+              type="button"
+              disabled={!newForm.name.trim() || aiLoading === "all"}
+              onClick={() => generateAllWithAI(newForm.name, newForm.category, newForm.region, newForm.tags)}
+              className="flex items-center gap-2 rounded-xl border-2 border-violet-300 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-40 transition shadow-sm"
+            >
+              {aiLoading === "all"
+                ? "⏳ جاري التوليد..."
+                : "✨ توليد الكل بالذكاء الاصطناعي"}
+            </button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs font-semibold text-ink-700">اسم المكان *</label>
@@ -492,29 +539,18 @@ function AdminDashboard() {
                 ))}
               </select>
             </div>
-            <div className="sm:col-span-2">
-              <div className="mb-1 flex items-center justify-between">
-                <label className="text-xs font-semibold text-ink-700">الوصف</label>
-                <button
-                  type="button"
-                  disabled={!newForm.name.trim() || aiLoading === "description"}
-                  onClick={() =>
-                    generateWithAI("description", newForm.name, newForm.category, newForm.tags, (text) =>
-                      setNewForm((f) => ({ ...f, description: text }))
-                    )
-                  }
-                  className="flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-40 transition"
-                >
-                  {aiLoading === "description" ? "⏳ جاري التوليد..." : "✨ توليد بالذكاء الاصطناعي"}
-                </button>
-              </div>
-              <textarea
-                value={newForm.description}
-                onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
-                rows={3}
-                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none resize-none"
-                placeholder="وصف مختصر عن المكان..."
-              />
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">المنطقة</label>
+              <select
+                value={newForm.region}
+                onChange={(e) => setNewForm({ ...newForm, region: e.target.value as Region | "" })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+              >
+                <option value="">— بدون منطقة —</option>
+                {(["شمال","جنوب","شرق","غرب","وسط"] as Region[]).map((r) => (
+                  <option key={r} value={r}>{r} الرياض</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-ink-700">التقييم (0–5)</label>
@@ -528,6 +564,45 @@ function AdminDashboard() {
                 className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
               />
             </div>
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs font-semibold text-ink-700">الوصف ✨</label>
+              <textarea
+                value={newForm.description}
+                onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
+                rows={3}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none resize-none"
+                placeholder="وصف مختصر عن المكان — يُوَلَّد تلقائياً بزر التوليد أعلاه"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs font-semibold text-ink-700">رأي الناس (المربع الأصفر) ✨</label>
+              <textarea
+                value={newForm.opinion}
+                onChange={(e) => setNewForm({ ...newForm, opinion: e.target.value })}
+                rows={2}
+                className="w-full rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm focus:border-amber-500 focus:outline-none resize-none"
+                placeholder="ما يقوله الزوار عن المكان — يُوَلَّد تلقائياً"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">الوسوم (مفصولة بفاصلة) ✨</label>
+              <input
+                value={newForm.tags}
+                onChange={(e) => setNewForm({ ...newForm, tags: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                placeholder="مثال: قهوة, عائلي, هادئ"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">كلمات بحث إضافية (مفصولة بفاصلة) ✨</label>
+              <input
+                value={newForm.keywords}
+                onChange={(e) => setNewForm({ ...newForm, keywords: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                placeholder="مثال: برجر كينج, Burger King, وجبات سريعة"
+              />
+              <p className="mt-1 text-[10px] text-ink-500">✨ = يتم توليده تلقائياً بزر الذكاء الاصطناعي أعلاه</p>
+            </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-ink-700">عدد الزيارات</label>
               <input
@@ -537,28 +612,6 @@ function AdminDashboard() {
                 onChange={(e) => setNewForm({ ...newForm, visits: e.target.value })}
                 className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
               />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-700">الوسوم (مفصولة بفاصلة)</label>
-              <input
-                value={newForm.tags}
-                onChange={(e) => setNewForm({ ...newForm, tags: e.target.value })}
-                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
-                placeholder="مثال: قهوة, عائلي, هادئ"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-700">المنطقة</label>
-              <select
-                value={newForm.region}
-                onChange={(e) => setNewForm({ ...newForm, region: e.target.value as Region | "" })}
-                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
-              >
-                <option value="">— بدون منطقة —</option>
-                {(["شمال","جنوب","شرق","غرب","وسط"] as Region[]).map((r) => (
-                  <option key={r} value={r}>{r} الرياض</option>
-                ))}
-              </select>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-ink-700">هاتف المنشأة</label>
@@ -589,16 +642,6 @@ function AdminDashboard() {
                 placeholder="https://..."
                 dir="ltr"
               />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-700">كلمات بحث إضافية (مفصولة بفاصلة)</label>
-              <input
-                value={newForm.keywords}
-                onChange={(e) => setNewForm({ ...newForm, keywords: e.target.value })}
-                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
-                placeholder="مثال: برجر كينج, Burger King, وجبات سريعة"
-              />
-              <p className="mt-1 text-[10px] text-ink-500">أضف كلمات بالعربي والإنجليزي لتحسين نتائج البحث</p>
             </div>
             <div className="sm:col-span-2">
               <LocationPicker

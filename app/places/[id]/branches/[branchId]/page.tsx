@@ -1,19 +1,20 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPlaceById, PLACES } from "@/lib/salsabeel/data";
+import { getPlaceById } from "@/lib/salsabeel/data";
+import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
 
-export function generateStaticParams() {
-  return PLACES.flatMap((p) =>
-    p.branches.map((b) => ({ id: p.id, branchId: b.id }))
-  );
-}
+export const dynamic = "force-dynamic";
 
-export default function BranchDetailPage({
+export default async function BranchDetailPage({
   params,
 }: {
   params: { id: string; branchId: string };
 }) {
-  const place = getPlaceById(params.id);
+  let place = getPlaceById(params.id) ?? null;
+  if (!place) {
+    const custom = await getCustomPlaces();
+    place = custom.find((p) => p.id === params.id) ?? null;
+  }
   if (!place) notFound();
 
   const branch = place.branches.find((b) => b.id === params.branchId);
