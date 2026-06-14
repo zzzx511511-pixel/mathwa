@@ -167,19 +167,22 @@ function AdminDashboard() {
   const [newBranch, setNewBranch] = useState<Partial<Branch>>({});
   const [editBranchId, setEditBranchId] = useState<string | null>(null);
 
-  // Load custom places from Supabase on mount
+  // Load custom places from Supabase on mount.
+  // Supabase entries override static entries with the same id (so edits to static places persist).
   useEffect(() => {
     fetch("/api/places")
       .then((r) => r.json())
       .then((custom: Place[]) => {
-        const staticIds = new Set(INITIAL_PLACES.map((p) => p.id));
-        const fresh = custom.filter((p) => !staticIds.has(p.id));
-        if (fresh.length > 0)
-          setPlaces((prev) => {
-            const existingIds = new Set(prev.map((p) => p.id));
-            const toAdd = fresh.filter((p) => !existingIds.has(p.id));
-            return toAdd.length > 0 ? [...toAdd, ...prev] : prev;
-          });
+        if (!custom.length) return;
+        setPlaces((prev) => {
+          const customById = new Map(custom.map((p) => [p.id, p]));
+          // Replace any static place that has a saved Supabase version
+          const merged = prev.map((p) => customById.get(p.id) ?? p);
+          // Add brand-new custom places that don't exist in static data
+          const staticIds = new Set(prev.map((p) => p.id));
+          const brandNew  = custom.filter((p) => !staticIds.has(p.id));
+          return brandNew.length > 0 ? [...brandNew, ...merged] : merged;
+        });
       })
       .catch(() => {});
   }, []);
@@ -441,10 +444,20 @@ function AdminDashboard() {
     window.location.reload();
   }
 
-  // ── Filtered list ───────────────────────────────────────────────────
-  const filtered = filterCat === "all"
-    ? places
-    : places.filter((p) => p.category === filterCat);
+  // ── Search + filter ─────────────────────────────────────────────────
+  const [adminSearch, setAdminSearch] = useState("");
+
+  const filtered = places.filter((p) => {
+    const matchCat = filterCat === "all" || p.category === filterCat;
+    if (!matchCat) return false;
+    if (!adminSearch.trim()) return true;
+    const q = adminSearch.trim().toLowerCase();
+    return (
+      p.name.toLowerCase().includes(q) ||
+      (p.description ?? "").toLowerCase().includes(q) ||
+      p.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="mx-auto max-w-screen-xl space-y-6 px-5 py-10">
@@ -759,6 +772,23 @@ function AdminDashboard() {
       {/* ── PLACES TAB ───────────────────────────────────────────────── */}
       {tab === "places" && (
         <div className="space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <svg className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
+            </svg>
+            <input
+              type="text"
+              value={adminSearch}
+              onChange={(e) => setAdminSearch(e.target.value)}
+              placeholder="ابحث بالاسم أو الوصف أو الوسوم..."
+              className="w-full rounded-xl border border-sal-200 bg-white py-2.5 pr-9 pl-4 text-sm focus:border-sal-500 focus:outline-none"
+              style={{ direction: "rtl" }}
+            />
+            {adminSearch && (
+              <button onClick={() => setAdminSearch("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700">✕</button>
+            )}
+          </div>
           {/* Category filter */}
           <div className="flex flex-wrap gap-2">
             <button

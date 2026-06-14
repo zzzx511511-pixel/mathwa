@@ -289,12 +289,14 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         </div>
       )}
 
-      {/* Branches */}
-      <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 فروع {place.name}</h2>
-        <p className="mb-4 text-sm text-ink-600">اضغط على الفرع لعرض عنوانه وتفاصيله</p>
-        <BranchPanel branches={place.branches} placeId={place.id} />
-      </div>
+      {/* Branches — only show when there are 2 or more */}
+      {place.branches.length > 1 && (
+        <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 فروع {place.name}</h2>
+          <p className="mb-4 text-sm text-ink-600">اضغط على الفرع لعرض عنوانه وتفاصيله</p>
+          <BranchPanel branches={place.branches} placeId={place.id} />
+        </div>
+      )}
 
       {/* Back */}
       <div className="text-center">
