@@ -26,6 +26,11 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   const cat = getCategoryMeta(place.category);
   const mainBranch = place.branches[0];
 
+  // Place-level location data (fallback to first branch for old entries that predate these fields)
+  const displayNeighborhood = place.neighborhood ?? mainBranch?.neighborhood;
+  const displayAddress      = place.address      ?? mainBranch?.address;
+  const displayOpeningHours = place.openingHours ?? mainBranch?.openingHours;
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
 
@@ -138,12 +143,12 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
         {/* Info grid */}
         <div className="grid grid-cols-1 gap-3 border-t border-sal-50 pt-4 sm:grid-cols-2">
-          {mainBranch?.openingHours && (
+          {displayOpeningHours && (
             <div className="flex items-start gap-3 rounded-xl bg-sal-50 p-3">
               <span className="text-xl">⏰</span>
               <div>
                 <p className="text-xs font-semibold text-ink-600">ساعات العمل</p>
-                <p className="text-sm font-bold text-ink-900">{mainBranch.openingHours}</p>
+                <p className="text-sm font-bold text-ink-900">{displayOpeningHours}</p>
               </div>
             </div>
           )}
@@ -171,12 +176,14 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
               </div>
             </div>
           )}
-          {mainBranch?.address && (
+          {(displayNeighborhood || displayAddress) && (
             <div className="flex items-start gap-3 rounded-xl bg-sal-50 p-3">
               <span className="text-xl">📍</span>
               <div>
-                <p className="text-xs font-semibold text-ink-600">العنوان</p>
-                <p className="text-sm font-bold text-ink-900">{mainBranch.address}</p>
+                <p className="text-xs font-semibold text-ink-600">الموقع</p>
+                <p className="text-sm font-bold text-ink-900">
+                  {[displayNeighborhood, displayAddress].filter(Boolean).join("، ")}
+                </p>
               </div>
             </div>
           )}

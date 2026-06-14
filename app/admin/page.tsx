@@ -200,10 +200,11 @@ function AdminDashboard() {
     instagramUrl: "",
     website: "",
     mapsUrl: "",
+    neighborhood: "",
+    address: "",
+    openingHours: "",
     branchAddress: "",
-    branchNeighborhood: "",
     branchCity: "الرياض",
-    branchOpeningHours: "",
     branchMapsUrl: "",
   });
 
@@ -230,6 +231,9 @@ function AdminDashboard() {
       instagramUrl: place.instagramUrl ?? "",
       website: place.website ?? "",
       mapsUrl: place.mapsUrl ?? "",
+      neighborhood: place.neighborhood ?? "",
+      address: place.address ?? "",
+      openingHours: place.openingHours ?? "",
       photos: place.photos ? [...place.photos] : [],
       videos: place.videos ? [...place.videos] : [],
       branches: place.branches ? place.branches.map((b) => ({ ...b })) : [],
@@ -255,6 +259,9 @@ function AdminDashboard() {
       instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
       website: (editForm.website as string)?.trim() || undefined,
       mapsUrl: (editForm.mapsUrl as string)?.trim() || undefined,
+      neighborhood: (editForm.neighborhood as string)?.trim() || undefined,
+      address: (editForm.address as string)?.trim() || undefined,
+      openingHours: (editForm.openingHours as string)?.trim() || undefined,
       keywords: Array.isArray(editForm.keywords)
         ? (editForm.keywords as string[]).filter(Boolean)
         : typeof editForm.keywords === "string"
@@ -385,9 +392,7 @@ function AdminDashboard() {
           id: `${ts}-b1`,
           name: "الفرع الرئيسي",
           address: newForm.branchAddress.trim(),
-          neighborhood: newForm.branchNeighborhood.trim() || undefined,
           city: newForm.branchCity.trim() || "الرياض",
-          openingHours: newForm.branchOpeningHours.trim() || undefined,
           mapsUrl: newForm.branchMapsUrl.trim() || undefined,
         }
       : null;
@@ -396,6 +401,9 @@ function AdminDashboard() {
       name: newForm.name.trim(),
       category: newForm.category,
       region: (newForm.region as Region) || undefined,
+      neighborhood: newForm.neighborhood.trim() || undefined,
+      address: newForm.address.trim() || undefined,
+      openingHours: newForm.openingHours.trim() || undefined,
       description: newForm.description.trim(),
       opinion: newForm.opinion.trim() || undefined,
       rating: Math.min(5, Math.max(0, Number(newForm.rating) || 4.5)),
@@ -421,7 +429,8 @@ function AdminDashboard() {
       name: "", category: "cafes", region: "", description: "", opinion: "",
       rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
       phone: "", instagramUrl: "", website: "", mapsUrl: "",
-      branchAddress: "", branchNeighborhood: "", branchCity: "الرياض", branchOpeningHours: "", branchMapsUrl: "",
+      neighborhood: "", address: "", openingHours: "",
+      branchAddress: "", branchCity: "الرياض", branchMapsUrl: "",
     });
     setTab("places");
   }
@@ -643,13 +652,6 @@ function AdminDashboard() {
                 dir="ltr"
               />
             </div>
-            <div className="sm:col-span-2">
-              <LocationPicker
-                value={newForm.mapsUrl}
-                searchHint={newForm.name}
-                onSelect={(url) => setNewForm({ ...newForm, mapsUrl: url })}
-              />
-            </div>
             {newForm.category === "salons" && (
               <div className="flex items-center gap-2">
                 <input
@@ -663,21 +665,53 @@ function AdminDashboard() {
               </div>
             )}
 
-            {/* First branch */}
+            {/* ── Place-level location ── */}
             <div className="sm:col-span-2 rounded-xl border border-sal-200 bg-sal-50 p-4 space-y-3">
-              <p className="text-xs font-bold text-sal-700">📍 الفرع الرئيسي (اختياري)</p>
+              <p className="text-xs font-bold text-sal-700">📍 موقع المنشأة الأم</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-ink-700">الحي</label>
                   <input
-                    value={newForm.branchNeighborhood}
-                    onChange={(e) => setNewForm({ ...newForm, branchNeighborhood: e.target.value })}
+                    value={newForm.neighborhood}
+                    onChange={(e) => setNewForm({ ...newForm, neighborhood: e.target.value })}
                     className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
-                    placeholder="مثال: حي النرجس"
+                    placeholder="مثال: حي الريان"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-ink-700">العنوان النصي (الشارع أو الطريق)</label>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">الشارع / العنوان النصي</label>
+                  <input
+                    value={newForm.address}
+                    onChange={(e) => setNewForm({ ...newForm, address: e.target.value })}
+                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                    placeholder="مثال: شارع بريدة"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">ساعات العمل</label>
+                  <input
+                    value={newForm.openingHours}
+                    onChange={(e) => setNewForm({ ...newForm, openingHours: e.target.value })}
+                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
+                    placeholder="مثال: 12م–12ص يومياً"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <LocationPicker
+                    value={newForm.mapsUrl}
+                    searchHint={newForm.name}
+                    onSelect={(url) => setNewForm({ ...newForm, mapsUrl: url })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Optional first named branch ── */}
+            <div className="sm:col-span-2 rounded-xl border border-dashed border-sal-300 bg-white p-4 space-y-3">
+              <p className="text-xs font-bold text-sal-600">➕ إضافة فرع بعنوان مختلف (اختياري)</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-ink-700">عنوان الفرع (شارع / طريق)</label>
                   <input
                     value={newForm.branchAddress}
                     onChange={(e) => setNewForm({ ...newForm, branchAddress: e.target.value })}
@@ -692,15 +726,6 @@ function AdminDashboard() {
                     onChange={(e) => setNewForm({ ...newForm, branchCity: e.target.value })}
                     className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
                     placeholder="الرياض"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-ink-700">ساعات العمل</label>
-                  <input
-                    value={newForm.branchOpeningHours}
-                    onChange={(e) => setNewForm({ ...newForm, branchOpeningHours: e.target.value })}
-                    className="w-full rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
-                    placeholder="مثال: 8ص–12م يومياً"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -970,49 +995,34 @@ function AdminDashboard() {
                                 />
                               </div>
 
-                              {/* Main branch quick fields */}
+                              {/* Place-level location */}
                               <div className="sm:col-span-2 rounded-xl border border-sal-200 bg-sal-50 p-4 space-y-3">
-                                <p className="text-xs font-bold text-sal-700">📍 بيانات الفرع الرئيسي</p>
+                                <p className="text-xs font-bold text-sal-700">📍 موقع المنشأة الأم</p>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                   <div>
                                     <label className="mb-1 block text-[10px] font-semibold text-ink-600">الحي</label>
                                     <input
-                                      value={editForm.branches?.[0]?.neighborhood ?? ""}
-                                      onChange={(e) => setEditForm((f) => {
-                                        if (!f) return f;
-                                        const branches = [...(f.branches ?? [])];
-                                        if (branches[0]) branches[0] = { ...branches[0], neighborhood: e.target.value || undefined };
-                                        return { ...f, branches };
-                                      })}
-                                      placeholder="مثال: حي النرجس"
+                                      value={(editForm.neighborhood as string) ?? ""}
+                                      onChange={(e) => setEditForm({ ...editForm, neighborhood: e.target.value || undefined })}
+                                      placeholder="مثال: حي الريان"
                                       className="w-full rounded-lg border border-sal-200 bg-white px-3 py-2 text-xs focus:border-sal-500 focus:outline-none"
                                     />
                                   </div>
                                   <div>
-                                    <label className="mb-1 block text-[10px] font-semibold text-ink-600">العنوان النصي (الشارع أو الطريق)</label>
+                                    <label className="mb-1 block text-[10px] font-semibold text-ink-600">الشارع / العنوان النصي</label>
                                     <input
-                                      value={editForm.branches?.[0]?.address ?? ""}
-                                      onChange={(e) => setEditForm((f) => {
-                                        if (!f) return f;
-                                        const branches = [...(f.branches ?? [])];
-                                        if (branches[0]) branches[0] = { ...branches[0], address: e.target.value };
-                                        return { ...f, branches };
-                                      })}
-                                      placeholder="مثال: طريق أنس بن مالك"
+                                      value={(editForm.address as string) ?? ""}
+                                      onChange={(e) => setEditForm({ ...editForm, address: e.target.value || undefined })}
+                                      placeholder="مثال: شارع بريدة"
                                       className="w-full rounded-lg border border-sal-200 bg-white px-3 py-2 text-xs focus:border-sal-500 focus:outline-none"
                                     />
                                   </div>
                                   <div className="sm:col-span-2">
                                     <label className="mb-1 block text-[10px] font-semibold text-ink-600">ساعات العمل</label>
                                     <input
-                                      value={editForm.branches?.[0]?.openingHours ?? ""}
-                                      onChange={(e) => setEditForm((f) => {
-                                        if (!f) return f;
-                                        const branches = [...(f.branches ?? [])];
-                                        if (branches[0]) branches[0] = { ...branches[0], openingHours: e.target.value || undefined };
-                                        return { ...f, branches };
-                                      })}
-                                      placeholder="مثال: 8ص–12م يومياً"
+                                      value={(editForm.openingHours as string) ?? ""}
+                                      onChange={(e) => setEditForm({ ...editForm, openingHours: e.target.value || undefined })}
+                                      placeholder="مثال: 12م–12ص يومياً"
                                       className="w-full rounded-lg border border-sal-200 bg-white px-3 py-2 text-xs focus:border-sal-500 focus:outline-none"
                                     />
                                   </div>

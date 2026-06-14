@@ -31,6 +31,9 @@ export type Place = {
   name: string;
   category: Category;
   region?: Region;
+  neighborhood?: string;
+  address?: string;
+  openingHours?: string;
   description: string;
   opinion?: string;
   rating: number;
