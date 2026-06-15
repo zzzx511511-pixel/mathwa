@@ -15,8 +15,10 @@ export function ContactForm() {
     setLoading(true);
     setError("");
 
+    const W3F_URL = "https://api.web3forms.com/submit";
+    console.log("[Contact] Submitting to:", W3F_URL);
     try {
-      const res = await fetch("https://api.web3forms.com/submit", {
+      const res = await fetch(W3F_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,15 +31,19 @@ export function ContactForm() {
           botcheck: "",
         }),
       });
-      const data = await res.json() as { success?: boolean; message?: string };
+      console.log("[Contact] Response status:", res.status);
+      let data: { success?: boolean; message?: string } = {};
+      try { data = await res.json(); } catch { /* non-JSON response */ }
+      console.log("[Contact] Response body:", data);
       if (!res.ok || !data.success) {
-        setError(data.message ?? "حدث خطأ، حاول مرة أخرى.");
+        setError(data.message ?? `خطأ ${res.status} — حاول مرة أخرى.`);
       } else {
         setSent(true);
         setForm({ name: "", email: "", type: "", message: "" });
         setTimeout(() => setSent(false), 5000);
       }
-    } catch {
+    } catch (err) {
+      console.error("[Contact] Network error:", err);
       setError("تعذّر الاتصال بالخادم، تحقق من الاتصال وأعد المحاولة.");
     } finally {
       setLoading(false);
