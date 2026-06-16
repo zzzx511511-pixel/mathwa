@@ -223,6 +223,13 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Beta notice ── */}
+      <div className="border-t border-sal-100 bg-white py-3 text-center">
+        <p className="text-xs text-ink-400">
+          منصة سلسبيل (نسخة تجريبية Beta) — دليل خدمي تجريبي لمدينة الرياض.
+        </p>
+      </div>
+
       {/* ══════════════════════════════════ REGIONS ══ */}
       <section id="regions" className="scroll-mt-20 px-5 py-24" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-screen-xl">
@@ -310,7 +317,12 @@ export default function HomePage() {
           </div>
 
           {/* Form */}
-          <ContactForm />
+          <div>
+            <p className="mb-4 rounded-xl bg-white/70 px-4 py-3 text-xs leading-relaxed text-ink-400">
+              جميع البيانات والتقييمات مجمعة من مصادر عامة ومتاحة للعموم. المنصة لا تتبنى الآراء الواردة، ولأصحاب المنشآت كامل الحق في طلب التعديل أو الحذف عبر وسائل التواصل بالأسفل.
+            </p>
+            <ContactForm />
+          </div>
         </div>
       </section>
     </>
