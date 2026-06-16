@@ -224,9 +224,9 @@ export default function HomePage() {
       </section>
 
       {/* ── Beta notice ── */}
-      <div className="border-t border-sal-100 bg-white py-3 text-center">
-        <p className="text-xs text-ink-400">
-          منصة سلسبيل (نسخة تجريبية Beta) — دليل خدمي تجريبي لمدينة الرياض.
+      <div className="border-y border-amber-200 bg-amber-50 py-4 text-center">
+        <p className="text-sm font-semibold text-amber-800">
+          🚧 منصة سلسبيل — <span className="font-black">نسخة تجريبية Beta</span> — دليل خدمي تجريبي لمدينة الرياض.
         </p>
       </div>
 
@@ -318,9 +318,12 @@ export default function HomePage() {
 
           {/* Form */}
           <div>
-            <p className="mb-4 rounded-xl bg-white/70 px-4 py-3 text-xs leading-relaxed text-ink-400">
-              جميع البيانات والتقييمات مجمعة من مصادر عامة ومتاحة للعموم. المنصة لا تتبنى الآراء الواردة، ولأصحاب المنشآت كامل الحق في طلب التعديل أو الحذف عبر وسائل التواصل بالأسفل.
-            </p>
+            <div className="mb-5 rounded-2xl border border-sal-100 bg-white px-5 py-4">
+              <p className="mb-1 text-xs font-black uppercase tracking-widest text-sal-500">إخلاء مسؤولية</p>
+              <p className="text-sm leading-relaxed text-ink-600">
+                جميع البيانات والتقييمات مجمعة من مصادر عامة ومتاحة للعموم. المنصة لا تتبنى الآراء الواردة، ولأصحاب المنشآت كامل الحق في طلب التعديل أو الحذف عبر وسائل التواصل بالأسفل.
+              </p>
+            </div>
             <ContactForm />
           </div>
         </div>
