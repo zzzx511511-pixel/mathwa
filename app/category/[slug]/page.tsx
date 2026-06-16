@@ -15,7 +15,13 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
   const custom = await getCustomPlaces();
   const allPlaces = mergePlaces(custom);
-  const places = allPlaces.filter((p) => p.category === cat.slug);
+  const places = allPlaces.filter((p) => {
+    if (cat.slug === "cafes")
+      return p.category === "cafes" || (p.isHybrid && p.category === "restaurants");
+    if (cat.slug === "restaurants")
+      return p.category === "restaurants" || (p.isHybrid && p.category === "cafes");
+    return p.category === cat.slug;
+  });
 
   return (
     <div className="mx-auto max-w-screen-xl space-y-8 px-5 py-10">

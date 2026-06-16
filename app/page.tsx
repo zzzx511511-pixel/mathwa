@@ -9,16 +9,16 @@ export const dynamic = "force-static";
 
 /* ── Category descriptions ─── */
 const CAT_DESC: Record<string, string> = {
-  cafes:       "specialty coffee فقط — نخبة كافيهات الرياض مع تقييم دقيق لكل تجربة",
-  restaurants: "من الراقي إلى الشعبي — دليل شامل لأفضل مطاعم الرياض بكل أنواعها",
+  cafes:       "كوفيهات ومطاعم هجينة — specialty coffee وبرنش وغداء وعشاء في مكان واحد",
+  restaurants: "مطاعم وكوفيهات متكاملة — من الراقي إلى الشعبي ومن الفطور حتى العشاء",
   clinics:     "اختر عيادتك بثقة بناءً على تقييمات حقيقية ونسب قبول موثوقة",
   salons:      "أفضل الصالونات النسائية في الرياض بأسعار معقولة وخدمة ممتازة",
   malls:       "مجمعات تسوق وترفيه متكاملة تجمع أبرز الماركات والمطاعم والسينما",
 };
 
 const CAT_SUB: Record<string, string> = {
-  cafes:       "specialty coffee متخصص",
-  restaurants: "مطاعم الرياض بكل أنواعها",
+  cafes:       "كوفيهات · برنش · مطاعم هجينة",
+  restaurants: "مطاعم · كوفيهات · برنش",
   clinics:     "أسنان • تجميل • علاج طبيعي",
   salons:      "صالونات نسائية",
   malls:       "تسوق وترفيه",
@@ -86,8 +86,7 @@ export default function HomePage() {
           </h1>
 
           <p className="anim-fade-up-d2 max-w-xl text-lg leading-relaxed text-white/60">
-            سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات
-            والمجمعات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
+            سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم (بما فيها المنشآت الهجينة الجامعة بين الاثنين) والعيادات والصالونات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
           </p>
 
           <div className="anim-fade-up-d3 w-full flex justify-center">

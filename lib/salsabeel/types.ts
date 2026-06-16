@@ -51,6 +51,7 @@ export type Place = {
   videos?: string[];
   gradient: string;
   tags: string[];
+  isHybrid?: boolean;
   isWomenOnly?: boolean;
   specialization?: string[];
   branches: Branch[];
