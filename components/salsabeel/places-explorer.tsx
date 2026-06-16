@@ -1,18 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Place, Region } from "@/lib/salsabeel/types";
+import { matchesQuery, expandQuery } from "@/lib/salsabeel/search";
 import { PlaceCard } from "./place-card";
-
-function normalize(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[أإآ]/g, "ا")
-    .replace(/ة/g, "ه")
-    .replace(/ى/g, "ي")
-    .replace(/[ً-ٟ]/g, "");
-}
 
 const REGIONS: { label: string; value: Region | "all" }[] = [
   { label: "الكل", value: "all" },
@@ -33,6 +25,22 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
   const [search, setSearch] = useState(initialQuery);
   const [region, setRegion] = useState<Region | "all">(initialRegion);
   const [period, setPeriod] = useState<"all" | "28d">("all");
+  const [expandedTerms, setExpandedTerms] = useState<string[]>([]);
+  const [aiSearching, setAiSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const q = search.trim();
+    if (!q) { setExpandedTerms([]); setAiSearching(false); return; }
+    setAiSearching(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const terms = await expandQuery(q);
+      setExpandedTerms(terms);
+      setAiSearching(false);
+    }, 700);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [search]);
 
   function handleRegionChange(v: Region | "all") {
     setRegion(v);
@@ -42,18 +50,12 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
   }
 
   const filtered = useMemo(() => {
-    const q = normalize(search.trim());
     return allPlaces.filter((p) => {
-      const matchSearch =
-        !q ||
-        normalize(p.name).includes(q) ||
-        normalize(p.description).includes(q) ||
-        p.tags.some((t) => normalize(t).includes(q)) ||
-        (p.keywords ?? []).some((k) => normalize(k).includes(q));
+      const matchSearch = matchesQuery(p, search.trim(), expandedTerms);
       const matchRegion = region === "all" || p.region === region;
       return matchSearch && matchRegion;
     });
-  }, [allPlaces, search, region]);
+  }, [allPlaces, search, expandedTerms, region]);
 
   const topRated = useMemo(
     () => [...filtered].sort((a, b) => b.rating - a.rating).slice(0, 6),
@@ -94,11 +96,17 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
           />
           {search && (
             <button
-              onClick={() => setSearch("")}
+              onClick={() => { setSearch(""); setExpandedTerms([]); }}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"
             >
               ✕
             </button>
+          )}
+          {search && (
+            <span className="absolute left-12 top-1/2 -translate-y-1/2 text-[10px] font-bold"
+              style={{ color: aiSearching ? "#94a3b8" : "#0ea5e9" }}>
+              {aiSearching ? "..." : "✦ AI"}
+            </span>
           )}
         </div>
 

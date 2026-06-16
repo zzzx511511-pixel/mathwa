@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { matchesQuery, expandQuery } from "@/lib/salsabeel/search";
 import Link from "next/link";
 import { PLACES as INITIAL_PLACES } from "@/lib/salsabeel/data";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
@@ -446,17 +447,26 @@ function AdminDashboard() {
 
   // ── Search + filter ─────────────────────────────────────────────────
   const [adminSearch, setAdminSearch] = useState("");
+  const [adminExpandedTerms, setAdminExpandedTerms] = useState<string[]>([]);
+  const [adminAiSearching, setAdminAiSearching] = useState(false);
+  const adminDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleAdminSearch = useCallback((val: string) => {
+    setAdminSearch(val);
+    if (adminDebounceRef.current) clearTimeout(adminDebounceRef.current);
+    if (!val.trim()) { setAdminExpandedTerms([]); setAdminAiSearching(false); return; }
+    setAdminAiSearching(true);
+    adminDebounceRef.current = setTimeout(async () => {
+      const terms = await expandQuery(val.trim());
+      setAdminExpandedTerms(terms);
+      setAdminAiSearching(false);
+    }, 700);
+  }, []);
 
   const filtered = places.filter((p) => {
     const matchCat = filterCat === "all" || p.category === filterCat;
     if (!matchCat) return false;
-    if (!adminSearch.trim()) return true;
-    const q = adminSearch.trim().toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      (p.description ?? "").toLowerCase().includes(q) ||
-      p.tags.some((t) => t.toLowerCase().includes(q))
-    );
+    return matchesQuery(p, adminSearch.trim(), adminExpandedTerms);
   });
 
   return (
@@ -780,13 +790,19 @@ function AdminDashboard() {
             <input
               type="text"
               value={adminSearch}
-              onChange={(e) => setAdminSearch(e.target.value)}
-              placeholder="ابحث بالاسم أو الوصف أو الوسوم..."
-              className="w-full rounded-xl border border-sal-200 bg-white py-2.5 pr-9 pl-4 text-sm focus:border-sal-500 focus:outline-none"
+              onChange={(e) => handleAdminSearch(e.target.value)}
+              placeholder="ابحث بالعربي أو الإنجليزي..."
+              className="w-full rounded-xl border border-sal-200 bg-white py-2.5 pr-9 pl-16 text-sm focus:border-sal-500 focus:outline-none"
               style={{ direction: "rtl" }}
             />
             {adminSearch && (
-              <button onClick={() => setAdminSearch("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700">✕</button>
+              <button onClick={() => { handleAdminSearch(""); }} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700">✕</button>
+            )}
+            {adminSearch && (
+              <span className="absolute left-8 top-1/2 -translate-y-1/2 text-[10px] font-bold"
+                style={{ color: adminAiSearching ? "#94a3b8" : "#0ea5e9" }}>
+                {adminAiSearching ? "..." : "✦ AI"}
+              </span>
             )}
           </div>
           {/* Category filter */}
