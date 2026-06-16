@@ -51,9 +51,11 @@ type SortMode = "default" | "visits" | "nearest";
 export function CategoryExplorer({
   places,
   cat,
+  visitCounts = {},
 }: {
   places: Place[];
   cat: CategoryMeta;
+  visitCounts?: Record<string, number>;
 }) {
   const router       = useRouter();
   const pathname     = usePathname();
@@ -84,21 +86,27 @@ export function CategoryExplorer({
   const displayed = useMemo(() => {
     if (sort === "visits") {
       return [...filtered].sort(
-        (a, b) => (b.visits28d ?? b.visits) - (a.visits28d ?? a.visits)
+        (a, b) =>
+          (visitCounts[b.id] ?? b.visits28d ?? b.visits) -
+          (visitCounts[a.id] ?? a.visits28d ?? a.visits)
       );
     }
     if (sort === "nearest" && userCoords) {
       return [...filtered].sort((a, b) => {
-        const ca = REGION_CENTERS[a.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
-        const cb = REGION_CENTERS[b.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
+        const fallbackA = REGION_CENTERS[a.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
+        const fallbackB = REGION_CENTERS[b.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
+        const latA = a.lat ?? fallbackA.lat;
+        const lngA = a.lng ?? fallbackA.lng;
+        const latB = b.lat ?? fallbackB.lat;
+        const lngB = b.lng ?? fallbackB.lng;
         return (
-          haversineKm(userCoords.lat, userCoords.lng, ca.lat, ca.lng) -
-          haversineKm(userCoords.lat, userCoords.lng, cb.lat, cb.lng)
+          haversineKm(userCoords.lat, userCoords.lng, latA, lngA) -
+          haversineKm(userCoords.lat, userCoords.lng, latB, lngB)
         );
       });
     }
     return filtered;
-  }, [filtered, sort, userCoords]);
+  }, [filtered, sort, userCoords, visitCounts]);
 
   function setRegion(value: string) {
     const params = new URLSearchParams(searchParams.toString());

@@ -15,6 +15,8 @@ const SESSION_KEY = "sal_admin_auth";
 
 type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" | "branches"> & {
   id: string;
+  lat?: number;
+  lng?: number;
   tags?: string | string[];
   keywords?: string | string[];
   photos?: string[];
@@ -204,12 +206,16 @@ function AdminDashboard() {
     instagramUrl: "",
     website: "",
     mapsUrl: "",
+    lat: undefined as number | undefined,
+    lng: undefined as number | undefined,
     neighborhood: "",
     address: "",
     openingHours: "",
     branchAddress: "",
     branchCity: "الرياض",
     branchMapsUrl: "",
+    branchLat: undefined as number | undefined,
+    branchLng: undefined as number | undefined,
   });
 
   // ── Edit helpers ────────────────────────────────────────────────────
@@ -235,6 +241,8 @@ function AdminDashboard() {
       instagramUrl: place.instagramUrl ?? "",
       website: place.website ?? "",
       mapsUrl: place.mapsUrl ?? "",
+      lat: place.lat,
+      lng: place.lng,
       neighborhood: place.neighborhood ?? "",
       address: place.address ?? "",
       openingHours: place.openingHours ?? "",
@@ -263,6 +271,8 @@ function AdminDashboard() {
       instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
       website: (editForm.website as string)?.trim() || undefined,
       mapsUrl: (editForm.mapsUrl as string)?.trim() || undefined,
+      lat: editForm.lat,
+      lng: editForm.lng,
       neighborhood: (editForm.neighborhood as string)?.trim() || undefined,
       address: (editForm.address as string)?.trim() || undefined,
       openingHours: (editForm.openingHours as string)?.trim() || undefined,
@@ -398,6 +408,8 @@ function AdminDashboard() {
           address: newForm.branchAddress.trim(),
           city: newForm.branchCity.trim() || "الرياض",
           mapsUrl: newForm.branchMapsUrl.trim() || undefined,
+          lat: newForm.branchLat,
+          lng: newForm.branchLng,
         }
       : null;
     const newPlace: Place = {
@@ -416,6 +428,8 @@ function AdminDashboard() {
       instagramUrl: newForm.instagramUrl.trim() || undefined,
       website: newForm.website.trim() || undefined,
       mapsUrl: newForm.mapsUrl.trim() || undefined,
+      lat: newForm.lat,
+      lng: newForm.lng,
       gradient: gradients[Math.floor(Math.random() * gradients.length)],
       tags: newForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
       keywords: newForm.keywords.split(",").map((k) => k.trim()).filter(Boolean),
@@ -433,8 +447,10 @@ function AdminDashboard() {
       name: "", category: "cafes", region: "", description: "", opinion: "",
       rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
       phone: "", instagramUrl: "", website: "", mapsUrl: "",
+      lat: undefined, lng: undefined,
       neighborhood: "", address: "", openingHours: "",
       branchAddress: "", branchCity: "الرياض", branchMapsUrl: "",
+      branchLat: undefined, branchLng: undefined,
     });
     setTab("places");
   }
@@ -723,7 +739,7 @@ function AdminDashboard() {
                   <LocationPicker
                     value={newForm.mapsUrl}
                     searchHint={newForm.name}
-                    onSelect={(url) => setNewForm({ ...newForm, mapsUrl: url })}
+                    onSelect={(url, lat, lng) => setNewForm({ ...newForm, mapsUrl: url, lat, lng })}
                   />
                 </div>
               </div>
@@ -755,7 +771,7 @@ function AdminDashboard() {
                   <LocationPicker
                     value={newForm.branchMapsUrl}
                     searchHint={newForm.name}
-                    onSelect={(url) => setNewForm({ ...newForm, branchMapsUrl: url })}
+                    onSelect={(url, lat, lng) => setNewForm({ ...newForm, branchMapsUrl: url, branchLat: lat, branchLng: lng })}
                   />
                 </div>
               </div>
@@ -1037,7 +1053,7 @@ function AdminDashboard() {
                                 <LocationPicker
                                   value={(editForm.mapsUrl as string) ?? ""}
                                   searchHint={editForm.name ?? ""}
-                                  onSelect={(url) => setEditForm({ ...editForm, mapsUrl: url || undefined })}
+                                  onSelect={(url, lat, lng) => setEditForm({ ...editForm, mapsUrl: url || undefined, lat: lat ?? editForm.lat, lng: lng ?? editForm.lng })}
                                 />
                               </div>
 
@@ -1260,7 +1276,7 @@ function AdminDashboard() {
                                           <LocationPicker
                                             value={branch.mapsUrl}
                                             searchHint={`${editForm?.name ?? ""} ${branch.neighborhood ?? ""}`}
-                                            onSelect={(url) => updateBranchInEdit(branch.id, { mapsUrl: url || undefined })}
+                                            onSelect={(url, lat, lng) => updateBranchInEdit(branch.id, { mapsUrl: url || undefined, lat, lng })}
                                           />
                                           <button
                                             type="button"
@@ -1390,7 +1406,7 @@ function AdminDashboard() {
                                     <LocationPicker
                                       value={newBranch.mapsUrl}
                                       searchHint={`${editForm?.name ?? ""} ${newBranch.neighborhood ?? ""}`}
-                                      onSelect={(url) => setNewBranch({ ...newBranch, mapsUrl: url || undefined })}
+                                      onSelect={(url, lat, lng) => setNewBranch({ ...newBranch, mapsUrl: url || undefined, lat, lng })}
                                     />
                                     <button
                                       type="button"

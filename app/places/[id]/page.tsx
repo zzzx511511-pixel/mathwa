@@ -7,6 +7,7 @@ import { RatingStars } from "@/components/salsabeel/rating-stars";
 import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
+import { VisitTracker } from "@/components/salsabeel/visit-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
+      <VisitTracker placeId={place.id} />
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-ink-600">

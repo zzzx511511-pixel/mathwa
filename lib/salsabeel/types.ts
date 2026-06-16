@@ -23,6 +23,8 @@ export type Branch = {
   region?: Region;
   phone?: string;
   mapsUrl?: string;
+  lat?: number;
+  lng?: number;
   openingHours?: string;
 };
 
@@ -51,6 +53,8 @@ export type Place = {
   videos?: string[];
   gradient: string;
   tags: string[];
+  lat?: number;
+  lng?: number;
   isHybrid?: boolean;
   isWomenOnly?: boolean;
   specialization?: string[];

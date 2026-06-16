@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { getByCategory, mergePlaces } from "@/lib/salsabeel/data";
-import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
+import { getCustomPlaces, getVisitCounts28d } from "@/lib/salsabeel/supabase-places";
 import { CategoryExplorer } from "@/components/salsabeel/category-explorer";
 import type { Category } from "@/lib/salsabeel/types";
 
@@ -13,7 +13,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   const cat = getCategoryMeta(params.slug as Category);
   if (!cat) notFound();
 
-  const custom = await getCustomPlaces();
+  const [custom, visitCounts] = await Promise.all([getCustomPlaces(), getVisitCounts28d()]);
   const allPlaces = mergePlaces(custom);
   const places = allPlaces.filter((p) => {
     if (cat.slug === "cafes")
@@ -86,7 +86,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
       {/* ── Category explorer with region filter ── */}
       <Suspense>
-        <CategoryExplorer places={places} cat={cat} />
+        <CategoryExplorer places={places} cat={cat} visitCounts={visitCounts} />
       </Suspense>
 
       {/* ── Other categories ── */}

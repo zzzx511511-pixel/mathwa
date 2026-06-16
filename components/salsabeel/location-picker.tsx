@@ -25,7 +25,7 @@ export function LocationPicker({
   searchHint = "",
 }: {
   value?: string;
-  onSelect: (mapsUrl: string) => void;
+  onSelect: (mapsUrl: string, lat?: number, lng?: number) => void;
   searchHint?: string;
 }) {
   const [query, setQuery]     = useState(searchHint);
@@ -75,14 +75,14 @@ export function LocationPicker({
 
   function pick(r: OsmResult) {
     const url = toMapsUrl(r.lat, r.lon);
-    onSelect(url);
+    onSelect(url, parseFloat(r.lat), parseFloat(r.lon));
     setQuery(shortName(r.display_name));
     setOpen(false);
     setResults([]);
   }
 
   function clear() {
-    onSelect("");
+    onSelect("", undefined, undefined);
     setQuery("");
     setResults([]);
     setOpen(false);

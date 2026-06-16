@@ -41,6 +41,24 @@ export async function upsertCustomPlace(place: Place): Promise<boolean> {
   }
 }
 
+export async function getVisitCounts28d(): Promise<Record<string, number>> {
+  if (!URL || !KEY) return {};
+  try {
+    const since = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString();
+    const res = await fetch(
+      `${URL}/rest/v1/place_visits?select=place_id&visited_at=gte.${encodeURIComponent(since)}&limit=50000`,
+      { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, cache: "no-store" }
+    );
+    if (!res.ok) return {};
+    const rows: { place_id: string }[] = await res.json();
+    const counts: Record<string, number> = {};
+    for (const row of rows) counts[row.place_id] = (counts[row.place_id] ?? 0) + 1;
+    return counts;
+  } catch {
+    return {};
+  }
+}
+
 export async function deleteCustomPlace(id: string): Promise<boolean> {
   if (!URL || !KEY) return false;
   try {
