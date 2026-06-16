@@ -139,7 +139,7 @@ export default function HomePage() {
           <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
             التصنيفات
           </p>
-          <div className="mb-14 flex flex-wrap items-end justify-between gap-4">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="text-4xl font-black text-ink-900">كل ما تحتاجه في مكان واحد</h2>
               <p className="mt-2 max-w-xl text-base leading-relaxed text-ink-600">
@@ -154,6 +154,10 @@ export default function HomePage() {
               🔍 استكشف الأماكن
             </Link>
           </div>
+
+          <p className="mb-10 text-sm font-medium text-ink-400">
+            منصة سلسبيل (نسخة تجريبية Beta) — دليل خدمي تجريبي لمدينة الرياض.
+          </p>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {CATEGORIES.map((cat) => (
@@ -222,13 +226,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ── Beta notice ── */}
-      <div className="border-y border-amber-200 bg-amber-50 py-4 text-center">
-        <p className="text-sm font-semibold text-amber-800">
-          🚧 منصة سلسبيل — <span className="font-black">نسخة تجريبية Beta</span> — دليل خدمي تجريبي لمدينة الرياض.
-        </p>
-      </div>
 
       {/* ══════════════════════════════════ REGIONS ══ */}
       <section id="regions" className="scroll-mt-20 px-5 py-24" style={{ background: "#fff" }}>
@@ -319,7 +316,6 @@ export default function HomePage() {
           {/* Form */}
           <div>
             <div className="mb-5 rounded-2xl border border-sal-100 bg-white px-5 py-4">
-              <p className="mb-1 text-xs font-black uppercase tracking-widest text-sal-500">إخلاء مسؤولية</p>
               <p className="text-sm leading-relaxed text-ink-600">
                 جميع البيانات والتقييمات مجمعة من مصادر عامة ومتاحة للعموم. المنصة لا تتبنى الآراء الواردة، ولأصحاب المنشآت كامل الحق في طلب التعديل أو الحذف عبر وسائل التواصل بالأسفل.
               </p>
