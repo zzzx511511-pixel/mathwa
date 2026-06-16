@@ -25,6 +25,29 @@ const REGIONS = [
   { value: "وسط",  label: "🎯 وسط" },
 ];
 
+// Approximate center coordinates for each Riyadh region
+const REGION_CENTERS: Record<string, { lat: number; lng: number }> = {
+  "شمال": { lat: 24.80, lng: 46.65 },
+  "جنوب": { lat: 24.57, lng: 46.72 },
+  "شرق":  { lat: 24.67, lng: 46.80 },
+  "غرب":  { lat: 24.67, lng: 46.60 },
+  "وسط":  { lat: 24.69, lng: 46.69 },
+};
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+type SortMode = "default" | "visits" | "nearest";
+
 export function CategoryExplorer({
   places,
   cat,
@@ -36,8 +59,12 @@ export function CategoryExplorer({
   const pathname     = usePathname();
   const searchParams = useSearchParams();
   const active       = searchParams.get("region") ?? "all";
-  const [search, setSearch]   = useState("");
-  const [spec, setSpec]       = useState("all");
+  const [search, setSearch]       = useState("");
+  const [spec, setSpec]           = useState("all");
+  const [sort, setSort]           = useState<SortMode>("default");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoState, setGeoState]   = useState<"idle" | "loading" | "error">("idle");
+  const [geoError, setGeoError]   = useState<string>("");
 
   const filtered = useMemo(() => {
     const byRegion = active === "all" ? places : places.filter((p) => p.region === active);
@@ -54,12 +81,73 @@ export function CategoryExplorer({
     );
   }, [places, active, search, spec]);
 
+  const displayed = useMemo(() => {
+    if (sort === "visits") {
+      return [...filtered].sort(
+        (a, b) => (b.visits28d ?? b.visits) - (a.visits28d ?? a.visits)
+      );
+    }
+    if (sort === "nearest" && userCoords) {
+      return [...filtered].sort((a, b) => {
+        const ca = REGION_CENTERS[a.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
+        const cb = REGION_CENTERS[b.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
+        return (
+          haversineKm(userCoords.lat, userCoords.lng, ca.lat, ca.lng) -
+          haversineKm(userCoords.lat, userCoords.lng, cb.lat, cb.lng)
+        );
+      });
+    }
+    return filtered;
+  }, [filtered, sort, userCoords]);
+
   function setRegion(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "all") params.delete("region");
     else params.set("region", value);
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
+
+  function handleNearestClick() {
+    if (sort === "nearest") { setSort("default"); return; }
+    if (userCoords) { setSort("nearest"); return; }
+    if (!navigator.geolocation) {
+      setGeoError("متصفحك لا يدعم تحديد الموقع");
+      setGeoState("error");
+      return;
+    }
+    setGeoState("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setSort("nearest");
+        setGeoState("idle");
+      },
+      () => {
+        setGeoError("تعذّر الوصول لموقعك — تأكد من إذن الموقع في المتصفح");
+        setGeoState("error");
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
+
+  function sortBtn(mode: SortMode, label: string, onClick?: () => void) {
+    const isActive = sort === mode;
+    return (
+      <button
+        onClick={onClick ?? (() => setSort(isActive ? "default" : mode))}
+        className="flex items-center gap-1.5 rounded-xl border-2 px-4 py-2 text-sm font-bold transition-all hover:-translate-y-0.5"
+        style={
+          isActive
+            ? { background: GRAD, borderColor: "transparent", color: "#fff" }
+            : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+        }
+      >
+        {label}
+      </button>
+    );
   }
 
   return (
@@ -88,6 +176,35 @@ export function CategoryExplorer({
           >
             ✕
           </button>
+        )}
+      </div>
+
+      {/* ── Sort row ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold text-ink-500 ml-1">ترتيب:</span>
+        {sortBtn("visits", "🔥 الأكثر زيارة (28 يوم)")}
+        <button
+          onClick={handleNearestClick}
+          disabled={geoState === "loading"}
+          className="flex items-center gap-1.5 rounded-xl border-2 px-4 py-2 text-sm font-bold transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-wait"
+          style={
+            sort === "nearest"
+              ? { background: GRAD, borderColor: "transparent", color: "#fff" }
+              : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+          }
+        >
+          {geoState === "loading" ? "⏳ جارٍ تحديد موقعك..." : "📍 الأقرب إليك"}
+        </button>
+        {sort !== "default" && (
+          <button
+            onClick={() => setSort("default")}
+            className="rounded-xl border-2 border-ink-100 bg-white px-3 py-2 text-xs font-bold text-ink-500 transition hover:bg-ink-50"
+          >
+            ✕ إلغاء
+          </button>
+        )}
+        {geoState === "error" && (
+          <p className="text-xs text-red-500 font-medium">{geoError}</p>
         )}
       </div>
 
@@ -178,15 +295,15 @@ export function CategoryExplorer({
         {/* Count pill */}
         {active !== "all" && (
           <span className="mr-auto rounded-full bg-ink-50 px-3 py-1 text-xs font-semibold text-ink-500">
-            {filtered.length} {cat.label} في {active} الرياض
+            {displayed.length} {cat.label} في {active} الرياض
           </span>
         )}
       </div>
 
       {/* ── Places grid ── */}
-      {filtered.length > 0 ? (
+      {displayed.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((place) => (
+          {displayed.map((place) => (
             <PlaceCard key={place.id} place={place} />
           ))}
         </div>
