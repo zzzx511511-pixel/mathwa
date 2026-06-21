@@ -216,7 +216,7 @@ export function CategoryExplorer({
         )}
       </div>
 
-      {/* ── Clinic specialization filter (clinics only) ── */}
+      {/* ── Clinic specialization filter (clinics only — 4 visible specs) ── */}
       {cat.slug === "clinics" && (
         <div className="flex flex-wrap gap-2">
           <button
@@ -235,7 +235,9 @@ export function CategoryExplorer({
           >
             🏥 جميع التخصصات
           </button>
-          {CLINIC_SPECS.map((s) => {
+          {CLINIC_SPECS.filter((s) =>
+            ["أسنان", "تجميل", "علاج طبيعي", "جلدية"].includes(s.value)
+          ).map((s) => {
             const isActive = spec === s.value;
             return (
               <button
