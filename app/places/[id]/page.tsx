@@ -8,6 +8,7 @@ import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
+import { fetchGooglePhotoNames, fetchGooglePhotoUri } from "@/lib/salsabeel/google-photos";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,15 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
   const cat = getCategoryMeta(place.category);
   const mainBranch = place.branches[0];
+
+  // Fetch up to 3 Google photos
+  const gPhotoQuery = [place.name, mainBranch?.neighborhood, "الرياض"]
+    .filter(Boolean)
+    .join(" ");
+  const gPhotoNames = await fetchGooglePhotoNames(gPhotoQuery, 3);
+  const gPhotoUris = (
+    await Promise.all(gPhotoNames.map((n) => fetchGooglePhotoUri(n)))
+  ).filter(Boolean) as string[];
 
   // Place-level location data (fallback to first branch for old entries that predate these fields)
   const displayNeighborhood = place.neighborhood ?? mainBranch?.neighborhood;
@@ -63,12 +73,21 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
       {/* Hero */}
       <div className="relative overflow-hidden rounded-3xl h-56 md:h-72">
-        <PlaceImage
-          photos={place.photos}
-          category={place.category}
-          name={place.name}
-          className="h-full w-full"
-        />
+        {gPhotoUris[0] ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={gPhotoUris[0]}
+            alt={place.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <PlaceImage
+            photos={place.photos}
+            category={place.category}
+            name={place.name}
+            className="h-full w-full"
+          />
+        )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6">
           <div className="flex flex-wrap items-center gap-3">
             {cat && (
@@ -273,20 +292,23 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         </div>
       )}
 
-      {/* Photos gallery */}
-      {place.photos && place.photos.length > 0 && (
+      {/* Photos gallery — prefer Google photos, fall back to stored photos */}
+      {(gPhotoUris.length > 0 || (place.photos && place.photos.length > 0)) && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {place.photos.map((photo, i) => (
-              <a key={i} href={photo} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={photo}
-                  alt={`${place.name} - صورة ${i + 1}`}
-                  className="aspect-video w-full rounded-2xl object-cover transition hover:opacity-90 hover:shadow-md"
-                />
-              </a>
-            ))}
+            {(gPhotoUris.length > 0 ? gPhotoUris.slice(0, 3) : (place.photos ?? [])).map(
+              (photo, i) => (
+                <a key={i} href={photo} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo}
+                    alt={`${place.name} - صورة ${i + 1}`}
+                    className="aspect-video w-full rounded-2xl object-cover transition hover:opacity-90 hover:shadow-md"
+                  />
+                </a>
+              )
+            )}
           </div>
         </div>
       )}

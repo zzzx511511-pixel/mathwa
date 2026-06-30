@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Place } from "@/lib/salsabeel/types";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
@@ -11,20 +14,59 @@ function fmt(n: number) {
 
 export function PlaceCard({ place }: { place: Place }) {
   const cat = getCategoryMeta(place.category);
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const [googlePhoto, setGooglePhoto] = useState<string | null>(null);
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !fetched.current) {
+          fetched.current = true;
+          const firstBranch = place.branches[0];
+          const q = [place.name, firstBranch?.neighborhood, "الرياض"]
+            .filter(Boolean)
+            .join(" ");
+          fetch(`/api/place-photo?q=${encodeURIComponent(q)}&n=1`)
+            .then((r) => r.json())
+            .then((data: { photos: string[] }) => {
+              if (data.photos?.[0]) setGooglePhoto(data.photos[0]);
+            })
+            .catch(() => {});
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [place]);
+
   return (
     <Link
+      ref={cardRef}
       href={`/places/${place.id}`}
       className="group flex flex-col overflow-hidden rounded-3xl transition hover:-translate-y-1 hover:shadow-xl"
       style={{ border: "1px solid #e0f2fe", background: "#fff" }}
     >
-      {/* Hero image / placeholder */}
-      <div className="relative h-36">
-        <PlaceImage
-          photos={place.photos}
-          category={place.category}
-          name={place.name}
-          className="h-full w-full"
-        />
+      {/* Hero image */}
+      <div className="relative h-36 overflow-hidden">
+        {googlePhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={googlePhoto}
+            alt={place.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <PlaceImage
+            photos={place.photos}
+            category={place.category}
+            name={place.name}
+            className="h-full w-full"
+          />
+        )}
         {cat && (
           <span
             className="absolute bottom-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow"
