@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   const photos = names.map(
     (name) => `/api/place-photo-img?ref=${encodeURIComponent(name)}`
   );
+
   return NextResponse.json({ photos }, {
     headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" },
   });

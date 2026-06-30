@@ -2,7 +2,10 @@ const KEY = process.env.GOOGLE_PLACES_API_KEY ?? "";
 const BASE = "https://places.googleapis.com/v1";
 
 export async function fetchGooglePhotoNames(query: string, maxCount: number): Promise<string[]> {
-  if (!KEY) return [];
+  if (!KEY) {
+    console.error("[google-photos] GOOGLE_PLACES_API_KEY is not set — set it in Vercel env vars");
+    return [];
+  }
   try {
     const res = await fetch(`${BASE}/places:searchText`, {
       method: "POST",
@@ -13,11 +16,19 @@ export async function fetchGooglePhotoNames(query: string, maxCount: number): Pr
       },
       body: JSON.stringify({ textQuery: query, maxResultCount: 1 }),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(`[google-photos] Text Search ${res.status}: ${body.slice(0, 200)}`);
+      return [];
+    }
     const data = await res.json();
     const photos: Array<{ name: string }> = data.places?.[0]?.photos ?? [];
+    if (photos.length === 0) {
+      console.warn(`[google-photos] no photos found for: "${query}"`);
+    }
     return photos.slice(0, maxCount).map((p) => p.name);
-  } catch {
+  } catch (err) {
+    console.error("[google-photos] Text Search threw:", err);
     return [];
   }
 }
@@ -29,10 +40,14 @@ export async function fetchGooglePhotoUri(photoName: string): Promise<string | n
       `${BASE}/${photoName}/media?maxWidthPx=800&skipHttpRedirect=true`,
       { headers: { "X-Goog-Api-Key": KEY } }
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[google-photos] media ${res.status} for: ${photoName.slice(0, 80)}`);
+      return null;
+    }
     const data = await res.json();
     return (data.photoUri as string) ?? null;
-  } catch {
+  } catch (err) {
+    console.error("[google-photos] media threw:", err);
     return null;
   }
 }
