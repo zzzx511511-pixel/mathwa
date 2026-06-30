@@ -14,11 +14,12 @@ export async function fetchGooglePhotoNames(query: string, maxCount: number): Pr
         "X-Goog-Api-Key": KEY,
         "X-Goog-FieldMask": "places.photos",
       },
-      body: JSON.stringify({ textQuery: query, maxResultCount: 1 }),
+      // Places API (New) uses "pageSize", NOT "maxResultCount" (old API field)
+      body: JSON.stringify({ textQuery: query, pageSize: 1 }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      console.error(`[google-photos] Text Search ${res.status}: ${body.slice(0, 200)}`);
+      console.error(`[google-photos] Text Search ${res.status}: ${body}`);
       return [];
     }
     const data = await res.json();
