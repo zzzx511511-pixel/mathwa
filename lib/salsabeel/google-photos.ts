@@ -18,8 +18,16 @@ export async function fetchGooglePhotoNames(query: string, maxCount: number): Pr
       body: JSON.stringify({ textQuery: query, pageSize: 1 }),
     });
     if (!res.ok) {
+      const keyHint = `${KEY.slice(0, 8)}...${KEY.slice(-4)} (len=${KEY.length})`;
       const body = await res.text().catch(() => "");
-      console.error(`[google-photos] Text Search ${res.status}: ${body}`);
+      try {
+        const e = JSON.parse(body);
+        console.error(`[google-photos] 400 | key=${keyHint}`);
+        console.error(`[google-photos] status=${e.error?.status} | message=${e.error?.message}`);
+        console.error(`[google-photos] details=${JSON.stringify(e.error?.details ?? [])}`);
+      } catch {
+        console.error(`[google-photos] ${res.status} | key=${keyHint} | body=${body}`);
+      }
       return [];
     }
     const data = await res.json();
