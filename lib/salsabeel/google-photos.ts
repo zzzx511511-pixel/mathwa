@@ -12,9 +12,9 @@ export async function fetchGooglePhotoNames(query: string, maxCount: number): Pr
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": KEY,
-        "X-Goog-FieldMask": "places.photos",
+        // places.id is required alongside advanced-tier fields; photos.name is the only sub-field needed
+        "X-Goog-FieldMask": "places.id,places.photos.name",
       },
-      // Places API (New) uses "pageSize", NOT "maxResultCount" (old API field)
       body: JSON.stringify({ textQuery: query, pageSize: 1 }),
     });
     if (!res.ok) {
