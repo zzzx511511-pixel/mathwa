@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchGooglePhotoNames } from "@/lib/salsabeel/google-photos";
+import { fetchGooglePhotoRefs } from "@/lib/salsabeel/google-photos";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q") ?? "";
   const n = Math.min(parseInt(req.nextUrl.searchParams.get("n") ?? "1", 10), 5);
   if (!q) return NextResponse.json({ photos: [] });
 
-  const names = await fetchGooglePhotoNames(q, n);
-  const photos = names.map(
-    (name) => `/api/place-photo-img?ref=${encodeURIComponent(name)}`
+  const refs = await fetchGooglePhotoRefs(q, n);
+  const photos = refs.map(
+    (ref) => `/api/place-photo-img?ref=${encodeURIComponent(ref)}`
   );
 
   return NextResponse.json({ photos }, {

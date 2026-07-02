@@ -8,7 +8,7 @@ import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
-import { fetchGooglePhotoNames, fetchGooglePhotoUri } from "@/lib/salsabeel/google-photos";
+import { fetchGooglePhotoRefs } from "@/lib/salsabeel/google-photos";
 
 export const dynamic = "force-dynamic";
 
@@ -28,14 +28,14 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   const cat = getCategoryMeta(place.category);
   const mainBranch = place.branches[0];
 
-  // Fetch up to 3 Google photos
+  // Fetch up to 3 Google photos (legacy Places API)
   const gPhotoQuery = [place.name, mainBranch?.neighborhood, "الرياض"]
     .filter(Boolean)
     .join(" ");
-  const gPhotoNames = await fetchGooglePhotoNames(gPhotoQuery, 3);
-  const gPhotoUris = (
-    await Promise.all(gPhotoNames.map((n) => fetchGooglePhotoUri(n)))
-  ).filter(Boolean) as string[];
+  const gPhotoRefs = await fetchGooglePhotoRefs(gPhotoQuery, 3);
+  const gPhotoUris = gPhotoRefs.map(
+    (ref) => `/api/place-photo-img?ref=${encodeURIComponent(ref)}`
+  );
 
   // Place-level location data (fallback to first branch for old entries that predate these fields)
   const displayNeighborhood = place.neighborhood ?? mainBranch?.neighborhood;
