@@ -27,7 +27,7 @@ export async function fetchGooglePhotoRefs(query: string, maxCount: number): Pro
     const data = await res.json();
     if (data.status !== "OK") {
       const keyHint = `${KEY.slice(0, 8)}...${KEY.slice(-4)} (len=${KEY.length})`;
-      console.error(`[google-photos] FindPlace status=${data.status} | ${data.error_message ?? ""} | key=${keyHint}`);
+      console.error(`[google-photos] FindPlace status=${data.status} | msg=${data.error_message ?? ""} | key=${keyHint} | full=${JSON.stringify(data)}`);
       return [];
     }
     const photos: Array<{ photo_reference: string }> = data.candidates?.[0]?.photos ?? [];
