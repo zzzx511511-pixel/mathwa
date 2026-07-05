@@ -13,7 +13,7 @@ import { LocationPicker } from "@/components/salsabeel/location-picker";
 const ADMIN_PW = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
 const SESSION_KEY = "sal_admin_auth";
 
-type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" | "branches"> & {
+type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" | "branches" | "instagramPosts"> & {
   id: string;
   lat?: number;
   lng?: number;
@@ -22,6 +22,7 @@ type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" 
   photos?: string[];
   videos?: string[];
   branches?: Branch[];
+  instagramPosts?: string | string[];
 };
 
 // ── Password Gate ────────────────────────────────────────────────────────────
@@ -204,6 +205,7 @@ function AdminDashboard() {
     isWomenOnly: false,
     phone: "",
     instagramUrl: "",
+    instagramPosts: "",
     website: "",
     mapsUrl: "",
     lat: undefined as number | undefined,
@@ -239,6 +241,7 @@ function AdminDashboard() {
       isWomenOnly: place.isWomenOnly,
       phone: place.phone ?? "",
       instagramUrl: place.instagramUrl ?? "",
+      instagramPosts: place.instagramPosts ?? [],
       website: place.website ?? "",
       mapsUrl: place.mapsUrl ?? "",
       lat: place.lat,
@@ -269,6 +272,11 @@ function AdminDashboard() {
       isWomenOnly: editForm.isWomenOnly,
       phone: (editForm.phone as string)?.trim() || undefined,
       instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
+      instagramPosts: Array.isArray(editForm.instagramPosts)
+        ? (editForm.instagramPosts as string[]).filter(Boolean)
+        : typeof editForm.instagramPosts === "string"
+          ? (editForm.instagramPosts as string).split("\n").map((u) => u.trim()).filter(Boolean)
+          : original.instagramPosts,
       website: (editForm.website as string)?.trim() || undefined,
       mapsUrl: (editForm.mapsUrl as string)?.trim() || undefined,
       lat: editForm.lat,
@@ -426,6 +434,7 @@ function AdminDashboard() {
       visits: Math.max(0, Number(newForm.visits) || 0),
       phone: newForm.phone.trim() || undefined,
       instagramUrl: newForm.instagramUrl.trim() || undefined,
+      instagramPosts: newForm.instagramPosts.split("\n").map((u) => u.trim()).filter(Boolean),
       website: newForm.website.trim() || undefined,
       mapsUrl: newForm.mapsUrl.trim() || undefined,
       lat: newForm.lat,
@@ -446,7 +455,7 @@ function AdminDashboard() {
     setNewForm({
       name: "", category: "cafes", region: "", description: "", opinion: "",
       rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
-      phone: "", instagramUrl: "", website: "", mapsUrl: "",
+      phone: "", instagramUrl: "", instagramPosts: "", website: "", mapsUrl: "",
       lat: undefined, lng: undefined,
       neighborhood: "", address: "", openingHours: "",
       branchAddress: "", branchCity: "الرياض", branchMapsUrl: "",
@@ -680,6 +689,18 @@ function AdminDashboard() {
                 placeholder="https://instagram.com/..."
                 dir="ltr"
               />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs font-semibold text-pink-700">📸 روابط منشورات انستقرام (للصور)</label>
+              <textarea
+                value={newForm.instagramPosts}
+                onChange={(e) => setNewForm({ ...newForm, instagramPosts: e.target.value })}
+                className="w-full rounded-xl border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm focus:border-pink-500 focus:outline-none"
+                placeholder={"https://www.instagram.com/p/ABC123/\nhttps://www.instagram.com/p/XYZ456/"}
+                dir="ltr"
+                rows={3}
+              />
+              <p className="mt-1 text-[10px] text-ink-500">رابط منشور واحد في كل سطر (حتى 5) — ليس رابط الملف الشخصي</p>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-ink-700">الموقع الإلكتروني</label>
@@ -1023,6 +1044,24 @@ function AdminDashboard() {
                                   placeholder="https://instagram.com/..."
                                   dir="ltr"
                                 />
+                              </div>
+
+                              {/* Instagram Posts */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-pink-600">📸 روابط منشورات انستقرام (للصور)</label>
+                                <textarea
+                                  value={
+                                    Array.isArray(editForm.instagramPosts)
+                                      ? (editForm.instagramPosts as string[]).join("\n")
+                                      : (editForm.instagramPosts as string) ?? ""
+                                  }
+                                  onChange={(e) => setEditForm({ ...editForm, instagramPosts: e.target.value })}
+                                  className="w-full rounded-xl border border-pink-300 bg-pink-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
+                                  placeholder={"https://www.instagram.com/p/ABC123/\nhttps://www.instagram.com/p/XYZ456/"}
+                                  dir="ltr"
+                                  rows={3}
+                                />
+                                <p className="mt-1 text-[10px] text-ink-500">رابط منشور واحد في كل سطر (حتى 5) — ليس رابط الملف الشخصي</p>
                               </div>
 
                               {/* Website */}

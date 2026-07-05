@@ -15,31 +15,27 @@ function fmt(n: number) {
 export function PlaceCard({ place }: { place: Place }) {
   const cat = getCategoryMeta(place.category);
   const cardRef = useRef<HTMLAnchorElement>(null);
-  const [googlePhoto, setGooglePhoto] = useState<string | null>(null);
+  const [igPhoto, setIgPhoto] = useState<string | null>(null);
 
   useEffect(() => {
+    const posts = place.instagramPosts;
+    if (!posts?.length) return;
+
     const el = cardRef.current;
     if (!el) return;
-
     const controller = new AbortController();
 
     const doFetch = () => {
-      const firstBranch = place.branches[0];
-      const q = [place.name, firstBranch?.neighborhood, "الرياض"]
-        .filter(Boolean)
-        .join(" ");
-      fetch(`/api/place-photo?q=${encodeURIComponent(q)}&n=1`, {
+      fetch(`/api/ig-photos?posts=${encodeURIComponent(posts[0])}`, {
         signal: controller.signal,
       })
         .then((r) => r.json())
         .then((data: { photos: string[] }) => {
-          if (data.photos?.[0]) setGooglePhoto(data.photos[0]);
+          if (data.photos?.[0]) setIgPhoto(data.photos[0]);
         })
         .catch(() => {});
     };
 
-    // IntersectionObserver: threshold 0 fires as soon as any pixel is visible;
-    // rootMargin prefetches cards within 150px of the viewport.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -55,7 +51,6 @@ export function PlaceCard({ place }: { place: Place }) {
       controller.abort();
       observer.disconnect();
     };
-    // place.id is stable for the lifetime of this card instance
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [place.id]);
 
@@ -68,10 +63,10 @@ export function PlaceCard({ place }: { place: Place }) {
     >
       {/* Hero image */}
       <div className="relative h-36 overflow-hidden">
-        {googlePhoto ? (
+        {igPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={googlePhoto}
+            src={igPhoto}
             alt={place.name}
             className="h-full w-full object-cover"
           />

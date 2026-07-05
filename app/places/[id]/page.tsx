@@ -8,13 +8,29 @@ import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
-import { fetchGooglePhotoRefs } from "@/lib/salsabeel/google-photos";
 
 export const dynamic = "force-dynamic";
 
 function formatVisits(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
   return n.toString();
+}
+
+async function fetchIgPhotos(posts: string[]): Promise<string[]> {
+  if (!posts.length) return [];
+  try {
+    const param = posts.slice(0, 5).map(encodeURIComponent).join(",");
+    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+    const res = await fetch(`${base}/api/ig-photos?posts=${param}`, {
+      signal: AbortSignal.timeout(8000),
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.photos as string[]) ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export default async function PlaceDetailPage({ params }: { params: { id: string } }) {
@@ -28,14 +44,11 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   const cat = getCategoryMeta(place.category);
   const mainBranch = place.branches[0];
 
-  // Fetch up to 3 Google photos (legacy Places API)
-  const gPhotoQuery = [place.name, mainBranch?.neighborhood, "الرياض"]
-    .filter(Boolean)
-    .join(" ");
-  const gPhotoRefs = await fetchGooglePhotoRefs(gPhotoQuery, 3);
-  const gPhotoUris = gPhotoRefs.map(
-    (ref) => `/api/place-photo-img?ref=${encodeURIComponent(ref)}`
-  );
+  // Fetch Instagram photos via oEmbed (free, no API key)
+  const igPhotos = await fetchIgPhotos(place.instagramPosts ?? []);
+
+  // Determine hero image: Instagram first, then stored photos
+  const heroPhoto = igPhotos[0] ?? place.photos?.[0] ?? null;
 
   // Place-level location data (fallback to first branch for old entries that predate these fields)
   const displayNeighborhood = place.neighborhood ?? mainBranch?.neighborhood;
@@ -53,6 +66,9 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       : (mainBranch?.address
           ? `https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`
           : null);
+
+  // Gallery: prefer Instagram photos (up to 5), fall back to stored photos
+  const galleryPhotos = igPhotos.length > 0 ? igPhotos : (place.photos ?? []);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
@@ -73,10 +89,10 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
 
       {/* Hero */}
       <div className="relative overflow-hidden rounded-3xl h-56 md:h-72">
-        {gPhotoUris[0] ? (
+        {heroPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={gPhotoUris[0]}
+            src={heroPhoto}
             alt={place.name}
             className="h-full w-full object-cover"
           />
@@ -292,23 +308,28 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         </div>
       )}
 
-      {/* Photos gallery — prefer Google photos, fall back to stored photos */}
-      {(gPhotoUris.length > 0 || (place.photos && place.photos.length > 0)) && (
+      {/* Photos gallery — Instagram posts first, fall back to stored photos */}
+      {galleryPhotos.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
+          <h2 className="mb-4 text-lg font-extrabold text-ink-900">
+            {igPhotos.length > 0 ? "📸 صور من انستقرام" : "📷 صور المكان"}
+          </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {(gPhotoUris.length > 0 ? gPhotoUris.slice(0, 3) : (place.photos ?? [])).map(
-              (photo, i) => (
-                <a key={i} href={photo} target="_blank" rel="noopener noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo}
-                    alt={`${place.name} - صورة ${i + 1}`}
-                    className="aspect-video w-full rounded-2xl object-cover transition hover:opacity-90 hover:shadow-md"
-                  />
-                </a>
-              )
-            )}
+            {galleryPhotos.slice(0, 5).map((photo, i) => (
+              <a
+                key={i}
+                href={igPhotos.length > 0 && place!.instagramPosts?.[i] ? place!.instagramPosts[i] : photo}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo}
+                  alt={`${place.name} - صورة ${i + 1}`}
+                  className="aspect-square w-full rounded-2xl object-cover transition hover:opacity-90 hover:shadow-md"
+                />
+              </a>
+            ))}
           </div>
         </div>
       )}

@@ -46,6 +46,7 @@ export type Place = {
   priceRange?: string;
   phone?: string;
   instagramUrl?: string;
+  instagramPosts?: string[];
   website?: string;
   mapsUrl?: string;
   keywords?: string[];
