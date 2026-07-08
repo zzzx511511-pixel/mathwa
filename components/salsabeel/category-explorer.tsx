@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { Place } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import type { CategoryMeta } from "@/lib/salsabeel/categories";
 import { PlaceCard } from "./place-card";
+
+const CategoryMapView = lazy(() =>
+  import("./category-map-view").then((m) => ({ default: m.CategoryMapView }))
+);
 
 function normalize(s: string): string {
   return s
@@ -64,6 +68,7 @@ export function CategoryExplorer({
   const [search, setSearch]       = useState("");
   const [spec, setSpec]           = useState("all");
   const [sort, setSort]           = useState<SortMode>("default");
+  const [view, setView]           = useState<"cards" | "map">("cards");
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoState, setGeoState]   = useState<"idle" | "loading" | "error">("idle");
   const [geoError, setGeoError]   = useState<string>("");
@@ -187,33 +192,71 @@ export function CategoryExplorer({
         )}
       </div>
 
-      {/* ── Sort row ── */}
+      {/* ── Sort row + View toggle ── */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-bold text-ink-500 ml-1">ترتيب:</span>
-        {sortBtn("visits", "🔥 الأكثر زيارة (28 يوم)")}
-        <button
-          onClick={handleNearestClick}
-          disabled={geoState === "loading"}
-          className="flex items-center gap-1.5 rounded-xl border-2 px-4 py-2 text-sm font-bold transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-wait"
-          style={
-            sort === "nearest"
-              ? { background: GRAD, borderColor: "transparent", color: "#fff" }
-              : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
-          }
-        >
-          {geoState === "loading" ? "⏳ جارٍ تحديد موقعك..." : "📍 الأقرب إليك"}
-        </button>
-        {sort !== "default" && (
-          <button
-            onClick={() => setSort("default")}
-            className="rounded-xl border-2 border-ink-100 bg-white px-3 py-2 text-xs font-bold text-ink-500 transition hover:bg-ink-50"
-          >
-            ✕ إلغاء
-          </button>
+        {view === "cards" && (
+          <>
+            {sortBtn("visits", "🔥 الأكثر زيارة (28 يوم)")}
+            <button
+              onClick={handleNearestClick}
+              disabled={geoState === "loading"}
+              className="flex items-center gap-1.5 rounded-xl border-2 px-4 py-2 text-sm font-bold transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-wait"
+              style={
+                sort === "nearest"
+                  ? { background: GRAD, borderColor: "transparent", color: "#fff" }
+                  : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+              }
+            >
+              {geoState === "loading" ? "⏳ جارٍ تحديد موقعك..." : "📍 الأقرب إليك"}
+            </button>
+            {sort !== "default" && (
+              <button
+                onClick={() => setSort("default")}
+                className="rounded-xl border-2 border-ink-100 bg-white px-3 py-2 text-xs font-bold text-ink-500 transition hover:bg-ink-50"
+              >
+                ✕ إلغاء
+              </button>
+            )}
+          </>
         )}
         {geoState === "error" && (
           <p className="text-xs text-red-500 font-medium">{geoError}</p>
         )}
+
+        {/* View toggle */}
+        <div className="mr-auto flex rounded-xl border-2 border-sal-100 overflow-hidden">
+          <button
+            onClick={() => setView("cards")}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold transition-colors"
+            style={
+              view === "cards"
+                ? { background: cat.color, color: "#fff" }
+                : { background: "#f0f9ff", color: "#0c4a6e" }
+            }
+            title="عرض البطاقات"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+            </svg>
+            بطاقات
+          </button>
+          <button
+            onClick={() => setView("map")}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold transition-colors"
+            style={
+              view === "map"
+                ? { background: cat.color, color: "#fff" }
+                : { background: "#f0f9ff", color: "#0c4a6e" }
+            }
+            title="عرض الخريطة"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+            </svg>
+            خريطة
+          </button>
+        </div>
       </div>
 
       {/* ── Clinic specialization filter (clinics only — 4 visible specs) ── */}
@@ -310,40 +353,55 @@ export function CategoryExplorer({
         )}
       </div>
 
-      {/* ── Places grid ── */}
-      {displayed.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {displayed.map((place) => (
-            <PlaceCard key={place.id} place={place} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-sal-100 bg-white p-12 text-center">
-          <p className="mb-3 text-4xl">{cat.icon}</p>
-          <p className="font-semibold text-ink-700">
-            {search.trim()
-              ? `لا توجد نتائج لـ "${search}" في ${active === "all" ? cat.label : `${active} الرياض`}`
-              : `لا توجد ${cat.label} مضافة في ${active} الرياض حتى الآن`}
-          </p>
-          <div className="mt-4 flex justify-center gap-2">
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="rounded-xl border border-sal-200 px-5 py-2 text-sm font-semibold text-sal-600 transition hover:bg-sal-50"
-              >
-                مسح البحث
-              </button>
-            )}
-            {active !== "all" && (
-              <button
-                onClick={() => setRegion("all")}
-                className="rounded-xl border border-sal-200 px-5 py-2 text-sm font-semibold text-sal-600 transition hover:bg-sal-50"
-              >
-                عرض كل المناطق
-              </button>
-            )}
+      {/* ── Map view ── */}
+      {view === "map" && (
+        <Suspense
+          fallback={
+            <div className="flex h-64 items-center justify-center rounded-2xl border border-sal-100 bg-sal-50">
+              <p className="text-sm font-semibold text-ink-500">⏳ جارٍ تحميل الخريطة...</p>
+            </div>
+          }
+        >
+          <CategoryMapView places={displayed} cat={cat} />
+        </Suspense>
+      )}
+
+      {/* ── Cards grid ── */}
+      {view === "cards" && (
+        displayed.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {displayed.map((place) => (
+              <PlaceCard key={place.id} place={place} />
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="rounded-2xl border border-sal-100 bg-white p-12 text-center">
+            <p className="mb-3 text-4xl">{cat.icon}</p>
+            <p className="font-semibold text-ink-700">
+              {search.trim()
+                ? `لا توجد نتائج لـ "${search}" في ${active === "all" ? cat.label : `${active} الرياض`}`
+                : `لا توجد ${cat.label} مضافة في ${active} الرياض حتى الآن`}
+            </p>
+            <div className="mt-4 flex justify-center gap-2">
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="rounded-xl border border-sal-200 px-5 py-2 text-sm font-semibold text-sal-600 transition hover:bg-sal-50"
+                >
+                  مسح البحث
+                </button>
+              )}
+              {active !== "all" && (
+                <button
+                  onClick={() => setRegion("all")}
+                  className="rounded-xl border border-sal-200 px-5 py-2 text-sm font-semibold text-sal-600 transition hover:bg-sal-50"
+                >
+                  عرض كل المناطق
+                </button>
+              )}
+            </div>
+          </div>
+        )
       )}
     </div>
   );
