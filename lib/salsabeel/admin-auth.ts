@@ -4,15 +4,17 @@ import { cookies } from "next/headers";
 const COOKIE = "sal_admin";
 const SECRET = process.env.ADMIN_SECRET ?? "";
 
-/** Returns true when the request carries a valid admin session cookie. */
+/** Returns true when the request carries a valid admin session cookie.
+ *  When ADMIN_SECRET is not configured (dev/staging), all requests pass through. */
 export function isAdminAuthed(req: NextRequest): boolean {
+  if (!SECRET) return true; // no secret set → open access (dev mode)
   const cookie = req.cookies.get(COOKIE);
-  return !!SECRET && cookie?.value === SECRET;
+  return cookie?.value === SECRET;
 }
 
 /** Server-component helper (reads cookies() from the Next.js store). */
 export async function isAdminAuthedServer(): Promise<boolean> {
-  if (!SECRET) return false;
+  if (!SECRET) return true;
   const store = await cookies();
   return store.get(COOKIE)?.value === SECRET;
 }
