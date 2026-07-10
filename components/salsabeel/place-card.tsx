@@ -18,17 +18,17 @@ export function PlaceCard({ place }: { place: Place }) {
   const [igPhoto, setIgPhoto] = useState<string | null>(null);
 
   useEffect(() => {
-    const posts = place.instagramPosts;
-    if (!posts?.length) return;
-
     const el = cardRef.current;
     if (!el) return;
     const controller = new AbortController();
 
     const doFetch = () => {
-      fetch(`/api/ig-photos?posts=${encodeURIComponent(posts[0])}`, {
-        signal: controller.signal,
-      })
+      const nbh = place.neighborhood ?? place.branches[0]?.neighborhood;
+      const url =
+        `/api/place-photos/${encodeURIComponent(place.id)}` +
+        `?name=${encodeURIComponent(place.name)}` +
+        (nbh ? `&nbh=${encodeURIComponent(nbh)}` : "");
+      fetch(url, { signal: controller.signal })
         .then((r) => r.json())
         .then((data: { photos: string[] }) => {
           if (data.photos?.[0]) setIgPhoto(data.photos[0]);

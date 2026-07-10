@@ -8,29 +8,13 @@ import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
+import { getPlacePhotos } from "@/lib/salsabeel/place-photos";
 
 export const dynamic = "force-dynamic";
 
 function formatVisits(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
   return n.toString();
-}
-
-async function fetchIgPhotos(posts: string[]): Promise<string[]> {
-  if (!posts.length) return [];
-  try {
-    const param = posts.slice(0, 5).map(encodeURIComponent).join(",");
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-    const res = await fetch(`${base}/api/ig-photos?posts=${param}`, {
-      signal: AbortSignal.timeout(8000),
-      next: { revalidate: 86400 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.photos as string[]) ?? [];
-  } catch {
-    return [];
-  }
 }
 
 export default async function PlaceDetailPage({ params }: { params: { id: string } }) {
@@ -44,11 +28,16 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   const cat = getCategoryMeta(place.category);
   const mainBranch = place.branches[0];
 
-  // Fetch Instagram photos via oEmbed (free, no API key)
-  const igPhotos = await fetchIgPhotos(place.instagramPosts ?? []);
+  // Fetch (or serve from Supabase cache) 2 photos via Google Places API (Legacy)
+  const cachedPhotos = await getPlacePhotos(
+    place.id,
+    place.name,
+    place.neighborhood ?? mainBranch?.neighborhood,
+    2
+  );
 
-  // Determine hero image: Instagram first, then stored photos
-  const heroPhoto = igPhotos[0] ?? place.photos?.[0] ?? null;
+  // Hero: Supabase-cached Google photo first, then manual photos
+  const heroPhoto = cachedPhotos[0] ?? place.photos?.[0] ?? null;
 
   // Place-level location data (fallback to first branch for old entries that predate these fields)
   const displayNeighborhood = place.neighborhood ?? mainBranch?.neighborhood;
@@ -67,8 +56,8 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
           ? `https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`
           : null);
 
-  // Gallery: prefer Instagram photos (up to 5), fall back to stored photos
-  const galleryPhotos = igPhotos.length > 0 ? igPhotos : (place.photos ?? []);
+  // Gallery: Supabase-cached Google photos, then manual photos
+  const galleryPhotos = cachedPhotos.length > 0 ? cachedPhotos : (place.photos ?? []);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
@@ -308,20 +297,13 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         </div>
       )}
 
-      {/* Photos gallery — Instagram posts first, fall back to stored photos */}
+      {/* Photos gallery — Supabase-cached Google photos, then manual photos */}
       {galleryPhotos.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-extrabold text-ink-900">
-            {igPhotos.length > 0 ? "📸 صور من انستقرام" : "📷 صور المكان"}
-          </h2>
+          <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {galleryPhotos.slice(0, 5).map((photo, i) => (
-              <a
-                key={i}
-                href={igPhotos.length > 0 && place!.instagramPosts?.[i] ? place!.instagramPosts[i] : photo}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            {galleryPhotos.slice(0, 2).map((photo, i) => (
+              <a key={i} href={photo} target="_blank" rel="noopener noreferrer">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo}
