@@ -306,11 +306,21 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         </div>
       )}
 
-      {/* Branches — only show when there are 2 or more */}
-      {place.branches.length > 1 && (
+      {/* Branches — show for any place that has branch data */}
+      {place.branches.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 فروع {place.name}</h2>
-          <p className="mb-4 text-sm text-ink-600">اضغط على الفرع لعرض عنوانه وتفاصيله</p>
+          {place.branches.length === 1 ? (
+            <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 موقع المنشأة</h2>
+          ) : (
+            <>
+              <h2 className="mb-1 text-xl font-extrabold text-ink-900">
+                📍 فروع {place.name}
+              </h2>
+              <p className="mb-4 text-sm text-ink-600">
+                {place.branches.length} فروع — اضغط على الفرع لعرض عنوانه وتفاصيله
+              </p>
+            </>
+          )}
           <BranchPanel branches={place.branches} placeId={place.id} />
         </div>
       )}

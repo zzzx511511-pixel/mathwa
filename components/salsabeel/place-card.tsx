@@ -58,6 +58,12 @@ export function PlaceCard({ place }: { place: Place }) {
     <Link
       ref={cardRef}
       href={`/places/${place.id}`}
+      onClick={() => {
+        try {
+          sessionStorage.setItem("sal_back_url", window.location.href);
+          sessionStorage.setItem("sal_back_scroll", String(Math.round(window.scrollY)));
+        } catch { /* ignore private/incognito */ }
+      }}
       className="group flex flex-col overflow-hidden rounded-3xl transition hover:-translate-y-1 hover:shadow-xl"
       style={{ border: "1px solid #e0f2fe", background: "#fff" }}
     >

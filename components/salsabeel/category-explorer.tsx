@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, lazy, Suspense, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { Place } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
@@ -72,6 +72,20 @@ export function CategoryExplorer({
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoState, setGeoState]   = useState<"idle" | "loading" | "error">("idle");
   const [geoError, setGeoError]   = useState<string>("");
+
+  // Restore scroll position when returning from a place detail page
+  useEffect(() => {
+    try {
+      const savedUrl    = sessionStorage.getItem("sal_back_url");
+      const savedScroll = sessionStorage.getItem("sal_back_scroll");
+      if (savedUrl === window.location.href && savedScroll) {
+        sessionStorage.removeItem("sal_back_url");
+        sessionStorage.removeItem("sal_back_scroll");
+        const y = parseInt(savedScroll, 10);
+        if (y > 0) requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" }));
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   const filtered = useMemo(() => {
     const byRegion = active === "all" ? places : places.filter((p) => p.region === active);
