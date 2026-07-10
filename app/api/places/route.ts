@@ -4,6 +4,7 @@ import {
   upsertCustomPlace,
   deleteCustomPlace,
 } from "@/lib/salsabeel/supabase-places";
+import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
 
 export async function GET() {
   const places = await getCustomPlaces();
@@ -11,6 +12,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isAdminAuthed(req)) return unauthorized();
   try {
     const place = await req.json();
     if (!place?.id || !place?.name) {
@@ -25,6 +27,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  if (!isAdminAuthed(req)) return unauthorized();
   try {
     const { id } = await req.json();
     if (!id) return NextResponse.json({ error: "id مطلوب" }, { status: 400 });

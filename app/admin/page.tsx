@@ -10,8 +10,6 @@ import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import { LocationPicker } from "@/components/salsabeel/location-picker";
 
-const ADMIN_PW = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
-const SESSION_KEY = "sal_admin_auth";
 
 type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" | "branches" | "instagramPosts"> & {
   id: string;
@@ -29,15 +27,28 @@ type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" 
 function PasswordGate({ onAuth }: { onAuth: () => void }) {
   const [pw, setPw] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function tryLogin(e: React.FormEvent) {
+  async function tryLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (ADMIN_PW && pw === ADMIN_PW) {
-      sessionStorage.setItem(SESSION_KEY, "1");
-      onAuth();
-    } else {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw }),
+      });
+      if (res.ok) {
+        onAuth();
+      } else {
+        setError(true);
+        setPw("");
+      }
+    } catch {
       setError(true);
       setPw("");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -67,9 +78,10 @@ function PasswordGate({ onAuth }: { onAuth: () => void }) {
           )}
           <button
             type="submit"
-            className="w-full rounded-2xl bg-sal-600 py-3 text-sm font-bold text-white hover:bg-sal-700 transition"
+            disabled={loading}
+            className="w-full rounded-2xl bg-sal-600 py-3 text-sm font-bold text-white hover:bg-sal-700 transition disabled:opacity-60"
           >
-            دخول
+            {loading ? "جاري التحقق…" : "دخول"}
           </button>
         </form>
         <div className="text-center">
@@ -88,8 +100,11 @@ export default function AdminPage() {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === "1") setAuthed(true);
-    setChecked(true);
+    fetch("/api/admin-auth")
+      .then((r) => r.json())
+      .then((d: { authed?: boolean }) => { if (d.authed) setAuthed(true); })
+      .catch(() => {})
+      .finally(() => setChecked(true));
   }, []);
 
   if (!checked) return null;
@@ -465,8 +480,12 @@ function AdminDashboard() {
   }
 
   // ── Logout ──────────────────────────────────────────────────────────
-  function logout() {
-    sessionStorage.removeItem(SESSION_KEY);
+  async function logout() {
+    await fetch("/api/admin-auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "logout" }),
+    }).catch(() => {});
     window.location.reload();
   }
 
