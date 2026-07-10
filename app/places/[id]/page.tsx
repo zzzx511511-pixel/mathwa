@@ -9,6 +9,7 @@ import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
 import { getPlacePhotos } from "@/lib/salsabeel/place-photos";
+import { PhotoLightbox } from "@/components/salsabeel/photo-lightbox";
 
 export const dynamic = "force-dynamic";
 
@@ -301,18 +302,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       {galleryPhotos.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {galleryPhotos.slice(0, 2).map((photo, i) => (
-              <a key={i} href={photo} target="_blank" rel="noopener noreferrer">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photo}
-                  alt={`${place.name} - صورة ${i + 1}`}
-                  className="aspect-square w-full rounded-2xl object-cover transition hover:opacity-90 hover:shadow-md"
-                />
-              </a>
-            ))}
-          </div>
+          <PhotoLightbox photos={galleryPhotos.slice(0, 2)} altPrefix={place.name} />
         </div>
       )}
 
