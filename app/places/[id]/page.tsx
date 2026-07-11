@@ -19,10 +19,18 @@ function formatVisits(n: number) {
 }
 
 export default async function PlaceDetailPage({ params }: { params: { id: string } }) {
+  // Always fetch custom_places so we can apply tombstones and edits to static entries
+  const custom = await getCustomPlaces();
+  const customById = new Map(custom.map((p) => [p.id, p]));
+
   let place = getPlaceById(params.id) ?? null;
-  if (!place) {
-    const custom = await getCustomPlaces();
-    place = custom.find((p) => p.id === params.id) ?? null;
+  if (place) {
+    const override = customById.get(place.id);
+    if (override?._deleted) notFound();   // admin deleted this static place
+    if (override) place = override;        // admin edited this static place
+  } else {
+    const cp = customById.get(params.id);
+    place = (cp && !cp._deleted) ? cp : null;
   }
   if (!place) notFound();
 
