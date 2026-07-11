@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPlaceById } from "@/lib/salsabeel/data";
 import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
+import { BackButton } from "@/components/salsabeel/back-button";
 
 export const dynamic = "force-dynamic";
 
@@ -146,15 +147,10 @@ export default async function BranchDetailPage({
 
       {/* Back to place */}
       <div className="text-center">
-        <Link
-          href={`/places/${place.id}`}
-          className="inline-flex items-center gap-2 rounded-xl border border-sal-200 bg-white px-6 py-2.5 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
-          عودة لـ {place.name}
-        </Link>
+        <BackButton
+          fallbackHref={`/places/${place.id}`}
+          label={`عودة لـ ${place.name}`}
+        />
       </div>
     </div>
   );

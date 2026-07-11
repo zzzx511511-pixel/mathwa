@@ -310,7 +310,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       {place.branches.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
           {place.branches.length === 1 ? (
-            <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 موقع المنشأة</h2>
+            <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 موقع الفرع</h2>
           ) : (
             <>
               <h2 className="mb-1 text-xl font-extrabold text-ink-900">
