@@ -195,11 +195,14 @@ function AdminDashboard() {
         if (!custom.length) return;
         setPlaces((prev) => {
           const customById = new Map(custom.map((p) => [p.id, p]));
-          // Replace any static place that has a saved Supabase version
-          const merged = prev.map((p) => customById.get(p.id) ?? p);
-          // Add brand-new custom places that don't exist in static data
+          // Replace static places with their custom versions (edits / tombstones)
+          // Filter out tombstones (_deleted: true) so they disappear from the list
+          const merged = prev
+            .map((p) => customById.get(p.id) ?? p)
+            .filter((p) => !p._deleted);
+          // Add brand-new custom places (not in static data, not deleted)
           const staticIds = new Set(prev.map((p) => p.id));
-          const brandNew  = custom.filter((p) => !staticIds.has(p.id));
+          const brandNew  = custom.filter((p) => !staticIds.has(p.id) && !p._deleted);
           return brandNew.length > 0 ? [...brandNew, ...merged] : merged;
         });
       })

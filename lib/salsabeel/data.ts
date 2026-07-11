@@ -1423,7 +1423,22 @@ export function getRegionCounts(): Record<string, number> {
 
 // Merges static PLACES with Supabase custom places (dedup by id)
 export function mergePlaces(custom: Place[]): Place[] {
+  // Build a lookup of custom entries (includes tombstones with _deleted: true)
+  const customById = new Map(custom.map((p) => [p.id, p]));
+
+  // Static places: skip if tombstoned, override with custom version if edited
+  const result: Place[] = [];
+  for (const p of PLACES) {
+    const override = customById.get(p.id);
+    if (override?._deleted) continue;          // admin deleted this static place
+    result.push(override ?? p);                // use edited version if it exists
+  }
+
+  // Truly new custom places (not in static data, not deleted)
   const staticIds = new Set(PLACES.map((p) => p.id));
-  const fresh = custom.filter((p) => !staticIds.has(p.id));
-  return [...PLACES, ...fresh];
+  for (const p of custom) {
+    if (!staticIds.has(p.id) && !p._deleted) result.push(p);
+  }
+
+  return result;
 }

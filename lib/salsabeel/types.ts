@@ -61,5 +61,6 @@ export type Place = {
   specialization?: string[];
   branches: Branch[];
   createdAt: string;
+  _deleted?: boolean;
 };
 
