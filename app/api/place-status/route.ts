@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
-import { getPlaceStatuses, checkAndSavePlaceStatus } from "@/lib/salsabeel/place-photos";
+import { getPlaceStatuses, checkAndSavePlaceStatus, saveBusinessStatus } from "@/lib/salsabeel/place-photos";
 
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
@@ -31,6 +31,23 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, results });
+  } catch {
+    return NextResponse.json({ error: "طلب غير صالح" }, { status: 400 });
+  }
+}
+
+// Admin: manually override business_status for a single place.
+// Body: { id: string, status: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY" }
+export async function PATCH(req: NextRequest) {
+  if (!isAdminAuthed(req)) return unauthorized();
+  try {
+    const { id, status } = await req.json() as { id: string; status: string };
+    const valid = ["OPERATIONAL", "CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY"];
+    if (!id || !valid.includes(status)) {
+      return NextResponse.json({ error: "بيانات غير صالحة" }, { status: 400 });
+    }
+    await saveBusinessStatus(id, status);
+    return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "طلب غير صالح" }, { status: 400 });
   }

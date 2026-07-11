@@ -65,6 +65,32 @@ async function getStoredUrls(placeId: string, count: number): Promise<string[]> 
   }
 }
 
+// Delete all cached photos for a place from Supabase Storage.
+export async function deleteStoredPhotos(placeId: string): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+  try {
+    // List all files under this place's prefix
+    const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: "POST",
+      headers: storageHeaders(),
+      body: JSON.stringify({ prefix: `${placeId}/`, limit: 50 }),
+    });
+    if (!listRes.ok) return false;
+    const files: { name: string }[] = await listRes.json();
+    if (!files.length) return true;
+
+    const paths = files.map((f) => `${placeId}/${f.name}`);
+    const delRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+      method: "DELETE",
+      headers: storageHeaders(),
+      body: JSON.stringify({ prefixes: paths }),
+    });
+    return delRes.ok;
+  } catch {
+    return false;
+  }
+}
+
 // Fetch photo references + business_status from Google Places Legacy API.
 async function fetchGoogleData(
   query: string,
@@ -114,7 +140,7 @@ function dbHeaders(extra?: Record<string, string>) {
   };
 }
 
-async function saveBusinessStatus(placeId: string, status: string): Promise<void> {
+export async function saveBusinessStatus(placeId: string, status: string): Promise<void> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return;
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/place_status`, {

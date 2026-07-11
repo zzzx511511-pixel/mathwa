@@ -1640,19 +1640,51 @@ function AdminDashboard() {
                             {place.branches.length} {place.branches.length === 1 ? "فرع" : "فروع"}
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => startEdit(place)}
-                                className="rounded-lg border border-sal-200 bg-sal-50 px-3 py-1.5 text-xs font-bold text-sal-700 hover:border-sal-400 hover:bg-sal-100 transition"
-                              >
-                                ✏️ تعديل
-                              </button>
-                              <button
-                                onClick={() => confirmDelete(place.id)}
-                                className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:border-red-300 hover:bg-red-100 transition"
-                              >
-                                🗑️ حذف
-                              </button>
+                            <div className="flex flex-col items-center gap-1.5">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => startEdit(place)}
+                                  className="rounded-lg border border-sal-200 bg-sal-50 px-3 py-1.5 text-xs font-bold text-sal-700 hover:border-sal-400 hover:bg-sal-100 transition"
+                                >
+                                  ✏️ تعديل
+                                </button>
+                                <button
+                                  onClick={() => confirmDelete(place.id)}
+                                  className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:border-red-300 hover:bg-red-100 transition"
+                                >
+                                  🗑️ حذف
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <select
+                                  value={placeStatuses.get(place.id) ?? ""}
+                                  onChange={async (e) => {
+                                    const status = e.target.value;
+                                    setPlaceStatuses((prev) => new Map(prev).set(place.id, status));
+                                    await fetch("/api/place-status", {
+                                      method: "PATCH",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ id: place.id, status }),
+                                    });
+                                  }}
+                                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-ink-700 focus:outline-none"
+                                >
+                                  <option value="">— الحالة —</option>
+                                  <option value="OPERATIONAL">🟢 مفتوح</option>
+                                  <option value="CLOSED_TEMPORARILY">🟠 مغلق مؤقتًا</option>
+                                  <option value="CLOSED_PERMANENTLY">🔴 مغلق نهائيًا</option>
+                                </select>
+                                <button
+                                  title="مسح الصور المخزنة"
+                                  onClick={async () => {
+                                    if (!confirm(`مسح صور ${place.name}؟`)) return;
+                                    await fetch(`/api/place-photos/${place.id}`, { method: "DELETE" });
+                                  }}
+                                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-ink-600 hover:bg-gray-100 transition"
+                                >
+                                  🖼️ مسح
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </>
