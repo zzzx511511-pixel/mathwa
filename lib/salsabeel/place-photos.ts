@@ -65,14 +65,17 @@ async function getStoredUrls(placeId: string, count: number): Promise<string[]> 
   }
 }
 
-// Fetch photo references from Google Places Legacy API.
-async function fetchGoogleRefs(query: string, count: number): Promise<string[]> {
-  if (!GOOGLE_KEY) return [];
+// Fetch photo references + business_status from Google Places Legacy API.
+async function fetchGoogleData(
+  query: string,
+  count: number
+): Promise<{ refs: string[]; businessStatus: string | null }> {
+  if (!GOOGLE_KEY) return { refs: [], businessStatus: null };
   try {
     const params = new URLSearchParams({
       input: query,
       inputtype: "textquery",
-      fields: "photos",
+      fields: "photos,business_status",
       language: "ar",
       locationbias: "circle:30000@24.687731,46.721893",
       key: GOOGLE_KEY,
@@ -80,19 +83,66 @@ async function fetchGoogleRefs(query: string, count: number): Promise<string[]> 
     const res = await fetch(`${PLACES_BASE}/findplacefromtext/json?${params}`, {
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { refs: [], businessStatus: null };
     const data = await res.json();
     if (data.status !== "OK") {
       const hint = `${GOOGLE_KEY.slice(0, 8)}...${GOOGLE_KEY.slice(-4)} (len=${GOOGLE_KEY.length})`;
       console.error(
         `[place-photos] Google status=${data.status} | ${data.error_message ?? ""} | key=${hint}`
       );
-      return [];
+      return { refs: [], businessStatus: null };
     }
-    const photos: { photo_reference: string }[] = data.candidates?.[0]?.photos ?? [];
-    return photos.slice(0, count).map((p) => p.photo_reference);
+    const candidate = data.candidates?.[0];
+    const photos: { photo_reference: string }[] = candidate?.photos ?? [];
+    const businessStatus: string | null = candidate?.business_status ?? null;
+    return {
+      refs: photos.slice(0, count).map((p: { photo_reference: string }) => p.photo_reference),
+      businessStatus,
+    };
   } catch (err) {
-    console.error("[place-photos] fetchGoogleRefs threw:", err);
+    console.error("[place-photos] fetchGoogleData threw:", err);
+    return { refs: [], businessStatus: null };
+  }
+}
+
+function dbHeaders(extra?: Record<string, string>) {
+  return {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    ...extra,
+  };
+}
+
+async function saveBusinessStatus(placeId: string, status: string): Promise<void> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/place_status`, {
+      method: "POST",
+      headers: dbHeaders({ Prefer: "resolution=merge-duplicates" }),
+      body: JSON.stringify({ id: placeId, business_status: status, checked_at: new Date().toISOString() }),
+    });
+  } catch {
+    // non-critical
+  }
+}
+
+export interface PlaceStatus {
+  id: string;
+  business_status: string;
+  checked_at: string;
+}
+
+export async function getPlaceStatuses(): Promise<PlaceStatus[]> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return [];
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/place_status?select=id,business_status,checked_at`,
+      { headers: dbHeaders() }
+    );
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
     return [];
   }
 }
@@ -172,7 +222,13 @@ export async function getPlacePhotos(
   await ensureBucket();
 
   const query = [placeName, neighborhood, "الرياض"].filter(Boolean).join(" ");
-  const refs  = await fetchGoogleRefs(query, count);
+  const { refs, businessStatus } = await fetchGoogleData(query, count);
+
+  if (businessStatus) {
+    // Fire-and-forget — don't block photo delivery on DB write.
+    saveBusinessStatus(placeId, businessStatus).catch(() => {});
+  }
+
   if (!refs.length) return cached;
 
   // 3. Download images and store in Supabase; run in parallel.

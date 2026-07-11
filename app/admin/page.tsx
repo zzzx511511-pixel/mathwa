@@ -123,6 +123,7 @@ function AdminDashboard() {
   const [videoUrlInput, setVideoUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [aiLoading, setAiLoading] = useState<string | null>(null); // field key being generated
+  const [placeStatuses, setPlaceStatuses] = useState<Map<string, string>>(new Map());
 
   async function generateWithAI(
     field: "description" | "opinion",
@@ -205,6 +206,17 @@ function AdminDashboard() {
           const brandNew  = custom.filter((p) => !staticIds.has(p.id) && !p._deleted);
           return brandNew.length > 0 ? [...brandNew, ...merged] : merged;
         });
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load business statuses from Google Places cache.
+  useEffect(() => {
+    fetch("/api/place-status")
+      .then((r) => r.json())
+      .then((rows: { id: string; business_status: string }[]) => {
+        if (!Array.isArray(rows)) return;
+        setPlaceStatuses(new Map(rows.map((r) => [r.id, r.business_status])));
       })
       .catch(() => {});
   }, []);
@@ -1505,14 +1517,32 @@ function AdminDashboard() {
                         <>
                           <td className="px-4 py-3">
                             <div>
-                              <Link href={`/places/${place.id}`} className="font-bold text-ink-900 hover:text-sal-600 transition">
-                                {place.name}
-                              </Link>
-                              {place.isWomenOnly && (
-                                <span className="mr-2 rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-pink-700">
-                                  نسائية
-                                </span>
-                              )}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <Link href={`/places/${place.id}`} className="font-bold text-ink-900 hover:text-sal-600 transition">
+                                  {place.name}
+                                </Link>
+                                {(() => {
+                                  const s = placeStatuses.get(place.id);
+                                  if (s === "CLOSED_PERMANENTLY")
+                                    return (
+                                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                                        🔴 مغلق نهائيًا
+                                      </span>
+                                    );
+                                  if (s === "CLOSED_TEMPORARILY")
+                                    return (
+                                      <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700">
+                                        🟠 مغلق مؤقتًا
+                                      </span>
+                                    );
+                                  return null;
+                                })()}
+                                {place.isWomenOnly && (
+                                  <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-pink-700">
+                                    نسائية
+                                  </span>
+                                )}
+                              </div>
                               <p className="mt-0.5 line-clamp-1 text-xs text-ink-600">{place.description}</p>
                               {(place.acceptanceRate !== undefined || place.rejectionRate !== undefined) && (
                                 <div className="mt-1 flex gap-3 text-[10px] font-semibold">
