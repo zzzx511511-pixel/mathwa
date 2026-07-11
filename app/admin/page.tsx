@@ -118,6 +118,8 @@ function AdminDashboard() {
   const [editingId, setEditingId]   = useState<string | null>(null);
   const [editForm, setEditForm]     = useState<EditState | null>(null);
   const [deleteId, setDeleteId]     = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError]     = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState<string>("all");
   const [tab, setTab]               = useState<"places" | "add">("places");
   const [videoUrlInput, setVideoUrlInput] = useState("");
@@ -448,19 +450,33 @@ function AdminDashboard() {
   }
 
   // ── Delete helpers ──────────────────────────────────────────────────
-  function confirmDelete(id: string) { setDeleteId(id); }
-  function doDelete() {
-    if (!deleteId) return;
+  function confirmDelete(id: string) { setDeleteId(id); setDeleteError(null); }
+  async function doDelete() {
+    if (!deleteId || deleteLoading) return;
     const id = deleteId;
-    setPlaces((prev) => prev.filter((p) => p.id !== id));
-    setDeleteId(null);
-    fetch("/api/places", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    }).catch(() => {});
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/places", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setDeleteError(body.error ?? "فشل الحذف، حاول مجددًا");
+        return;
+      }
+      // Only update UI after confirmed server success
+      setPlaces((prev) => prev.filter((p) => p.id !== id));
+      setDeleteId(null);
+    } catch {
+      setDeleteError("خطأ في الاتصال، تحقق من الإنترنت وحاول مجددًا");
+    } finally {
+      setDeleteLoading(false);
+    }
   }
-  function cancelDelete() { setDeleteId(null); }
+  function cancelDelete() { setDeleteId(null); setDeleteError(null); }
 
   // ── Add helpers ─────────────────────────────────────────────────────
   function handleAdd() {
@@ -1675,16 +1691,23 @@ function AdminDashboard() {
                 ؟ لا يمكن التراجع عن هذا الإجراء.
               </p>
             </div>
+            {deleteError && (
+              <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                ⚠️ {deleteError}
+              </p>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={doDelete}
-                className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition"
+                disabled={deleteLoading}
+                className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60 transition"
               >
-                نعم، احذف
+                {deleteLoading ? "جاري الحذف…" : "نعم، احذف"}
               </button>
               <button
                 onClick={cancelDelete}
-                className="flex-1 rounded-xl border border-sal-200 py-2.5 text-sm font-semibold text-ink-700 hover:bg-sal-50 transition"
+                disabled={deleteLoading}
+                className="flex-1 rounded-xl border border-sal-200 py-2.5 text-sm font-semibold text-ink-700 hover:bg-sal-50 disabled:opacity-60 transition"
               >
                 إلغاء
               </button>
