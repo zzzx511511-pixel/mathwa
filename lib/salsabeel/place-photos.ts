@@ -147,6 +147,21 @@ export async function getPlaceStatuses(): Promise<PlaceStatus[]> {
   }
 }
 
+export async function getPlaceStatus(placeId: string): Promise<string | null> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/place_status?id=eq.${encodeURIComponent(placeId)}&select=business_status&limit=1`,
+      { headers: dbHeaders() }
+    );
+    if (!res.ok) return null;
+    const rows: { business_status: string }[] = await res.json();
+    return rows[0]?.business_status ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Explicitly check and save business_status for a single place (no photo side effect).
 export async function checkAndSavePlaceStatus(
   placeId: string,

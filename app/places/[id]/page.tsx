@@ -8,7 +8,7 @@ import { BranchPanel } from "@/components/salsabeel/branch-panel";
 import { PlaceImage } from "@/components/salsabeel/place-image";
 import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
-import { getPlacePhotos } from "@/lib/salsabeel/place-photos";
+import { getPlacePhotos, getPlaceStatus } from "@/lib/salsabeel/place-photos";
 import { PhotoLightbox } from "@/components/salsabeel/photo-lightbox";
 
 export const dynamic = "force-dynamic";
@@ -37,13 +37,16 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   const cat = getCategoryMeta(place.category);
   const mainBranch = place.branches[0];
 
-  // Fetch (or serve from Supabase cache) 2 photos via Google Places API (Legacy)
-  const cachedPhotos = await getPlacePhotos(
-    place.id,
-    place.name,
-    place.neighborhood ?? mainBranch?.neighborhood,
-    2
-  );
+  // Fetch photos and business status in parallel
+  const [cachedPhotos, businessStatus] = await Promise.all([
+    getPlacePhotos(
+      place.id,
+      place.name,
+      place.neighborhood ?? mainBranch?.neighborhood,
+      2
+    ),
+    getPlaceStatus(place.id),
+  ]);
 
   // Hero: Supabase-cached Google photo first, then manual photos
   const heroPhoto = cachedPhotos[0] ?? place.photos?.[0] ?? null;
@@ -84,6 +87,26 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         )}
         <span className="text-ink-900 font-medium">{place.name}</span>
       </nav>
+
+      {/* Business status banner */}
+      {businessStatus === "CLOSED_PERMANENTLY" && (
+        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
+          <span className="text-2xl">🔴</span>
+          <div>
+            <p className="font-extrabold text-red-700">هذا المكان مغلق نهائيًا</p>
+            <p className="mt-0.5 text-sm text-red-600">وفقًا لبيانات Google — يُنصح بالتحقق قبل الزيارة</p>
+          </div>
+        </div>
+      )}
+      {businessStatus === "CLOSED_TEMPORARILY" && (
+        <div className="flex items-start gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4">
+          <span className="text-2xl">🟠</span>
+          <div>
+            <p className="font-extrabold text-orange-700">هذا المكان مغلق مؤقتًا</p>
+            <p className="mt-0.5 text-sm text-orange-600">وفقًا لبيانات Google — قد يفتح لاحقًا، تحقق قبل الزيارة</p>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="relative overflow-hidden rounded-3xl h-56 md:h-72">
