@@ -147,6 +147,19 @@ export async function getPlaceStatuses(): Promise<PlaceStatus[]> {
   }
 }
 
+// Explicitly check and save business_status for a single place (no photo side effect).
+export async function checkAndSavePlaceStatus(
+  placeId: string,
+  placeName: string,
+  neighborhood?: string
+): Promise<string | null> {
+  if (!GOOGLE_KEY) return null;
+  const query = [placeName, neighborhood, "الرياض"].filter(Boolean).join(" ");
+  const { businessStatus } = await fetchGoogleData(query, 0);
+  if (businessStatus) await saveBusinessStatus(placeId, businessStatus);
+  return businessStatus;
+}
+
 // Download one photo from Google and upload it to Supabase Storage.
 async function downloadAndStore(
   placeId: string,

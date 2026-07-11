@@ -124,6 +124,7 @@ function AdminDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [aiLoading, setAiLoading] = useState<string | null>(null); // field key being generated
   const [placeStatuses, setPlaceStatuses] = useState<Map<string, string>>(new Map());
+  const [statusChecking, setStatusChecking] = useState(false);
 
   async function generateWithAI(
     field: "description" | "opinion",
@@ -180,6 +181,37 @@ function AdminDashboard() {
       // silently fail
     } finally {
       setAiLoading(null);
+    }
+  }
+
+  async function checkAllStatuses() {
+    if (statusChecking) return;
+    setStatusChecking(true);
+    try {
+      const payload = places.map((p) => ({
+        id: p.id,
+        name: p.name,
+        neighborhood: p.neighborhood ?? p.branches[0]?.neighborhood,
+      }));
+      const res = await fetch("/api/place-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ places: payload }),
+      });
+      const data = await res.json() as { results?: { id: string; business_status: string | null }[] };
+      if (data.results) {
+        setPlaceStatuses(
+          new Map(
+            data.results
+              .filter((r) => r.business_status)
+              .map((r) => [r.id, r.business_status as string])
+          )
+        );
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setStatusChecking(false);
     }
   }
 
@@ -909,6 +941,22 @@ function AdminDashboard() {
                 </button>
               );
             })}
+          </div>
+
+          {/* Status check */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={checkAllStatuses}
+              disabled={statusChecking}
+              className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition"
+            >
+              {statusChecking ? "⏳ جاري الفحص…" : "🔍 فحص حالة المنشآت"}
+            </button>
+            {placeStatuses.size > 0 && (
+              <span className="text-xs text-ink-500">
+                {[...placeStatuses.values()].filter((s) => s !== "OPERATIONAL").length} منشأة تحتاج مراجعة
+              </span>
+            )}
           </div>
 
           {/* Table */}
