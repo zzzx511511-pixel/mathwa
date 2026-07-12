@@ -29,7 +29,7 @@ const REGIONS = [
   { value: "وسط",  label: "🎯 وسط" },
 ];
 
-// Approximate center coordinates for each Riyadh region
+// Region centers kept only for the map view — NOT used for distance sorting.
 const REGION_CENTERS: Record<string, { lat: number; lng: number }> = {
   "شمال": { lat: 24.80, lng: 46.65 },
   "جنوب": { lat: 24.57, lng: 46.72 },
@@ -75,7 +75,15 @@ export function CategoryExplorer({
   const [geoState, setGeoState]   = useState<"idle" | "loading" | "error">("idle");
   const [geoError, setGeoError]   = useState<string>("");
 
-  // Restore scroll position when returning from a place detail page
+  // Persist sort+coords to sessionStorage so back-navigation can restore them
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("sal_sort", sort);
+      if (userCoords) sessionStorage.setItem("sal_coords", JSON.stringify(userCoords));
+    } catch { /* ignore */ }
+  }, [sort, userCoords]);
+
+  // Restore scroll position AND sort state when returning from a place detail page
   useEffect(() => {
     try {
       const savedUrl    = sessionStorage.getItem("sal_back_url");
@@ -85,6 +93,15 @@ export function CategoryExplorer({
         sessionStorage.removeItem("sal_back_scroll");
         const y = parseInt(savedScroll, 10);
         if (y > 0) requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" }));
+
+        const savedSort   = sessionStorage.getItem("sal_sort") as SortMode | null;
+        const savedCoords = sessionStorage.getItem("sal_coords");
+        if (savedSort && savedSort !== "default") {
+          setSort(savedSort);
+          if (savedSort === "nearest" && savedCoords) {
+            setUserCoords(JSON.parse(savedCoords));
+          }
+        }
       }
     } catch { /* ignore */ }
   }, []);
@@ -114,16 +131,14 @@ export function CategoryExplorer({
     }
     if (sort === "nearest" && userCoords) {
       return [...filtered].sort((a, b) => {
-        const fallbackA = REGION_CENTERS[a.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
-        const fallbackB = REGION_CENTERS[b.region ?? "وسط"] ?? REGION_CENTERS["وسط"];
-        const latA = a.lat ?? fallbackA.lat;
-        const lngA = a.lng ?? fallbackA.lng;
-        const latB = b.lat ?? fallbackB.lat;
-        const lngB = b.lng ?? fallbackB.lng;
-        return (
-          haversineKm(userCoords.lat, userCoords.lng, latA, lngA) -
-          haversineKm(userCoords.lat, userCoords.lng, latB, lngB)
-        );
+        // Places without precise coordinates → pushed to end (Infinity distance)
+        const distA = (a.lat != null && a.lng != null)
+          ? haversineKm(userCoords.lat, userCoords.lng, a.lat, a.lng)
+          : Infinity;
+        const distB = (b.lat != null && b.lng != null)
+          ? haversineKm(userCoords.lat, userCoords.lng, b.lat, b.lng)
+          : Infinity;
+        return distA - distB;
       });
     }
     return filtered;
@@ -381,6 +396,20 @@ export function CategoryExplorer({
           <CategoryMapView places={displayed} cat={cat} />
         </Suspense>
       )}
+
+      {/* ── Nearest note ── */}
+      {view === "cards" && sort === "nearest" && (() => {
+        const withCoords  = displayed.filter((p) => p.lat != null && p.lng != null).length;
+        const withoutCoords = displayed.length - withCoords;
+        if (withoutCoords === 0) return null;
+        return (
+          <p className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-2.5 text-xs text-amber-700">
+            📍 {withCoords > 0
+              ? `${withCoords} منشأة لديها إحداثيات دقيقة وتظهر أولاً — ${withoutCoords} منشأة بدون إحداثيات مسجّلة وتظهر في النهاية`
+              : `لا توجد إحداثيات دقيقة لأي منشأة حالياً — يمكن إضافتها من لوحة التحكم`}
+          </p>
+        );
+      })()}
 
       {/* ── Cards grid ── */}
       {view === "cards" && (
