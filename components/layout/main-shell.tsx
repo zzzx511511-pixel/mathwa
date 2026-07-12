@@ -9,6 +9,8 @@ const FOOTER_LINKS = [
   { href: "/#regions",    label: "المناطق" },
   { href: "/#contact",    label: "تواصل معنا" },
   { href: "mailto:salsabelapp@gmail.com", label: "salsabelapp@gmail.com" },
+  { href: "/privacy", label: "سياسة الخصوصية" },
+  { href: "/terms",   label: "شروط الاستخدام" },
 ];
 
 export function MainShell({ children }: { children: ReactNode }) {
