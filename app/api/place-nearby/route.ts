@@ -6,27 +6,45 @@ const PLACES_BASE = "https://maps.googleapis.com/maps/api/place";
 
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
-  const q = req.nextUrl.searchParams.get("q")?.trim();
-  if (!q) return NextResponse.json({ results: [] });
+
+  const lat  = req.nextUrl.searchParams.get("lat");
+  const lng  = req.nextUrl.searchParams.get("lng");
+  const name = req.nextUrl.searchParams.get("name")?.trim() ?? "";
+
+  if (!lat || !lng) return NextResponse.json({ results: [] });
   if (!GOOGLE_KEY) return NextResponse.json({ error: "مفتاح Google غير موجود" }, { status: 500 });
 
   try {
     const params = new URLSearchParams({
-      query: `${q} الرياض`,
-      fields: "place_id,name,formatted_address",
+      location: `${lat},${lng}`,
+      radius: "300",
       language: "ar",
       key: GOOGLE_KEY,
+      ...(name ? { keyword: name } : {}),
     });
-    const res = await fetch(`${PLACES_BASE}/textsearch/json?${params}`, {
+
+    const res = await fetch(`${PLACES_BASE}/nearbysearch/json?${params}`, {
       signal: AbortSignal.timeout(8000),
     });
+
     if (!res.ok) return NextResponse.json({ results: [] });
     const data = await res.json();
-    if (data.status !== "OK") return NextResponse.json({ results: [] });
+    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+      return NextResponse.json({ results: [] });
+    }
 
-    const results = (data.results as { place_id: string; name: string; formatted_address: string }[])
-      .slice(0, 10)
-      .map((r) => ({ place_id: r.place_id, name: r.name, address: r.formatted_address }));
+    const results = ((data.results ?? []) as {
+      place_id: string;
+      name: string;
+      vicinity: string;
+      types?: string[];
+    }[])
+      .slice(0, 6)
+      .map((r) => ({
+        place_id: r.place_id,
+        name: r.name,
+        address: r.vicinity,
+      }));
 
     return NextResponse.json({ results });
   } catch {

@@ -10,6 +10,146 @@ import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import { LocationPicker } from "@/components/salsabeel/location-picker";
 
+// ── Map Modal for Place ID selection ─────────────────────────────────────────
+function PlaceMapModal({
+  name,
+  onSelect,
+  onClose,
+}: {
+  name: string;
+  onSelect: (id: string, placeName: string) => void;
+  onClose: () => void;
+}) {
+  const mapDivRef      = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<import("leaflet").Map | null>(null);
+  const markerRef      = useRef<import("leaflet").Marker | null>(null);
+  const [nearby, setNearby]     = useState<{ place_id: string; name: string; address: string }[]>([]);
+  const [loading, setLoading]   = useState(false);
+  const [clicked, setClicked]   = useState(false);
+
+  useEffect(() => {
+    if (!mapDivRef.current || mapInstanceRef.current) return;
+
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id   = "leaflet-css";
+      link.rel  = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+
+    import("leaflet").then((L) => {
+      if (!mapDivRef.current || mapInstanceRef.current) return;
+
+      const proto = L.Icon.Default.prototype as unknown as Record<string, unknown>;
+      delete proto._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconUrl:       "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        shadowUrl:     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      });
+
+      const map = L.map(mapDivRef.current, { center: [24.69, 46.69], zoom: 12 });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
+
+      map.on("click", async (e: import("leaflet").LeafletMouseEvent) => {
+        const { lat, lng } = e.latlng;
+        setClicked(true);
+        setNearby([]);
+        setLoading(true);
+
+        if (markerRef.current) markerRef.current.remove();
+        markerRef.current = L.marker([lat, lng]).addTo(map);
+
+        try {
+          const res  = await fetch(`/api/place-nearby?lat=${lat}&lng=${lng}&name=${encodeURIComponent(name)}`);
+          const data = await res.json() as { results?: { place_id: string; name: string; address: string }[] };
+          setNearby(data.results ?? []);
+        } catch {
+          setNearby([]);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      mapInstanceRef.current = map;
+    });
+
+    return () => { mapInstanceRef.current?.remove(); mapInstanceRef.current = null; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.65)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        style={{ maxHeight: "90vh" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-sal-100 px-5 py-3">
+          <h3 className="text-sm font-black text-ink-900">🗺️ حدد الموقع على الخريطة</h3>
+          <button type="button" onClick={onClose} className="text-xl leading-none text-ink-400 hover:text-ink-700">✕</button>
+        </div>
+
+        {/* Hint */}
+        <p className="border-b border-sal-100 bg-sal-50 px-5 py-2 text-xs text-ink-500">
+          اضغط على موقع المنشأة مباشرةً — ستظهر الأماكن القريبة في القائمة أدناه للاختيار
+        </p>
+
+        {/* Map */}
+        <div ref={mapDivRef} style={{ height: 320, flexShrink: 0 }} />
+
+        {/* Results panel */}
+        <div className="max-h-56 overflow-y-auto border-t border-sal-100">
+          {!clicked && (
+            <p className="py-5 text-center text-xs text-ink-400">اضغط على نقطة في الخريطة للبدء</p>
+          )}
+          {loading && (
+            <p className="py-5 text-center text-sm text-ink-500">⏳ جارٍ البحث عن الأماكن القريبة...</p>
+          )}
+          {!loading && clicked && nearby.length === 0 && (
+            <p className="py-5 text-center text-xs text-ink-500">
+              لا توجد نتائج — جرب تكبير الخريطة والضغط على الموقع بدقة أكبر
+            </p>
+          )}
+          {!loading && nearby.length > 0 && (
+            <>
+              <p className="bg-ink-50 px-4 py-2 text-[11px] font-bold text-ink-500">
+                اختر المنشأة الصحيحة ({nearby.length} نتيجة):
+              </p>
+              {nearby.map((r) => (
+                <button
+                  key={r.place_id}
+                  type="button"
+                  onClick={() => { onSelect(r.place_id, r.name); onClose(); }}
+                  className="flex w-full items-center gap-3 border-b border-sal-50 px-4 py-3 text-right transition last:border-0 hover:bg-sal-50 active:bg-sal-100"
+                >
+                  <span className="shrink-0 text-lg text-sal-500">📍</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-ink-900">{r.name}</p>
+                    <p className="truncate text-[11px] text-ink-500">{r.address}</p>
+                    <p className="font-mono text-[10px] text-sal-600">{r.place_id}</p>
+                  </div>
+                  <span className="shrink-0 rounded-lg bg-sal-100 px-2 py-1 text-[11px] font-bold text-sal-700">
+                    اختر
+                  </span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Place ID Picker ──────────────────────────────────────────────────────────
 function PlaceIdPicker({
   name,
@@ -20,12 +160,12 @@ function PlaceIdPicker({
   value: string;
   onChange: (id: string) => void;
 }) {
-  const [query, setQuery]     = useState(name);
-  const [results, setResults] = useState<{ place_id: string; name: string; address: string }[]>([]);
+  const [query, setQuery]       = useState(name);
+  const [results, setResults]   = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched]   = useState(false);
+  const [showMap, setShowMap]     = useState(false);
 
-  // Sync query when place name changes (e.g. edit form just opened)
   useEffect(() => { if (name && !query) setQuery(name); }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function doSearch() {
@@ -53,22 +193,27 @@ function PlaceIdPicker({
         <span className="mr-2 text-[10px] font-normal text-ink-500">لضمان جلب الصور الصحيحة</span>
       </label>
 
-      {/* Current value (manual or auto-filled) */}
+      {/* Saved ID */}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="ChIJ... — سيُملأ تلقائياً عند الاختيار، أو أدخله يدوياً"
+        placeholder="ChIJ... — سيُملأ عند الاختيار أدناه، أو أدخله يدوياً"
         dir="ltr"
         className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm font-mono focus:border-sal-500 focus:outline-none"
       />
+      {value && (
+        <p className="px-1 text-[11px] font-semibold text-green-600">
+          ✓ Place ID محدد: <span className="font-mono">{value}</span>
+        </p>
+      )}
 
-      {/* Search bar */}
+      {/* Text search */}
       <div className="flex gap-2">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), doSearch())}
-          placeholder="ابحث بالاسم للعثور على الـ Place ID..."
+          placeholder="ابحث بالاسم..."
           className="flex-1 rounded-xl border border-sal-200 bg-sal-50 px-3 py-2 text-sm focus:border-sal-400 focus:bg-white focus:outline-none transition"
           style={{ direction: "rtl" }}
         />
@@ -76,53 +221,55 @@ function PlaceIdPicker({
           type="button"
           onClick={doSearch}
           disabled={searching || !query.trim()}
-          className="rounded-xl border border-sal-300 bg-white px-4 py-2 text-xs font-bold text-sal-700 hover:bg-sal-50 disabled:opacity-40 transition whitespace-nowrap"
+          className="whitespace-nowrap rounded-xl border border-sal-300 bg-white px-4 py-2 text-xs font-bold text-sal-700 transition hover:bg-sal-50 disabled:opacity-40"
         >
-          {searching ? "⏳ جاري البحث..." : "🔍 بحث في Google"}
+          {searching ? "⏳ جاري..." : "🔍 بحث نصي"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowMap(true)}
+          className="whitespace-nowrap rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+        >
+          🗺️ تحديد على الخريطة
         </button>
       </div>
 
-      {/* Results dropdown */}
+      {/* Text results */}
       {results.length > 0 && (
-        <div className="rounded-xl border border-sal-200 bg-white shadow-lg overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-sal-200 bg-white shadow-lg">
+          <p className="border-b border-sal-50 bg-sal-50 px-4 py-1.5 text-[11px] font-bold text-ink-500">
+            {results.length} نتيجة — اختر المنشأة الصحيحة:
+          </p>
           {results.map((r) => (
             <button
               key={r.place_id}
               type="button"
               onClick={() => { onChange(r.place_id); setResults([]); setSearched(false); }}
-              className="w-full px-4 py-3 text-right hover:bg-sal-50 active:bg-sal-100 transition border-b border-sal-50 last:border-0"
+              className="w-full border-b border-sal-50 px-4 py-2.5 text-right transition last:border-0 hover:bg-sal-50 active:bg-sal-100"
             >
               <p className="text-sm font-bold text-ink-900">{r.name}</p>
-              <p className="text-[11px] text-ink-500 mt-0.5">{r.address}</p>
-              <p className="text-[10px] font-mono text-sal-600 mt-0.5">{r.place_id}</p>
+              <p className="mt-0.5 text-[11px] text-ink-500">{r.address}</p>
+              <p className="mt-0.5 font-mono text-[10px] text-sal-600">{r.place_id}</p>
             </button>
           ))}
         </div>
       )}
 
-      {/* No results state */}
+      {/* No results */}
       {searched && results.length === 0 && (
-        <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
+        <div className="space-y-1 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800">
           <p className="font-semibold">لم تُعثر على نتائج لـ &ldquo;{query}&rdquo;</p>
-          <p>جرب: اكتب الاسم بالعربي أو الإنجليزي، أو أضف اسم الحي</p>
-          <p>
-            أو ابحث{" "}
-            <a
-              href={`https://www.google.com/maps/search/${encodeURIComponent(query + " الرياض")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold underline hover:text-amber-900"
-            >
-              في Google Maps ↗
-            </a>
-            {" "}ثم انسخ الـ Place ID من عنوان الصفحة (يبدأ بـ ChIJ)
-          </p>
+          <p>جرب: اكتب الاسم بالعربي أو الإنجليزي، أو أضف اسم الحي — أو استخدم زر 🗺️ لتحديد الموقع يدوياً</p>
         </div>
       )}
 
-      {/* Confirmation when value is set */}
-      {value && (
-        <p className="text-[11px] text-green-600 font-semibold px-1">✓ Place ID محدد: <span className="font-mono">{value}</span></p>
+      {/* Map modal */}
+      {showMap && (
+        <PlaceMapModal
+          name={name || query}
+          onSelect={(id, placeName) => { onChange(id); setQuery(placeName); setResults([]); }}
+          onClose={() => setShowMap(false)}
+        />
       )}
     </div>
   );
