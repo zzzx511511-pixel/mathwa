@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPlacePhotos, deleteStoredPhotos } from "@/lib/salsabeel/place-photos";
+import { getPlacePhotos, deleteStoredPhotos, clearSkipSentinel } from "@/lib/salsabeel/place-photos";
 import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
 
 // Client-side endpoint: PlaceCard calls this for lazy-loaded card images.
@@ -23,7 +23,7 @@ export async function GET(
   );
 }
 
-// Admin: delete all cached photos for a place so they re-fetch from Google.
+// Admin: delete all cached photos and write .skip sentinel (blocks Google refetch).
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { placeId: string } }
@@ -31,5 +31,15 @@ export async function DELETE(
   if (!isAdminAuthed(req)) return unauthorized();
   const ok = await deleteStoredPhotos(params.placeId);
   if (!ok) return NextResponse.json({ error: "فشل المسح" }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
+// Admin: clear .skip sentinel so Google can refetch photos on next page visit.
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { placeId: string } }
+) {
+  if (!isAdminAuthed(req)) return unauthorized();
+  await clearSkipSentinel(params.placeId);
   return NextResponse.json({ ok: true });
 }

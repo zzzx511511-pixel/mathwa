@@ -35,41 +35,61 @@ async function ensureBucket(): Promise<void> {
   }
 }
 
-// List already-stored photos for a place and return their public URLs.
-async function getStoredUrls(placeId: string, count: number): Promise<string[]> {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return [];
+// List cached photos and check for the skip-Google sentinel (.skip file).
+async function getStoredState(
+  placeId: string,
+  count: number
+): Promise<{ urls: string[]; skipGoogle: boolean }> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return { urls: [], skipGoogle: false };
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`,
-      {
-        method: "POST",
-        headers: storageHeaders(),
-        body: JSON.stringify({
-          prefix: `${placeId}/`,
-          limit: 10,
-          sortBy: { column: "name", order: "asc" },
-        }),
-      }
-    );
-    if (!res.ok) return [];
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: "POST",
+      headers: storageHeaders(),
+      body: JSON.stringify({
+        prefix: `${placeId}/`,
+        limit: 20,
+        sortBy: { column: "name", order: "asc" },
+      }),
+    });
+    if (!res.ok) return { urls: [], skipGoogle: false };
     const files: { name: string }[] = await res.json();
-    return files
+    const skipGoogle = files.some((f) => f.name === ".skip");
+    const urls = files
       .filter((f) => /photo_\d+\.(jpg|jpeg|png|webp)$/i.test(f.name))
       .slice(0, count)
-      .map(
-        (f) =>
-          `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${placeId}/${f.name}`
-      );
+      .map((f) => `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${placeId}/${f.name}`);
+    return { urls, skipGoogle };
   } catch {
-    return [];
+    return { urls: [], skipGoogle: false };
   }
 }
 
-// Delete all cached photos for a place from Supabase Storage.
+async function writeSentinel(placeId: string): Promise<void> {
+  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${placeId}/.skip`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "text/plain",
+      "x-upsert": "true",
+    },
+    body: "1",
+  });
+}
+
+export async function clearSkipSentinel(placeId: string): Promise<void> {
+  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+    method: "DELETE",
+    headers: storageHeaders(),
+    body: JSON.stringify({ prefixes: [`${placeId}/.skip`] }),
+  });
+}
+
+// Delete all cached photos for a place and write a .skip sentinel so Google
+// doesn't auto-refetch on the next page visit.
 export async function deleteStoredPhotos(placeId: string): Promise<boolean> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return false;
   try {
-    // List all files under this place's prefix
     const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
       method: "POST",
       headers: storageHeaders(),
@@ -77,15 +97,21 @@ export async function deleteStoredPhotos(placeId: string): Promise<boolean> {
     });
     if (!listRes.ok) return false;
     const files: { name: string }[] = await listRes.json();
-    if (!files.length) return true;
 
-    const paths = files.map((f) => `${placeId}/${f.name}`);
-    const delRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
-      method: "DELETE",
-      headers: storageHeaders(),
-      body: JSON.stringify({ prefixes: paths }),
-    });
-    return delRes.ok;
+    // Delete all existing files (photos + any old sentinel)
+    if (files.length) {
+      const paths = files.map((f) => `${placeId}/${f.name}`);
+      const delRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+        method: "DELETE",
+        headers: storageHeaders(),
+        body: JSON.stringify({ prefixes: paths }),
+      });
+      if (!delRes.ok) return false;
+    }
+
+    // Write sentinel to prevent Google auto-refetch
+    await writeSentinel(placeId);
+    return true;
   } catch {
     return false;
   }
@@ -267,9 +293,11 @@ export async function getPlacePhotos(
 ): Promise<string[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
 
-  // 1. Return cached photos immediately if we already have enough.
-  const cached = await getStoredUrls(placeId, count);
+  // 1. Check cache and skip-sentinel in one Storage call.
+  const { urls: cached, skipGoogle } = await getStoredState(placeId, count);
   if (cached.length >= count) return cached.slice(0, count);
+  // Admin manually cleared photos — don't auto-refetch from Google.
+  if (skipGoogle) return [];
 
   // 2. Fetch new photos from Google.
   if (!GOOGLE_KEY) return cached;

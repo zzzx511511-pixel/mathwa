@@ -127,6 +127,8 @@ function AdminDashboard() {
   const [aiLoading, setAiLoading] = useState<string | null>(null); // field key being generated
   const [placeStatuses, setPlaceStatuses] = useState<Map<string, string>>(new Map());
   const [statusChecking, setStatusChecking] = useState(false);
+  const [photoClearId, setPhotoClearId] = useState<string | null>(null); // "clearing" | "done" | "error" keyed by id
+  const [photoClearState, setPhotoClearState] = useState<Record<string, "clearing" | "done" | "error">>({});
 
   async function generateWithAI(
     field: "description" | "opinion",
@@ -1674,16 +1676,35 @@ function AdminDashboard() {
                                   <option value="CLOSED_TEMPORARILY">🟠 مغلق مؤقتًا</option>
                                   <option value="CLOSED_PERMANENTLY">🔴 مغلق نهائيًا</option>
                                 </select>
-                                <button
-                                  title="مسح الصور المخزنة"
-                                  onClick={async () => {
-                                    if (!confirm(`مسح صور ${place.name}؟`)) return;
-                                    await fetch(`/api/place-photos/${place.id}`, { method: "DELETE" });
-                                  }}
-                                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-ink-600 hover:bg-gray-100 transition"
-                                >
-                                  🖼️ مسح
-                                </button>
+                                {photoClearState[place.id] === "done" ? (
+                                  <button
+                                    title="إعادة جلب صور من Google"
+                                    onClick={async () => {
+                                      setPhotoClearState((s) => ({ ...s, [place.id]: "clearing" }));
+                                      const res = await fetch(`/api/place-photos/${place.id}`, { method: "PATCH" });
+                                      setPhotoClearState((s) => ({ ...s, [place.id]: res.ok ? "error" : "error" }));
+                                      if (res.ok) setPhotoClearState((s) => { const n = { ...s }; delete n[place.id]; return n; });
+                                    }}
+                                    className="rounded-lg border border-green-200 bg-green-50 px-2 py-1 text-[10px] font-bold text-green-700 hover:bg-green-100 transition"
+                                  >
+                                    ✅ تم المسح — إعادة جلب؟
+                                  </button>
+                                ) : photoClearState[place.id] === "error" ? (
+                                  <span className="text-[10px] font-bold text-red-600">❌ فشل</span>
+                                ) : (
+                                  <button
+                                    title="مسح الصور المخزنة"
+                                    disabled={photoClearState[place.id] === "clearing"}
+                                    onClick={async () => {
+                                      setPhotoClearState((s) => ({ ...s, [place.id]: "clearing" }));
+                                      const res = await fetch(`/api/place-photos/${place.id}`, { method: "DELETE" });
+                                      setPhotoClearState((s) => ({ ...s, [place.id]: res.ok ? "done" : "error" }));
+                                    }}
+                                    className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-ink-600 hover:bg-gray-100 disabled:opacity-50 transition"
+                                  >
+                                    {photoClearState[place.id] === "clearing" ? "⏳" : "🖼️ مسح"}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </td>
