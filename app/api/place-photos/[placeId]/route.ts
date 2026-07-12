@@ -11,11 +11,12 @@ export async function GET(
   const { placeId } = params;
   const name = req.nextUrl.searchParams.get("name") ?? "";
   const nbh  = req.nextUrl.searchParams.get("nbh") ?? undefined;
+  const gid  = req.nextUrl.searchParams.get("gid") ?? undefined;
 
   if (!name || !placeId)
     return NextResponse.json({ photos: [] });
 
-  const photos = await getPlacePhotos(placeId, name, nbh, 2);
+  const photos = await getPlacePhotos(placeId, name, nbh, 2, gid);
 
   return NextResponse.json(
     { photos },

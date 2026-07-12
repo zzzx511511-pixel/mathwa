@@ -49,6 +49,7 @@ export type Place = {
   instagramPosts?: string[];
   website?: string;
   mapsUrl?: string;
+  googlePlaceId?: string;
   keywords?: string[];
   photos?: string[];
   videos?: string[];

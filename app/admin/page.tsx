@@ -274,6 +274,7 @@ function AdminDashboard() {
     instagramPosts: "",
     website: "",
     mapsUrl: "",
+    googlePlaceId: "",
     lat: undefined as number | undefined,
     lng: undefined as number | undefined,
     neighborhood: "",
@@ -310,6 +311,7 @@ function AdminDashboard() {
       instagramPosts: place.instagramPosts ?? [],
       website: place.website ?? "",
       mapsUrl: place.mapsUrl ?? "",
+      googlePlaceId: place.googlePlaceId ?? "",
       lat: place.lat,
       lng: place.lng,
       neighborhood: place.neighborhood ?? "",
@@ -345,6 +347,7 @@ function AdminDashboard() {
           : original.instagramPosts,
       website: (editForm.website as string)?.trim() || undefined,
       mapsUrl: (editForm.mapsUrl as string)?.trim() || undefined,
+      googlePlaceId: (editForm.googlePlaceId as string)?.trim() || undefined,
       lat: editForm.lat,
       lng: editForm.lng,
       neighborhood: (editForm.neighborhood as string)?.trim() || undefined,
@@ -517,6 +520,7 @@ function AdminDashboard() {
       instagramPosts: newForm.instagramPosts.split("\n").map((u) => u.trim()).filter(Boolean),
       website: newForm.website.trim() || undefined,
       mapsUrl: newForm.mapsUrl.trim() || undefined,
+      googlePlaceId: newForm.googlePlaceId.trim() || undefined,
       lat: newForm.lat,
       lng: newForm.lng,
       gradient: gradients[Math.floor(Math.random() * gradients.length)],
@@ -535,7 +539,7 @@ function AdminDashboard() {
     setNewForm({
       name: "", category: "cafes", region: "", description: "", opinion: "",
       rating: "4.5", visits: "0", tags: "", keywords: "", isWomenOnly: false,
-      phone: "", instagramUrl: "", instagramPosts: "", website: "", mapsUrl: "",
+      phone: "", instagramUrl: "", instagramPosts: "", website: "", mapsUrl: "", googlePlaceId: "",
       lat: undefined, lng: undefined,
       neighborhood: "", address: "", openingHours: "",
       branchAddress: "", branchCity: "الرياض", branchMapsUrl: "",
@@ -793,6 +797,19 @@ function AdminDashboard() {
                 onChange={(e) => setNewForm({ ...newForm, website: e.target.value })}
                 className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm focus:border-sal-500 focus:outline-none"
                 placeholder="https://..."
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-ink-700">
+                Google Place ID
+                <span className="mr-2 text-[10px] font-normal text-ink-500">لضمان جلب الصور الصحيحة</span>
+              </label>
+              <input
+                value={newForm.googlePlaceId}
+                onChange={(e) => setNewForm({ ...newForm, googlePlaceId: e.target.value })}
+                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm font-mono focus:border-sal-500 focus:outline-none"
+                placeholder="ChIJ..."
                 dir="ltr"
               />
             </div>
@@ -1184,6 +1201,25 @@ function AdminDashboard() {
                                   onChange={(e) => setEditForm({ ...editForm, keywords: e.target.value })}
                                   className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
                                   placeholder="مثال: برجر كينج, Burger King, وجبات سريعة"
+                                />
+                              </div>
+
+                              {/* Google Place ID */}
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">
+                                  Google Place ID
+                                  <span className="mr-2 text-[10px] font-normal text-ink-500">
+                                    (لضمان جلب الصور الصحيحة — ابحث عن المنشأة في{" "}
+                                    <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" rel="noopener noreferrer" className="text-sal-600 underline">Place ID Finder</a>
+                                    )
+                                  </span>
+                                </label>
+                                <input
+                                  value={(editForm.googlePlaceId as string) ?? ""}
+                                  onChange={(e) => setEditForm({ ...editForm, googlePlaceId: e.target.value })}
+                                  placeholder="مثال: ChIJN1t_tDeuEmsRUsoyG83frY4"
+                                  dir="ltr"
+                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm font-mono focus:border-sal-500 focus:outline-none"
                                 />
                               </div>
 

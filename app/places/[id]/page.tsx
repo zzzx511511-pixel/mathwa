@@ -43,7 +43,8 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       place.id,
       place.name,
       place.neighborhood ?? mainBranch?.neighborhood,
-      2
+      2,
+      place.googlePlaceId
     ),
     getPlaceStatus(place.id),
   ]);

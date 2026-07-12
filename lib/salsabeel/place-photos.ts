@@ -117,6 +117,38 @@ export async function deleteStoredPhotos(placeId: string): Promise<boolean> {
   }
 }
 
+// Fetch via Place ID (accurate — no text-search guessing).
+async function fetchGoogleDataById(
+  googlePlaceId: string,
+  count: number
+): Promise<{ refs: string[]; businessStatus: string | null }> {
+  if (!GOOGLE_KEY) return { refs: [], businessStatus: null };
+  try {
+    const params = new URLSearchParams({
+      place_id: googlePlaceId,
+      fields: "photos,business_status",
+      key: GOOGLE_KEY,
+    });
+    const res = await fetch(`${PLACES_BASE}/details/json?${params}`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return { refs: [], businessStatus: null };
+    const data = await res.json();
+    if (data.status !== "OK") {
+      console.error(`[place-photos] Details status=${data.status} | place_id=${googlePlaceId}`);
+      return { refs: [], businessStatus: null };
+    }
+    const photos: { photo_reference: string }[] = data.result?.photos ?? [];
+    return {
+      refs: photos.slice(0, count).map((p: { photo_reference: string }) => p.photo_reference),
+      businessStatus: data.result?.business_status ?? null,
+    };
+  } catch (err) {
+    console.error("[place-photos] fetchGoogleDataById threw:", err);
+    return { refs: [], businessStatus: null };
+  }
+}
+
 // Fetch photo references + business_status from Google Places Legacy API.
 async function fetchGoogleData(
   query: string,
@@ -218,11 +250,13 @@ export async function getPlaceStatus(placeId: string): Promise<string | null> {
 export async function checkAndSavePlaceStatus(
   placeId: string,
   placeName: string,
-  neighborhood?: string
+  neighborhood?: string,
+  googlePlaceId?: string
 ): Promise<string | null> {
   if (!GOOGLE_KEY) return null;
-  const query = [placeName, neighborhood, "الرياض"].filter(Boolean).join(" ");
-  const { businessStatus } = await fetchGoogleData(query, 0);
+  const { businessStatus } = googlePlaceId
+    ? await fetchGoogleDataById(googlePlaceId, 0)
+    : await fetchGoogleData([placeName, neighborhood, "الرياض"].filter(Boolean).join(" "), 0);
   if (businessStatus) await saveBusinessStatus(placeId, businessStatus);
   return businessStatus;
 }
@@ -289,7 +323,8 @@ export async function getPlacePhotos(
   placeId: string,
   placeName: string,
   neighborhood?: string,
-  count = 2
+  count = 2,
+  googlePlaceId?: string
 ): Promise<string[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
 
@@ -303,8 +338,13 @@ export async function getPlacePhotos(
   if (!GOOGLE_KEY) return cached;
   await ensureBucket();
 
-  const query = [placeName, neighborhood, "الرياض"].filter(Boolean).join(" ");
-  const { refs, businessStatus } = await fetchGoogleData(query, count);
+  // Use Place ID (accurate) when available, else fall back to text search.
+  const { refs, businessStatus } = googlePlaceId
+    ? await fetchGoogleDataById(googlePlaceId, count)
+    : await fetchGoogleData(
+        [placeName, neighborhood, "الرياض"].filter(Boolean).join(" "),
+        count
+      );
 
   if (businessStatus) {
     // Fire-and-forget — don't block photo delivery on DB write.
