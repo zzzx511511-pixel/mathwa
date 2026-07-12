@@ -20,54 +20,77 @@ function PlaceIdPicker({
   value: string;
   onChange: (id: string) => void;
 }) {
+  const [query, setQuery]     = useState(name);
   const [results, setResults] = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [searching, setSearching] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [searched, setSearched]   = useState(false);
 
-  async function search() {
-    if (!name.trim()) return;
+  // Sync query when place name changes (e.g. edit form just opened)
+  useEffect(() => { if (name && !query) setQuery(name); }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function doSearch() {
+    const q = query.trim();
+    if (!q) return;
     setSearching(true);
-    setOpen(false);
+    setSearched(false);
+    setResults([]);
     try {
-      const res = await fetch(`/api/place-search?q=${encodeURIComponent(name)}`);
+      const res  = await fetch(`/api/place-search?q=${encodeURIComponent(q)}`);
       const data = await res.json() as { results?: { place_id: string; name: string; address: string }[] };
       setResults(data.results ?? []);
-      setOpen(true);
     } catch {
       setResults([]);
     } finally {
       setSearching(false);
+      setSearched(true);
     }
   }
 
   return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold text-ink-700">Google Place ID</label>
+    <div className="space-y-2">
+      <label className="block text-xs font-semibold text-ink-700">
+        Google Place ID
+        <span className="mr-2 text-[10px] font-normal text-ink-500">لضمان جلب الصور الصحيحة</span>
+      </label>
+
+      {/* Current value (manual or auto-filled) */}
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="ChIJ... — سيُملأ تلقائياً عند الاختيار، أو أدخله يدوياً"
+        dir="ltr"
+        className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm font-mono focus:border-sal-500 focus:outline-none"
+      />
+
+      {/* Search bar */}
       <div className="flex gap-2">
         <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="ChIJ... — سيُملأ تلقائياً عند الاختيار من القائمة"
-          dir="ltr"
-          className="flex-1 rounded-xl border border-sal-300 px-3 py-2 text-sm font-mono focus:border-sal-500 focus:outline-none"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), doSearch())}
+          placeholder="ابحث بالاسم للعثور على الـ Place ID..."
+          className="flex-1 rounded-xl border border-sal-200 bg-sal-50 px-3 py-2 text-sm focus:border-sal-400 focus:bg-white focus:outline-none transition"
+          style={{ direction: "rtl" }}
         />
         <button
           type="button"
-          onClick={search}
-          disabled={searching || !name.trim()}
-          className="rounded-xl border border-sal-200 bg-sal-50 px-3 py-2 text-xs font-bold text-sal-700 hover:bg-sal-100 disabled:opacity-50 transition whitespace-nowrap"
+          onClick={doSearch}
+          disabled={searching || !query.trim()}
+          className="rounded-xl border border-sal-300 bg-white px-4 py-2 text-xs font-bold text-sal-700 hover:bg-sal-50 disabled:opacity-40 transition whitespace-nowrap"
         >
-          {searching ? "⏳" : "🔍 اختر من Google"}
+          {searching ? "⏳ جاري البحث..." : "🔍 بحث في Google"}
         </button>
       </div>
-      {open && results.length > 0 && (
-        <div className="mt-1 rounded-xl border border-sal-200 bg-white shadow-lg overflow-hidden">
+
+      {/* Results dropdown */}
+      {results.length > 0 && (
+        <div className="rounded-xl border border-sal-200 bg-white shadow-lg overflow-hidden">
           {results.map((r) => (
             <button
               key={r.place_id}
               type="button"
-              onClick={() => { onChange(r.place_id); setOpen(false); }}
-              className="w-full px-4 py-2.5 text-right hover:bg-sal-50 transition border-b border-sal-50 last:border-0"
+              onClick={() => { onChange(r.place_id); setResults([]); setSearched(false); }}
+              className="w-full px-4 py-3 text-right hover:bg-sal-50 active:bg-sal-100 transition border-b border-sal-50 last:border-0"
             >
               <p className="text-sm font-bold text-ink-900">{r.name}</p>
               <p className="text-[11px] text-ink-500 mt-0.5">{r.address}</p>
@@ -76,8 +99,30 @@ function PlaceIdPicker({
           ))}
         </div>
       )}
-      {open && results.length === 0 && (
-        <p className="mt-1 text-xs text-ink-500 px-1">لم تُعثر على نتائج — جرب اسماً أدق</p>
+
+      {/* No results state */}
+      {searched && results.length === 0 && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
+          <p className="font-semibold">لم تُعثر على نتائج لـ &ldquo;{query}&rdquo;</p>
+          <p>جرب: اكتب الاسم بالعربي أو الإنجليزي، أو أضف اسم الحي</p>
+          <p>
+            أو ابحث{" "}
+            <a
+              href={`https://www.google.com/maps/search/${encodeURIComponent(query + " الرياض")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold underline hover:text-amber-900"
+            >
+              في Google Maps ↗
+            </a>
+            {" "}ثم انسخ الـ Place ID من عنوان الصفحة (يبدأ بـ ChIJ)
+          </p>
+        </div>
+      )}
+
+      {/* Confirmation when value is set */}
+      {value && (
+        <p className="text-[11px] text-green-600 font-semibold px-1">✓ Place ID محدد: <span className="font-mono">{value}</span></p>
       )}
     </div>
   );
@@ -873,16 +918,10 @@ function AdminDashboard() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-700">
-                Google Place ID
-                <span className="mr-2 text-[10px] font-normal text-ink-500">لضمان جلب الصور الصحيحة</span>
-              </label>
-              <input
+              <PlaceIdPicker
+                name={newForm.name}
                 value={newForm.googlePlaceId}
-                onChange={(e) => setNewForm({ ...newForm, googlePlaceId: e.target.value })}
-                className="w-full rounded-xl border border-sal-200 px-4 py-2.5 text-sm font-mono focus:border-sal-500 focus:outline-none"
-                placeholder="ChIJ..."
-                dir="ltr"
+                onChange={(id) => setNewForm({ ...newForm, googlePlaceId: id })}
               />
             </div>
             {newForm.category === "salons" && (
