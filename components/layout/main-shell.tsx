@@ -9,6 +9,9 @@ const FOOTER_LINKS = [
   { href: "/#regions",    label: "المناطق" },
   { href: "/#contact",    label: "تواصل معنا" },
   { href: "mailto:salsabelapp@gmail.com", label: "salsabelapp@gmail.com" },
+];
+
+const LEGAL_LINKS = [
   { href: "/privacy", label: "سياسة الخصوصية" },
   { href: "/terms",   label: "شروط الاستخدام" },
 ];
@@ -49,7 +52,19 @@ export function MainShell({ children }: { children: ReactNode }) {
             ))}
           </ul>
 
-          <p className="text-xs text-white/25">
+          <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-1">
+            {LEGAL_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-xs text-white/40 underline underline-offset-2 transition hover:text-sal-400"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+
+          <p className="mt-4 text-xs text-white/25">
             © 2025 سلسبيل — جميع الحقوق محفوظة
           </p>
         </div>
