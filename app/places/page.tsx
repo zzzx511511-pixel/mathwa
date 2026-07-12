@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CATEGORIES } from "@/lib/salsabeel/categories";
 import { mergePlaces } from "@/lib/salsabeel/data";
 import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
+import { getPlaceStatuses } from "@/lib/salsabeel/place-photos";
 import { PlacesExplorer } from "@/components/salsabeel/places-explorer";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +12,11 @@ const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
 const GLOW = "rgba(56,189,248,0.3)";
 
 export default async function PlacesPage() {
-  const custom = await getCustomPlaces();
+  const [custom, statusRows] = await Promise.all([getCustomPlaces(), getPlaceStatuses()]);
   const allPlaces = mergePlaces(custom);
+  const statuses: Record<string, string> = Object.fromEntries(
+    statusRows.map((s) => [s.id, s.business_status])
+  );
 
   return (
     <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
@@ -86,7 +90,7 @@ export default async function PlacesPage() {
 
         {/* ── Interactive Explorer (search + region + places) ── */}
         <Suspense fallback={<div className="py-10 text-center text-sm text-ink-600">جاري التحميل...</div>}>
-          <PlacesExplorer allPlaces={allPlaces} />
+          <PlacesExplorer allPlaces={allPlaces} statuses={statuses} />
         </Suspense>
 
         {/* ── Quick Links ──────────────────────────────── */}

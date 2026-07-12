@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { getByCategory, mergePlaces } from "@/lib/salsabeel/data";
 import { getCustomPlaces, getVisitCounts28d } from "@/lib/salsabeel/supabase-places";
+import { getPlaceStatuses } from "@/lib/salsabeel/place-photos";
 import { CategoryExplorer } from "@/components/salsabeel/category-explorer";
 import type { Category } from "@/lib/salsabeel/types";
 
@@ -13,7 +14,10 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   const cat = getCategoryMeta(params.slug as Category);
   if (!cat) notFound();
 
-  const [custom, visitCounts] = await Promise.all([getCustomPlaces(), getVisitCounts28d()]);
+  const [custom, visitCounts, statusRows] = await Promise.all([getCustomPlaces(), getVisitCounts28d(), getPlaceStatuses()]);
+  const statuses: Record<string, string> = Object.fromEntries(
+    statusRows.map((s) => [s.id, s.business_status])
+  );
   const allPlaces = mergePlaces(custom);
   const places = allPlaces.filter((p) => {
     if (cat.slug === "cafes")
@@ -86,7 +90,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
       {/* ── Category explorer with region filter ── */}
       <Suspense>
-        <CategoryExplorer places={places} cat={cat} visitCounts={visitCounts} />
+        <CategoryExplorer places={places} cat={cat} visitCounts={visitCounts} statuses={statuses} />
       </Suspense>
 
       {/* ── Other categories ── */}

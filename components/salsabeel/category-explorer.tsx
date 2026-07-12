@@ -56,10 +56,12 @@ export function CategoryExplorer({
   places,
   cat,
   visitCounts = {},
+  statuses = {},
 }: {
   places: Place[];
   cat: CategoryMeta;
   visitCounts?: Record<string, number>;
+  statuses?: Record<string, string>;
 }) {
   const router       = useRouter();
   const pathname     = usePathname();
@@ -385,7 +387,7 @@ export function CategoryExplorer({
         displayed.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {displayed.map((place) => (
-              <PlaceCard key={place.id} place={place} />
+              <PlaceCard key={place.id} place={place} status={statuses[place.id]} />
             ))}
           </div>
         ) : (

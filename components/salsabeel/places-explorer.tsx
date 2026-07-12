@@ -15,7 +15,7 @@ const REGIONS: { label: string; value: Region | "all" }[] = [
   { label: "وسط", value: "وسط" },
 ];
 
-export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
+export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[]; statuses?: Record<string, string> }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -139,7 +139,7 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
         </div>
         {topRated.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {topRated.map((place) => <PlaceCard key={place.id} place={place} />)}
+            {topRated.map((place) => <PlaceCard key={place.id} place={place} status={statuses[place.id]} />)}
           </div>
         ) : (
           <p className="rounded-2xl border border-sal-100 bg-white py-10 text-center text-sm text-ink-600">
@@ -188,7 +188,7 @@ export function PlacesExplorer({ allPlaces }: { allPlaces: Place[] }) {
         </div>
         {mostVisited.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {mostVisited.map((place) => <PlaceCard key={place.id} place={place} />)}
+            {mostVisited.map((place) => <PlaceCard key={place.id} place={place} status={statuses[place.id]} />)}
           </div>
         ) : (
           <p className="rounded-2xl border border-sal-100 bg-white py-10 text-center text-sm text-ink-600">

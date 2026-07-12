@@ -12,7 +12,30 @@ function fmt(n: number) {
   return n.toString();
 }
 
-export function PlaceCard({ place }: { place: Place }) {
+function StatusBadge({ status }: { status?: string }) {
+  if (!status) return null;
+  if (status === "CLOSED_PERMANENTLY")
+    return (
+      <span className="absolute top-2 right-2 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
+        🔴 مغلق نهائيًا
+      </span>
+    );
+  if (status === "CLOSED_TEMPORARILY")
+    return (
+      <span className="absolute top-2 right-2 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
+        🟠 مغلق مؤقتًا
+      </span>
+    );
+  if (status === "OPERATIONAL")
+    return (
+      <span className="absolute top-2 right-2 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
+        🟢 مفتوح
+      </span>
+    );
+  return null;
+}
+
+export function PlaceCard({ place, status }: { place: Place; status?: string }) {
   const cat = getCategoryMeta(place.category);
   const cardRef = useRef<HTMLAnchorElement>(null);
   const [igPhoto, setIgPhoto] = useState<string | null>(null);
@@ -84,6 +107,7 @@ export function PlaceCard({ place }: { place: Place }) {
             className="h-full w-full"
           />
         )}
+        <StatusBadge status={status} />
         {cat && (
           <span
             className="absolute bottom-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow"
