@@ -10,6 +10,78 @@ import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import { LocationPicker } from "@/components/salsabeel/location-picker";
 
+// ── Place ID Picker ──────────────────────────────────────────────────────────
+function PlaceIdPicker({
+  name,
+  value,
+  onChange,
+}: {
+  name: string;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [results, setResults] = useState<{ place_id: string; name: string; address: string }[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  async function search() {
+    if (!name.trim()) return;
+    setSearching(true);
+    setOpen(false);
+    try {
+      const res = await fetch(`/api/place-search?q=${encodeURIComponent(name)}`);
+      const data = await res.json() as { results?: { place_id: string; name: string; address: string }[] };
+      setResults(data.results ?? []);
+      setOpen(true);
+    } catch {
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-semibold text-ink-700">Google Place ID</label>
+      <div className="flex gap-2">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="ChIJ... — سيُملأ تلقائياً عند الاختيار من القائمة"
+          dir="ltr"
+          className="flex-1 rounded-xl border border-sal-300 px-3 py-2 text-sm font-mono focus:border-sal-500 focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={search}
+          disabled={searching || !name.trim()}
+          className="rounded-xl border border-sal-200 bg-sal-50 px-3 py-2 text-xs font-bold text-sal-700 hover:bg-sal-100 disabled:opacity-50 transition whitespace-nowrap"
+        >
+          {searching ? "⏳" : "🔍 اختر من Google"}
+        </button>
+      </div>
+      {open && results.length > 0 && (
+        <div className="mt-1 rounded-xl border border-sal-200 bg-white shadow-lg overflow-hidden">
+          {results.map((r) => (
+            <button
+              key={r.place_id}
+              type="button"
+              onClick={() => { onChange(r.place_id); setOpen(false); }}
+              className="w-full px-4 py-2.5 text-right hover:bg-sal-50 transition border-b border-sal-50 last:border-0"
+            >
+              <p className="text-sm font-bold text-ink-900">{r.name}</p>
+              <p className="text-[11px] text-ink-500 mt-0.5">{r.address}</p>
+              <p className="text-[10px] font-mono text-sal-600 mt-0.5">{r.place_id}</p>
+            </button>
+          ))}
+        </div>
+      )}
+      {open && results.length === 0 && (
+        <p className="mt-1 text-xs text-ink-500 px-1">لم تُعثر على نتائج — جرب اسماً أدق</p>
+      )}
+    </div>
+  );
+}
 
 type EditState = Omit<Partial<Place>, "tags" | "keywords" | "photos" | "videos" | "branches" | "instagramPosts"> & {
   id: string;
@@ -1206,20 +1278,10 @@ function AdminDashboard() {
 
                               {/* Google Place ID */}
                               <div className="sm:col-span-2">
-                                <label className="mb-1 block text-xs font-semibold text-ink-700">
-                                  Google Place ID
-                                  <span className="mr-2 text-[10px] font-normal text-ink-500">
-                                    (لضمان جلب الصور الصحيحة — ابحث عن المنشأة في{" "}
-                                    <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" rel="noopener noreferrer" className="text-sal-600 underline">Place ID Finder</a>
-                                    )
-                                  </span>
-                                </label>
-                                <input
+                                <PlaceIdPicker
+                                  name={editForm.name ?? ""}
                                   value={(editForm.googlePlaceId as string) ?? ""}
-                                  onChange={(e) => setEditForm({ ...editForm, googlePlaceId: e.target.value })}
-                                  placeholder="مثال: ChIJN1t_tDeuEmsRUsoyG83frY4"
-                                  dir="ltr"
-                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm font-mono focus:border-sal-500 focus:outline-none"
+                                  onChange={(id) => setEditForm({ ...editForm, googlePlaceId: id })}
                                 />
                               </div>
 
