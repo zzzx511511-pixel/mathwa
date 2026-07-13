@@ -10,6 +10,7 @@ import { BackButton } from "@/components/salsabeel/back-button";
 import { VisitTracker } from "@/components/salsabeel/visit-tracker";
 import { getPlacePhotos, getPlaceStatus } from "@/lib/salsabeel/place-photos";
 import { PhotoLightbox } from "@/components/salsabeel/photo-lightbox";
+import { ReportPlaceButton, WrongPhotoButton } from "@/components/salsabeel/report-place-button";
 
 export const dynamic = "force-dynamic";
 
@@ -342,6 +343,18 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
           <PhotoLightbox photos={galleryPhotos.slice(0, 2)} altPrefix={place.name} />
+          {/* Wrong photo report buttons — one per visible photo */}
+          <div className="mt-3 flex flex-wrap gap-3 border-t border-sal-50 pt-3">
+            {galleryPhotos.slice(0, 2).map((url, i) => (
+              <WrongPhotoButton
+                key={i}
+                placeId={place.id}
+                placeName={place.name}
+                photoIndex={i}
+                photoUrl={url}
+              />
+            ))}
+          </div>
         </div>
       )}
 
@@ -363,6 +376,9 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
           <BranchPanel branches={place.branches} placeId={place.id} />
         </div>
       )}
+
+      {/* Report error / suggest edit */}
+      <ReportPlaceButton placeId={place.id} placeName={place.name} />
 
       {/* Back */}
       <div className="text-center">

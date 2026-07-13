@@ -9,6 +9,7 @@ import { RatingStars } from "@/components/salsabeel/rating-stars";
 import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import { LocationPicker } from "@/components/salsabeel/location-picker";
+import type { PendingRequest } from "@/lib/salsabeel/supabase-requests";
 
 // ── Name similarity check ─────────────────────────────────────────────────────
 // Returns true when the two names are likely the same place (safe to auto-select).
@@ -601,7 +602,10 @@ function AdminDashboard() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError]     = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState<string>("all");
-  const [tab, setTab]               = useState<"places" | "add">("places");
+  const [tab, setTab]               = useState<"places" | "add" | "requests">("places");
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestActionState, setRequestActionState] = useState<Record<string, "loading" | "done">>({});
   const [videoUrlInput, setVideoUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [aiLoading, setAiLoading] = useState<string | null>(null); // field key being generated
@@ -995,6 +999,41 @@ function AdminDashboard() {
     );
   }
 
+  // ── Pending requests helpers ────────────────────────────────────────
+  async function loadRequests() {
+    setRequestsLoading(true);
+    try {
+      const res = await fetch("/api/requests");
+      if (!res.ok) return;
+      const data: PendingRequest[] = await res.json();
+      setPendingRequests(data);
+    } catch {
+      // silently fail
+    } finally {
+      setRequestsLoading(false);
+    }
+  }
+
+  async function handleRequest(req: PendingRequest, action: "approve" | "reject") {
+    setRequestActionState((prev) => ({ ...prev, [req.id]: "loading" }));
+    try {
+      const res = await fetch(`/api/requests/${req.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, type: req.type, place_id: req.place_id }),
+      });
+      if (!res.ok) throw new Error();
+      setRequestActionState((prev) => ({ ...prev, [req.id]: "done" }));
+      setPendingRequests((prev) => prev.filter((r) => r.id !== req.id));
+    } catch {
+      setRequestActionState((prev) => {
+        const next = { ...prev };
+        delete next[req.id];
+        return next;
+      });
+    }
+  }
+
   // ── Delete helpers ──────────────────────────────────────────────────
   function confirmDelete(id: string) { setDeleteId(id); setDeleteError(null); }
   async function doDelete() {
@@ -1167,7 +1206,7 @@ function AdminDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setTab("places")}
           className={`rounded-xl px-5 py-2.5 text-sm font-bold transition ${
@@ -1187,6 +1226,21 @@ function AdminDashboard() {
           }`}
         >
           ➕ إضافة مكان
+        </button>
+        <button
+          onClick={() => { setTab("requests"); if (!pendingRequests.length && !requestsLoading) loadRequests(); }}
+          className={`relative rounded-xl px-5 py-2.5 text-sm font-bold transition ${
+            tab === "requests"
+              ? "bg-orange-500 text-white shadow"
+              : "border border-sal-200 bg-white text-sal-700 hover:bg-sal-50"
+          }`}
+        >
+          ⚠️ الطلبات المعلّقة
+          {pendingRequests.length > 0 && (
+            <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white">
+              {pendingRequests.length > 99 ? "99+" : pendingRequests.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -1468,6 +1522,176 @@ function AdminDashboard() {
               إلغاء
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ── REQUESTS TAB ─────────────────────────────────────────────── */}
+      {tab === "requests" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-ink-900">
+              الطلبات المعلّقة
+              {pendingRequests.length > 0 && (
+                <span className="mr-2 rounded-full bg-orange-100 px-2.5 py-0.5 text-sm font-bold text-orange-700">
+                  {pendingRequests.length}
+                </span>
+              )}
+            </h2>
+            <button
+              onClick={loadRequests}
+              disabled={requestsLoading}
+              className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-xs font-bold text-sal-700 hover:bg-sal-50 disabled:opacity-50 transition"
+            >
+              {requestsLoading ? "⏳ جارٍ التحميل…" : "🔄 تحديث"}
+            </button>
+          </div>
+
+          {requestsLoading && (
+            <div className="py-10 text-center text-sm text-ink-500 animate-pulse">جارٍ تحميل الطلبات…</div>
+          )}
+
+          {!requestsLoading && pendingRequests.length === 0 && (
+            <div className="rounded-2xl border border-ink-100 bg-white p-10 text-center">
+              <p className="text-3xl mb-2">✅</p>
+              <p className="font-bold text-ink-700">لا توجد طلبات معلّقة</p>
+              <p className="text-xs text-ink-400 mt-1">كل الطلبات تمت مراجعتها</p>
+            </div>
+          )}
+
+          {/* ── Suggest new place requests ── */}
+          {pendingRequests.filter((r) => r.type === "suggest_place").length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-extrabold text-ink-700 flex items-center gap-2">
+                <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">📍 اقتراح منشأة جديدة</span>
+                <span className="text-ink-400 text-[11px]">{pendingRequests.filter((r) => r.type === "suggest_place").length} طلب</span>
+              </h3>
+              {pendingRequests.filter((r) => r.type === "suggest_place").map((req) => {
+                const c = req.content as { suggestedName?: string; area?: string };
+                const acting = requestActionState[req.id] === "loading";
+                return (
+                  <div key={req.id} className="flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-ink-900">{c.suggestedName}</p>
+                      {c.area && <p className="text-xs text-ink-500">📍 {c.area}</p>}
+                      <p className="text-[10px] text-ink-400 mt-0.5">{new Date(req.created_at).toLocaleDateString("ar-SA")}</p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        onClick={() => handleRequest(req, "approve")}
+                        disabled={acting}
+                        className="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-600 disabled:opacity-50 transition"
+                      >
+                        {acting ? "⏳" : "✅ موافقة"}
+                      </button>
+                      <button
+                        onClick={() => handleRequest(req, "reject")}
+                        disabled={acting}
+                        className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
+                      >
+                        ❌
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── Edit / report error requests ── */}
+          {pendingRequests.filter((r) => r.type === "edit_place").length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-extrabold text-ink-700 flex items-center gap-2">
+                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">✏️ اقتراح تعديل</span>
+                <span className="text-ink-400 text-[11px]">{pendingRequests.filter((r) => r.type === "edit_place").length} طلب</span>
+              </h3>
+              {pendingRequests.filter((r) => r.type === "edit_place").map((req) => {
+                const c = req.content as { description?: string };
+                const acting = requestActionState[req.id] === "loading";
+                return (
+                  <div key={req.id} className="rounded-xl border border-amber-100 bg-amber-50 p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-ink-700">{req.place_name}</p>
+                        <p className="mt-1 text-sm text-ink-900">{c.description}</p>
+                        <p className="text-[10px] text-ink-400 mt-1">{new Date(req.created_at).toLocaleDateString("ar-SA")}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col gap-1.5">
+                        <button
+                          onClick={() => handleRequest(req, "approve")}
+                          disabled={acting}
+                          className="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-600 disabled:opacity-50 transition"
+                        >
+                          {acting ? "⏳" : "✅ راجعت"}
+                        </button>
+                        <button
+                          onClick={() => handleRequest(req, "reject")}
+                          disabled={acting}
+                          className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
+                        >
+                          ❌ رفض
+                        </button>
+                        {req.place_id && (
+                          <button
+                            onClick={() => {
+                              const el = document.getElementById(`place-row-${req.place_id}`);
+                              if (el) { setTab("places"); setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 100); }
+                              else setTab("places");
+                            }}
+                            className="rounded-lg border border-amber-200 bg-white px-3 py-1 text-[10px] font-bold text-amber-700 hover:bg-amber-50 transition"
+                          >
+                            ✏️ تعديل المنشأة
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── Wrong photo reports ── */}
+          {pendingRequests.filter((r) => r.type === "wrong_photo").length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-extrabold text-ink-700 flex items-center gap-2">
+                <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-bold text-red-700">🚩 صورة خاطئة</span>
+                <span className="text-ink-400 text-[11px]">{pendingRequests.filter((r) => r.type === "wrong_photo").length} بلاغ</span>
+              </h3>
+              {pendingRequests.filter((r) => r.type === "wrong_photo").map((req) => {
+                const c = req.content as { photoIndex?: number; photoUrl?: string };
+                const acting = requestActionState[req.id] === "loading";
+                return (
+                  <div key={req.id} className="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-3">
+                    {c.photoUrl && (
+                      <img src={c.photoUrl} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-ink-700">{req.place_name}</p>
+                      <p className="text-[11px] text-ink-500">الصورة {(c.photoIndex ?? 0) + 1}</p>
+                      <p className="text-[10px] text-ink-400">{new Date(req.created_at).toLocaleDateString("ar-SA")}</p>
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-1.5">
+                      <button
+                        onClick={() => handleRequest(req, "approve")}
+                        disabled={acting}
+                        className="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-600 disabled:opacity-50 transition"
+                        title="موافقة تحذف الصورة من الكاش تلقائيًا"
+                      >
+                        {acting ? "⏳" : "✅ حذف الصورة"}
+                      </button>
+                      <button
+                        onClick={() => handleRequest(req, "reject")}
+                        disabled={acting}
+                        className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
+                      >
+                        ❌ تجاهل
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

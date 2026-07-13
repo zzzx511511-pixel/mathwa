@@ -95,10 +95,10 @@ export function ContactForm() {
             className={inputCls}
           >
             <option value="">اختر...</option>
-            <option>إضافة مكان</option>
-            <option>اقتراح أو فكرة تطوير</option>
-            <option>إعلان ومؤسسة</option>
-            <option>ملاحظة أو رأي</option>
+            <option>اقتراح عام</option>
+            <option>استفسارات عامة</option>
+            <option>شكاوى</option>
+            <option>أخرى</option>
           </select>
         </div>
         <div>

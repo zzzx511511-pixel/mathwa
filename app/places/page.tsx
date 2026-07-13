@@ -5,6 +5,7 @@ import { mergePlaces } from "@/lib/salsabeel/data";
 import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
 import { getPlaceStatuses } from "@/lib/salsabeel/place-photos";
 import { PlacesExplorer } from "@/components/salsabeel/places-explorer";
+import { SuggestPlaceForm } from "@/components/salsabeel/suggest-place-form";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,11 @@ export default async function PlacesPage() {
         <Suspense fallback={<div className="py-10 text-center text-sm text-ink-600">جاري التحميل...</div>}>
           <PlacesExplorer allPlaces={allPlaces} statuses={statuses} />
         </Suspense>
+
+        {/* ── Suggest a place ──────────────────────────── */}
+        <section className="mx-auto max-w-sm">
+          <SuggestPlaceForm />
+        </section>
 
         {/* ── Quick Links ──────────────────────────────── */}
         <section>
