@@ -1020,7 +1020,7 @@ function AdminDashboard() {
       const res = await fetch(`/api/requests/${req.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, type: req.type, place_id: req.place_id }),
+        body: JSON.stringify({ action, type: req.type, place_id: req.place_id, content: req.content }),
       });
       if (!res.ok) throw new Error();
       setRequestActionState((prev) => ({ ...prev, [req.id]: "done" }));

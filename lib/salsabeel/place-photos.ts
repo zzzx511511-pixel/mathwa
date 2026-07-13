@@ -62,7 +62,10 @@ async function getStoredState(
     const skipGoogle = files.some((f) => f.name === ".skip");
 
     // Parse ".gid-<encodedId>-<count>" — the trailing "-<digits>" is the photo count.
-    const gidFile = files.find((f) => f.name.startsWith(".gid-"));
+    // Prefer the newer format (with count suffix) over legacy (without) when both exist.
+    const gidFile =
+      files.find((f) => f.name.startsWith(".gid-") && /-\d+$/.test(f.name)) ??
+      files.find((f) => f.name.startsWith(".gid-"));
     let storedGid: string | null = null;
     let storedCount = 0;
     if (gidFile) {
@@ -166,6 +169,46 @@ export async function deleteStoredPhotos(placeId: string): Promise<boolean> {
 
     // Write sentinel to prevent Google auto-refetch
     await writeSentinel(placeId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Delete a single wrong photo and clear .gid-* sentinels so the next page visit
+// fetches a fresh replacement from Google. Other correct photos are left intact
+// but will also be re-fetched (clearPhotosAndGid runs before any Google call).
+// Does NOT write .skip — auto-refetch is desirable here.
+export async function deleteSpecificPhoto(placeId: string, photoUrl: string): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+  try {
+    // Extract filename from the Supabase public URL.
+    // URL shape: .../object/public/place-photos/{placeId}/{filename}
+    const filename = photoUrl.split("/").pop();
+    if (!filename || !/^photo_\d+\.(jpg|jpeg|png|webp)$/i.test(filename)) return false;
+
+    const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: "POST",
+      headers: storageHeaders(),
+      body: JSON.stringify({ prefix: `${placeId}/`, limit: 50 }),
+    });
+    if (!listRes.ok) return false;
+    const files: { name: string }[] = await listRes.json();
+
+    // Delete the specific photo + all .gid-* sentinels.
+    // Clearing .gid-* means getPlacePhotos will see a cache miss on next request
+    // and re-fetch all photos fresh from Google (with the correct googlePlaceId).
+    const toDelete = files
+      .filter((f) => f.name === filename || f.name.startsWith(".gid-"))
+      .map((f) => `${placeId}/${f.name}`);
+
+    if (toDelete.length) {
+      await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+        method: "DELETE",
+        headers: storageHeaders(),
+        body: JSON.stringify({ prefixes: toDelete }),
+      });
+    }
     return true;
   } catch {
     return false;
