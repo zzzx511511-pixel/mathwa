@@ -15,38 +15,58 @@ export async function GET(req: NextRequest) {
   if (!GOOGLE_KEY) return NextResponse.json({ error: "مفتاح Google غير موجود" }, { status: 500 });
 
   try {
-    const params = new URLSearchParams({
+    const nearbyParams = new URLSearchParams({
       location: `${lat},${lng}`,
-      radius: "300",
+      radius: "500",
       language: "ar",
       key: GOOGLE_KEY,
       ...(name ? { keyword: name } : {}),
     });
 
-    const res = await fetch(`${PLACES_BASE}/nearbysearch/json?${params}`, {
-      signal: AbortSignal.timeout(8000),
-    });
+    const fetches: Promise<Response>[] = [
+      fetch(`${PLACES_BASE}/nearbysearch/json?${nearbyParams}`, { signal: AbortSignal.timeout(8000) }),
+    ];
 
-    if (!res.ok) return NextResponse.json({ results: [] });
-    const data = await res.json();
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      return NextResponse.json({ results: [] });
+    // textsearch includes CLOSED_TEMPORARILY places that nearbysearch may omit
+    if (name) {
+      const textParams = new URLSearchParams({
+        query: name,
+        location: `${lat},${lng}`,
+        radius: "500",
+        language: "ar",
+        key: GOOGLE_KEY,
+      });
+      fetches.push(fetch(`${PLACES_BASE}/textsearch/json?${textParams}`, { signal: AbortSignal.timeout(8000) }));
     }
 
-    const results = ((data.results ?? []) as {
-      place_id: string;
-      name: string;
-      vicinity: string;
-      types?: string[];
-    }[])
-      .slice(0, 6)
-      .map((r) => ({
-        place_id: r.place_id,
-        name: r.name,
-        address: r.vicinity,
-      }));
+    const responses = await Promise.all(fetches);
+    const jsons = await Promise.all(
+      responses.map((r) => (r.ok ? r.json() : Promise.resolve({ results: [] }))),
+    );
 
-    return NextResponse.json({ results });
+    type NearbyResult = { place_id: string; name: string; vicinity: string };
+    type TextResult   = { place_id: string; name: string; formatted_address: string };
+
+    const seen   = new Set<string>();
+    const merged: { place_id: string; name: string; address: string }[] = [];
+
+    for (const r of ((jsons[0]?.results ?? []) as NearbyResult[])) {
+      if (!seen.has(r.place_id)) {
+        seen.add(r.place_id);
+        merged.push({ place_id: r.place_id, name: r.name, address: r.vicinity });
+      }
+    }
+
+    if (jsons[1]) {
+      for (const r of ((jsons[1]?.results ?? []) as TextResult[])) {
+        if (!seen.has(r.place_id)) {
+          seen.add(r.place_id);
+          merged.push({ place_id: r.place_id, name: r.name, address: r.formatted_address });
+        }
+      }
+    }
+
+    return NextResponse.json({ results: merged.slice(0, 6) });
   } catch {
     return NextResponse.json({ results: [] });
   }

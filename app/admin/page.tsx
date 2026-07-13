@@ -66,7 +66,13 @@ function PlaceMapModal({
         setLoading(true);
 
         if (markerRef.current) markerRef.current.remove();
-        markerRef.current = L.marker([lat, lng]).addTo(map);
+        const pinIcon = L.divIcon({
+          html: '<span style="font-size:32px;line-height:1;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4))">📍</span>',
+          className: "",
+          iconSize: [32, 32],
+          iconAnchor: [10, 32],
+        });
+        markerRef.current = L.marker([lat, lng], { icon: pinIcon }).addTo(map);
 
         try {
           const res  = await fetch(`/api/place-nearby?lat=${lat}&lng=${lng}&name=${encodeURIComponent(name)}`);
@@ -143,7 +149,7 @@ function PlaceMapModal({
               value={geoQuery}
               onChange={(e) => { setGeoQuery(e.target.value); setGeoError(""); }}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), flyToLocation())}
-              placeholder="ابحث عن منشأة أو حي... (مثال: مطعم سهيل، حي الياسمين)"
+              placeholder="ابحث عن منشأة"
               className="flex-1 rounded-xl border border-sal-200 bg-white px-3 py-1.5 text-sm focus:border-sal-400 focus:outline-none transition"
               style={{ direction: "rtl" }}
             />
