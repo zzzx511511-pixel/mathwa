@@ -199,6 +199,50 @@ function PlaceMapModal({
   );
 }
 
+// ── Nearby Place Suggestions (auto-filled from LocationPicker) ───────────────
+function NearbyPlaceSuggestions({
+  results,
+  currentId,
+  onSelect,
+  onDismiss,
+}: {
+  results: { place_id: string; name: string; address: string }[];
+  currentId: string;
+  onSelect: (id: string) => void;
+  onDismiss: () => void;
+}) {
+  if (!results.length) return null;
+  return (
+    <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold text-emerald-800">
+          📍 {results.length === 1 ? "عُثر على منشأة قريبة — هل هي الصحيحة؟" : `عُثر على ${results.length} أماكن قريبة — اختر الصحيحة:`}
+        </p>
+        <button type="button" onClick={onDismiss} className="text-xs text-emerald-600 hover:text-emerald-900 leading-none">✕</button>
+      </div>
+      <div className="space-y-1">
+        {results.map((r) => (
+          <button
+            key={r.place_id}
+            type="button"
+            onClick={() => onSelect(r.place_id)}
+            disabled={currentId === r.place_id}
+            className="flex w-full items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-right transition hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-default"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-ink-900 truncate">{r.name}</p>
+              <p className="text-[10px] text-ink-500 truncate">{r.address}</p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
+              {currentId === r.place_id ? "✓ محدد" : "اختر"}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Place ID Picker ──────────────────────────────────────────────────────────
 function PlaceIdPicker({
   name,
@@ -442,6 +486,8 @@ function AdminDashboard() {
   const [statusChecking, setStatusChecking] = useState(false);
   const [photoClearId, setPhotoClearId] = useState<string | null>(null); // "clearing" | "done" | "error" keyed by id
   const [photoClearState, setPhotoClearState] = useState<Record<string, "clearing" | "done" | "error">>({});
+  const [newNearby, setNewNearby]   = useState<{ place_id: string; name: string; address: string }[]>([]);
+  const [editNearby, setEditNearby] = useState<{ place_id: string; name: string; address: string }[]>([]);
 
   async function generateWithAI(
     field: "description" | "opinion",
@@ -1168,7 +1214,22 @@ function AdminDashboard() {
                   <LocationPicker
                     value={newForm.mapsUrl}
                     searchHint={newForm.name}
-                    onSelect={(url, lat, lng) => setNewForm({ ...newForm, mapsUrl: url, lat, lng })}
+                    onSelect={async (url, lat, lng) => {
+                      setNewForm((f) => ({ ...f, mapsUrl: url, lat, lng }));
+                      if (lat && lng) {
+                        try {
+                          const res  = await fetch(`/api/place-nearby?lat=${lat}&lng=${lng}&name=${encodeURIComponent(newForm.name)}`);
+                          const data = await res.json() as { results?: { place_id: string; name: string; address: string }[] };
+                          setNewNearby(data.results ?? []);
+                        } catch { setNewNearby([]); }
+                      }
+                    }}
+                  />
+                  <NearbyPlaceSuggestions
+                    results={newNearby}
+                    currentId={newForm.googlePlaceId}
+                    onSelect={(id) => { setNewForm((f) => ({ ...f, googlePlaceId: id })); setNewNearby([]); }}
+                    onDismiss={() => setNewNearby([])}
                   />
                 </div>
               </div>
@@ -1525,7 +1586,22 @@ function AdminDashboard() {
                                 <LocationPicker
                                   value={(editForm.mapsUrl as string) ?? ""}
                                   searchHint={editForm.name ?? ""}
-                                  onSelect={(url, lat, lng) => setEditForm({ ...editForm, mapsUrl: url || undefined, lat: lat ?? editForm.lat, lng: lng ?? editForm.lng })}
+                                  onSelect={async (url, lat, lng) => {
+                                    setEditForm((f) => f ? { ...f, mapsUrl: url || undefined, lat: lat ?? f.lat, lng: lng ?? f.lng } : f);
+                                    if (lat && lng) {
+                                      try {
+                                        const res  = await fetch(`/api/place-nearby?lat=${lat}&lng=${lng}&name=${encodeURIComponent(editForm.name ?? "")}`);
+                                        const data = await res.json() as { results?: { place_id: string; name: string; address: string }[] };
+                                        setEditNearby(data.results ?? []);
+                                      } catch { setEditNearby([]); }
+                                    }
+                                  }}
+                                />
+                                <NearbyPlaceSuggestions
+                                  results={editNearby}
+                                  currentId={(editForm.googlePlaceId as string) ?? ""}
+                                  onSelect={(id) => { setEditForm((f) => f ? { ...f, googlePlaceId: id } : f); setEditNearby([]); }}
+                                  onDismiss={() => setEditNearby([])}
                                 />
                               </div>
 
