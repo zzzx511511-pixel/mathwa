@@ -705,6 +705,63 @@ function AdminDashboard() {
   const [newBranch, setNewBranch] = useState<Partial<Branch>>({});
   const [editBranchId, setEditBranchId] = useState<string | null>(null);
 
+  // Auto-fetch branches from Google
+  type FetchedBranch = {
+    _googlePlaceId: string;
+    name: string;
+    address: string;
+    city: string;
+    neighborhood?: string;
+    lat?: number;
+    lng?: number;
+    openingHours?: string;
+    phone?: string;
+    mapsUrl?: string;
+    selected: boolean;
+  };
+  const [fetchingBranches, setFetchingBranches] = useState(false);
+  const [fetchedBranchPreviews, setFetchedBranchPreviews] = useState<FetchedBranch[] | null>(null);
+
+  async function fetchBranchesFromGoogle() {
+    if (!editForm?.name || fetchingBranches) return;
+    setFetchingBranches(true);
+    setFetchedBranchPreviews(null);
+    try {
+      const res  = await fetch(`/api/place-branches?name=${encodeURIComponent(editForm.name)}`);
+      const data = await res.json();
+      const previews: FetchedBranch[] = (data.branches ?? []).map((b: Omit<FetchedBranch, "selected">) => ({
+        ...b,
+        selected: true,
+      }));
+      setFetchedBranchPreviews(previews);
+    } catch {
+      // silently fail
+    } finally {
+      setFetchingBranches(false);
+    }
+  }
+
+  function confirmFetchedBranches() {
+    if (!fetchedBranchPreviews) return;
+    const ts = Date.now();
+    const selected = fetchedBranchPreviews
+      .filter((b) => b.selected)
+      .map((b, i): Branch => ({
+        id:           `${editForm?.id ?? "p"}-b${ts}-${i + 1}`,
+        name:         b.name,
+        address:      b.address,
+        city:         b.city,
+        neighborhood: b.neighborhood,
+        lat:          b.lat,
+        lng:          b.lng,
+        openingHours: b.openingHours,
+        phone:        b.phone,
+        mapsUrl:      b.mapsUrl,
+      }));
+    setEditForm((prev) => prev ? { ...prev, branches: selected } : prev);
+    setFetchedBranchPreviews(null);
+  }
+
   // Load custom places from Supabase on mount.
   // Supabase entries override static entries with the same id (so edits to static places persist).
   useEffect(() => {
@@ -1870,7 +1927,73 @@ function AdminDashboard() {
                                       {(editForm.branches ?? []).length}
                                     </span>
                                   </label>
+                                  <button
+                                    type="button"
+                                    onClick={fetchBranchesFromGoogle}
+                                    disabled={fetchingBranches}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-sal-200 bg-white px-3 py-1 text-[11px] font-bold text-sal-700 hover:border-sal-400 hover:bg-sal-50 disabled:opacity-50 transition"
+                                  >
+                                    {fetchingBranches ? "⏳ جارٍ الجلب…" : "🌐 جلب الفروع من قوقل"}
+                                  </button>
                                 </div>
+
+                                {/* ── Google branch preview ── */}
+                                {fetchedBranchPreviews !== null && (
+                                  <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-[11px] font-bold text-amber-800">
+                                        {fetchedBranchPreviews.length === 0
+                                          ? "لم تُعثر على فروع من قوقل"
+                                          : `عُثر على ${fetchedBranchPreviews.length} فرع — اختر ما تريد إضافته:`}
+                                      </p>
+                                      <button
+                                        type="button"
+                                        onClick={() => setFetchedBranchPreviews(null)}
+                                        className="text-[11px] font-bold text-amber-700 hover:text-amber-900"
+                                      >✕ إلغاء</button>
+                                    </div>
+                                    {fetchedBranchPreviews.map((b, i) => (
+                                      <label
+                                        key={b._googlePlaceId}
+                                        className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 transition ${
+                                          b.selected
+                                            ? "border-sal-300 bg-white"
+                                            : "border-transparent bg-amber-100 opacity-60"
+                                        }`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={b.selected}
+                                          onChange={(e) =>
+                                            setFetchedBranchPreviews((prev) =>
+                                              prev
+                                                ? prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x)
+                                                : prev
+                                            )
+                                          }
+                                          className="mt-0.5 accent-sal-600"
+                                        />
+                                        <div className="min-w-0 flex-1 text-[11px]">
+                                          <p className="font-bold text-ink-900">{b.name}</p>
+                                          <p className="text-ink-600">{b.neighborhood ? `${b.neighborhood}، ` : ""}{b.address}</p>
+                                          {b.openingHours && <p className="text-ink-500">⏰ {b.openingHours}</p>}
+                                          {b.phone && <p className="text-ink-500" dir="ltr">📞 {b.phone}</p>}
+                                        </div>
+                                      </label>
+                                    ))}
+                                    {fetchedBranchPreviews.length > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={confirmFetchedBranches}
+                                        disabled={!fetchedBranchPreviews.some((b) => b.selected)}
+                                        className="w-full rounded-lg bg-sal-600 py-2 text-xs font-bold text-white hover:bg-sal-700 disabled:opacity-40 transition"
+                                      >
+                                        ✓ إضافة الفروع المحددة ({fetchedBranchPreviews.filter((b) => b.selected).length})
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+
                                 <div className="space-y-2">
 
                                   {/* ── existing branches ── */}
