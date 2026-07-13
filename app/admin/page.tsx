@@ -1633,9 +1633,16 @@ function AdminDashboard() {
                         {req.place_id && (
                           <button
                             onClick={() => {
-                              const el = document.getElementById(`place-row-${req.place_id}`);
-                              if (el) { setTab("places"); setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 100); }
-                              else setTab("places");
+                              const place = places.find((p) => p.id === req.place_id);
+                              if (place) {
+                                startEdit(place);
+                                setTab("places");
+                                setTimeout(() => {
+                                  document.getElementById(`place-row-${req.place_id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                }, 100);
+                              } else {
+                                setTab("places");
+                              }
                             }}
                             className="rounded-lg border border-amber-200 bg-white px-3 py-1 text-[10px] font-bold text-amber-700 hover:bg-amber-50 transition"
                           >
