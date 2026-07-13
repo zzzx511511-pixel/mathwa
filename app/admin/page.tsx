@@ -10,6 +10,34 @@ import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import { LocationPicker } from "@/components/salsabeel/location-picker";
 
+// ── Name similarity check ─────────────────────────────────────────────────────
+// Returns true when the two names are likely the same place (safe to auto-select).
+// Returns false when they appear to be unrelated businesses (show confirmation).
+function namesSimilar(dbName: string, googleName: string): boolean {
+  const norm = (s: string) =>
+    s.replace(/\([^)]*\)/g, "").toLowerCase().trim(); // strip parenthetical
+  const a = norm(dbName);
+  const b = norm(googleName);
+  if (!a || !b) return true;
+
+  const hasArabic = (s: string) => /[؀-ۿ]/.test(s);
+
+  // Cross-script pair (e.g. "نمق" vs "Namq Coffee"): can't compare — trust user
+  if (hasArabic(a) !== hasArabic(b)) return true;
+
+  // Same script: word overlap (any shared word ≥ 2 chars)
+  const words = (s: string) => s.split(/\s+/).filter((w) => w.length >= 2);
+  const setB = new Set(words(b));
+  if (words(a).some((w) => setB.has(w))) return true;
+
+  // Substring containment (e.g. "بيسمنترز" ⊂ "بيسمنترز القيروان")
+  const aCore = a.replace(/\s+/g, "");
+  const bCore = b.replace(/\s+/g, "");
+  if (aCore.length >= 3 && (bCore.includes(aCore) || aCore.includes(bCore))) return true;
+
+  return false; // looks like a different business → show confirmation
+}
+
 // ── Map Modal for Place ID selection ─────────────────────────────────────────
 function PlaceMapModal({
   name,
@@ -29,6 +57,7 @@ function PlaceMapModal({
   const [geoQuery, setGeoQuery]   = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError]   = useState("");
+  const [pendingResult, setPendingResult] = useState<{ place_id: string; name: string; address: string } | null>(null);
 
   useEffect(() => {
     if (!mapDivRef.current || mapInstanceRef.current) return;
@@ -189,11 +218,51 @@ function PlaceMapModal({
               <p className="bg-ink-50 px-4 py-2 text-[11px] font-bold text-ink-500">
                 اختر المنشأة الصحيحة ({nearby.length} نتيجة):
               </p>
+
+              {/* Name-mismatch confirmation */}
+              {pendingResult && (
+                <div className="mx-4 my-3 rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+                  <p className="text-xs font-extrabold text-amber-800">⚠️ تحقق من المنشأة</p>
+                  <p className="text-[11px] text-ink-700">
+                    اسم المنشأة في قاعدة البيانات: <strong>{name}</strong>
+                  </p>
+                  <p className="text-[11px] text-ink-700">
+                    اسم المنشأة في Google: <strong>{pendingResult.name}</strong>
+                  </p>
+                  <p className="text-[11px] text-amber-700 font-medium">
+                    الأسماء مختلفة — هل هذه فعلاً نفس المنشأة؟
+                  </p>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => { onSelect(pendingResult.place_id, pendingResult.name); onClose(); }}
+                      className="flex-1 rounded-lg bg-amber-600 py-1.5 text-[11px] font-bold text-white hover:bg-amber-700 transition"
+                    >
+                      نعم، اختر هذه المنشأة
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPendingResult(null)}
+                      className="flex-1 rounded-lg border border-amber-300 bg-white py-1.5 text-[11px] font-bold text-amber-700 hover:bg-amber-50 transition"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {nearby.map((r) => (
                 <button
                   key={r.place_id}
                   type="button"
-                  onClick={() => { onSelect(r.place_id, r.name); onClose(); }}
+                  onClick={() => {
+                    if (namesSimilar(name, r.name)) {
+                      onSelect(r.place_id, r.name);
+                      onClose();
+                    } else {
+                      setPendingResult(r);
+                    }
+                  }}
                   className="flex w-full items-center gap-3 border-b border-sal-50 px-4 py-3 text-right transition last:border-0 hover:bg-sal-50 active:bg-sal-100"
                 >
                   <span className="shrink-0 text-lg text-sal-500">📍</span>
@@ -219,14 +288,18 @@ function PlaceMapModal({
 function NearbyPlaceSuggestions({
   results,
   currentId,
+  placeName,
   onSelect,
   onDismiss,
 }: {
   results: { place_id: string; name: string; address: string }[];
   currentId: string;
+  placeName: string;
   onSelect: (id: string) => void;
   onDismiss: () => void;
 }) {
+  const [pendingResult, setPendingResult] = useState<{ place_id: string; name: string; address: string } | null>(null);
+
   if (!results.length) return null;
   return (
     <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 space-y-2">
@@ -236,12 +309,46 @@ function NearbyPlaceSuggestions({
         </p>
         <button type="button" onClick={onDismiss} className="text-xs text-emerald-600 hover:text-emerald-900 leading-none">✕</button>
       </div>
+
+      {/* Name-mismatch confirmation */}
+      {pendingResult && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+          <p className="text-xs font-extrabold text-amber-800">⚠️ تحقق من المنشأة</p>
+          <p className="text-[11px] text-ink-700">اسمها في قاعدة البيانات: <strong>{placeName}</strong></p>
+          <p className="text-[11px] text-ink-700">اسمها في Google: <strong>{pendingResult.name}</strong></p>
+          <p className="text-[11px] text-amber-700 font-medium">الأسماء مختلفة — هل هذه فعلاً نفس المنشأة؟</p>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => { onSelect(pendingResult.place_id); setPendingResult(null); }}
+              className="flex-1 rounded-lg bg-amber-600 py-1.5 text-[11px] font-bold text-white hover:bg-amber-700 transition"
+            >
+              نعم، اختر
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingResult(null)}
+              className="flex-1 rounded-lg border border-amber-300 bg-white py-1.5 text-[11px] font-bold text-amber-700 hover:bg-amber-50 transition"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-1">
         {results.map((r) => (
           <button
             key={r.place_id}
             type="button"
-            onClick={() => onSelect(r.place_id)}
+            onClick={() => {
+              if (currentId === r.place_id) return;
+              if (namesSimilar(placeName, r.name)) {
+                onSelect(r.place_id);
+              } else {
+                setPendingResult(r);
+              }
+            }}
             disabled={currentId === r.place_id}
             className="flex w-full items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-right transition hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-default"
           >
@@ -1246,6 +1353,7 @@ function AdminDashboard() {
                   <NearbyPlaceSuggestions
                     results={newNearby}
                     currentId={newForm.googlePlaceId}
+                    placeName={newForm.name}
                     onSelect={(id) => { setNewForm((f) => ({ ...f, googlePlaceId: id })); setNewNearby([]); }}
                     onDismiss={() => setNewNearby([])}
                   />
@@ -1618,6 +1726,7 @@ function AdminDashboard() {
                                 <NearbyPlaceSuggestions
                                   results={editNearby}
                                   currentId={(editForm.googlePlaceId as string) ?? ""}
+                                  placeName={(editForm.name as string) ?? ""}
                                   onSelect={(id) => { setEditForm((f) => f ? { ...f, googlePlaceId: id } : f); setEditNearby([]); }}
                                   onDismiss={() => setEditNearby([])}
                                 />
