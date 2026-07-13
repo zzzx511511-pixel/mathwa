@@ -21,7 +21,17 @@ export async function getCustomPlaces(): Promise<Place[]> {
     });
     if (!res.ok) return [];
     const rows: { data: Place }[] = await res.json();
-    return rows.map((r) => r.data);
+    // Deduplicate by id — keep first occurrence (newest, since ordered by created_at.desc).
+    // Guards against duplicate rows if the table's id column lacks a unique constraint.
+    const seen = new Set<string>();
+    const result: Place[] = [];
+    for (const row of rows) {
+      if (!seen.has(row.data.id)) {
+        seen.add(row.data.id);
+        result.push(row.data);
+      }
+    }
+    return result;
   } catch {
     return [];
   }

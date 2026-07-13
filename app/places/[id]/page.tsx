@@ -35,7 +35,11 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   if (!place) notFound();
 
   const cat = getCategoryMeta(place.category);
-  const mainBranch = place.branches[0];
+  // Only use branch[0] as a fallback for display when there is exactly 1 branch
+  // (= the main location). For multi-branch places each branch has its own data,
+  // so the place-level card must not copy a specific branch's address.
+  const mainBranch     = place.branches[0];
+  const singleBranch   = place.branches.length === 1 ? mainBranch : null;
 
   // Fetch photos and business status in parallel
   const [cachedPhotos, businessStatus] = await Promise.all([
@@ -52,22 +56,25 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   // Hero: Supabase-cached Google photo first, then manual photos
   const heroPhoto = cachedPhotos[0] ?? place.photos?.[0] ?? null;
 
-  // Place-level location data (fallback to first branch for old entries that predate these fields)
-  const displayNeighborhood = place.neighborhood ?? mainBranch?.neighborhood;
-  const displayAddress      = place.address      ?? mainBranch?.address;
-  const displayOpeningHours = place.openingHours ?? mainBranch?.openingHours;
+  // Place-level location data (fallback to singleBranch only for legacy 1-branch entries)
+  const displayNeighborhood = place.neighborhood ?? singleBranch?.neighborhood;
+  const displayAddress      = place.address      ?? singleBranch?.address;
+  const displayOpeningHours = place.openingHours ?? singleBranch?.openingHours;
 
-  // Map URL: prefer address-based search when the place has its own address fields,
-  // so a stale mapsUrl from a branch never leaks into the parent map button.
+  // Map URL for the place-level button. For multi-branch places, use the place name
+  // (each branch has its own map link in BranchPanel). For single-branch places,
+  // fall back to the branch's mapsUrl or address.
   const placeMapsHref = (place.address || place.neighborhood)
     ? `https://maps.google.com/?q=${encodeURIComponent(
         [place.name, place.neighborhood, place.address, "الرياض"].filter(Boolean).join(" ")
       )}`
     : place.mapsUrl
       ? place.mapsUrl
-      : (mainBranch?.address
-          ? `https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`
-          : null);
+      : singleBranch?.mapsUrl
+        ? singleBranch.mapsUrl
+        : (singleBranch?.address
+            ? `https://maps.google.com/?q=${encodeURIComponent(`${place.name} الرياض`)}`
+            : null);
 
   // Gallery: Supabase-cached Google photos, then manual photos
   const galleryPhotos = cachedPhotos.length > 0 ? cachedPhotos : (place.photos ?? []);
@@ -156,12 +163,12 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
             📍 الموقع
           </a>
         )}
-        {mainBranch?.phone && (
+        {(place.phone ?? singleBranch?.phone) && (
           <a
-            href={`tel:${mainBranch.phone}`}
+            href={`tel:${place.phone ?? singleBranch!.phone}`}
             className="inline-flex items-center gap-2 rounded-2xl border border-sal-200 bg-white px-5 py-2.5 text-sm font-bold text-sal-700 shadow-sm transition hover:bg-sal-50"
           >
-            📞 {mainBranch.phone}
+            📞 {place.phone ?? singleBranch!.phone}
           </a>
         )}
         {place.instagramUrl && (
@@ -213,17 +220,17 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
               </div>
             </div>
           )}
-          {(place.phone || mainBranch?.phone) && (
+          {(place.phone || singleBranch?.phone) && (
             <div className="flex items-start gap-3 rounded-xl bg-sal-50 p-3">
               <span className="text-xl">📞</span>
               <div>
                 <p className="text-xs font-semibold text-ink-600">الهاتف</p>
                 <a
-                  href={`tel:${place.phone ?? mainBranch?.phone}`}
+                  href={`tel:${place.phone ?? singleBranch?.phone}`}
                   className="text-sm font-bold text-sal-700 hover:underline"
                   dir="ltr"
                 >
-                  {place.phone ?? mainBranch?.phone}
+                  {place.phone ?? singleBranch?.phone}
                 </a>
               </div>
             </div>

@@ -774,6 +774,8 @@ function AdminDashboard() {
       phone:        newBranch.phone?.trim()         || undefined,
       openingHours: newBranch.openingHours?.trim()  || undefined,
       mapsUrl:      newBranch.mapsUrl?.trim()       || undefined,
+      lat:          newBranch.lat,
+      lng:          newBranch.lng,
     };
     setEditForm((prev) => prev ? { ...prev, branches: [...(prev.branches ?? []), branch] } : prev);
     setNewBranch({});
