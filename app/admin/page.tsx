@@ -1636,11 +1636,17 @@ function AdminDashboard() {
                               const place = places.find((p) => p.id === req.place_id);
                               if (place) {
                                 startEdit(place);
+                                setFilterCat("all");
+                                setAdminSearch("");
+                                setAdminExpandedTerms([]);
                                 setTab("places");
                                 setTimeout(() => {
                                   document.getElementById(`place-row-${req.place_id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-                                }, 100);
+                                }, 150);
                               } else {
+                                setFilterCat("all");
+                                setAdminSearch("");
+                                setAdminExpandedTerms([]);
                                 setTab("places");
                               }
                             }}
@@ -1798,7 +1804,7 @@ function AdminDashboard() {
                   const isEditing = editingId === place.id;
 
                   return (
-                    <tr key={place.id} className={`border-b border-sal-50 last:border-0 transition ${isEditing ? "bg-sal-50" : "hover:bg-gray-50"}`}>
+                    <tr id={`place-row-${place.id}`} key={place.id} className={`border-b border-sal-50 last:border-0 transition ${isEditing ? "bg-sal-50" : "hover:bg-gray-50"}`}>
                       {isEditing && editForm ? (
                         <>
                           {/* Inline edit row */}
