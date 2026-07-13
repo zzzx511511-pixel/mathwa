@@ -36,13 +36,16 @@ async function ensureBucket(): Promise<void> {
 }
 
 // List cached photos, check for sentinels, and return raw file names for cleanup.
-// .skip  → admin deleted photos, don't auto-refetch
-// .gid-* → the Google Place ID that was used to fetch the cached photos
+// .skip       → admin deleted photos, don't auto-refetch
+// .gid-<id>-<N> → the Google Place ID used to fetch the photos, and N = how many
+//                  were successfully stored. The count is the authoritative cap when
+//                  serving from cache — prevents stale leftover photos from leaking
+//                  in even if the pre-clear step failed silently.
 async function getStoredState(
   placeId: string,
   count: number
-): Promise<{ urls: string[]; skipGoogle: boolean; storedGid: string | null; fileNames: string[] }> {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return { urls: [], skipGoogle: false, storedGid: null, fileNames: [] };
+): Promise<{ urls: string[]; skipGoogle: boolean; storedGid: string | null; storedCount: number; fileNames: string[] }> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return { urls: [], skipGoogle: false, storedGid: null, storedCount: 0, fileNames: [] };
   try {
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
       method: "POST",
@@ -53,19 +56,35 @@ async function getStoredState(
         sortBy: { column: "name", order: "asc" },
       }),
     });
-    if (!res.ok) return { urls: [], skipGoogle: false, storedGid: null, fileNames: [] };
+    if (!res.ok) return { urls: [], skipGoogle: false, storedGid: null, storedCount: 0, fileNames: [] };
     const files: { name: string }[] = await res.json();
     const fileNames = files.map((f) => f.name);
     const skipGoogle = files.some((f) => f.name === ".skip");
+
+    // Parse ".gid-<encodedId>-<count>" — the trailing "-<digits>" is the photo count.
     const gidFile = files.find((f) => f.name.startsWith(".gid-"));
-    const storedGid = gidFile ? decodeURIComponent(gidFile.name.slice(5)) : null;
+    let storedGid: string | null = null;
+    let storedCount = 0;
+    if (gidFile) {
+      const raw = gidFile.name.slice(5); // strip ".gid-"
+      const countMatch = raw.match(/-(\d+)$/);
+      if (countMatch) {
+        storedCount = parseInt(countMatch[1], 10);
+        storedGid = decodeURIComponent(raw.slice(0, raw.length - countMatch[0].length));
+      } else {
+        // Legacy sentinel without count — treat count as unknown (conservative: 0 to force re-fetch).
+        storedGid = decodeURIComponent(raw);
+        storedCount = 0;
+      }
+    }
+
     const urls = files
       .filter((f) => /photo_\d+\.(jpg|jpeg|png|webp)$/i.test(f.name))
       .slice(0, count)
       .map((f) => `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${placeId}/${f.name}`);
-    return { urls, skipGoogle, storedGid, fileNames };
+    return { urls, skipGoogle, storedGid, storedCount, fileNames };
   } catch {
-    return { urls: [], skipGoogle: false, storedGid: null, fileNames: [] };
+    return { urls: [], skipGoogle: false, storedGid: null, storedCount: 0, fileNames: [] };
   }
 }
 
@@ -82,10 +101,11 @@ async function clearPhotosAndGid(placeId: string, fileNames: string[]): Promise<
   });
 }
 
-// Write a sentinel recording which Google Place ID was used for the cached photos.
-async function writeGidSentinel(placeId: string, googlePlaceId: string): Promise<void> {
+// Write a sentinel recording which Google Place ID was used and how many photos were stored.
+async function writeGidSentinel(placeId: string, googlePlaceId: string, count: number): Promise<void> {
+  const filename = `.gid-${encodeURIComponent(googlePlaceId)}-${count}`;
   await fetch(
-    `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${placeId}/.gid-${encodeURIComponent(googlePlaceId)}`,
+    `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${placeId}/${filename}`,
     {
       method: "POST",
       headers: {
@@ -369,15 +389,17 @@ export async function getPlacePhotos(
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
 
   // 1. Check cache, skip-sentinel, and source tracking in one Storage call.
-  const { urls: cached, skipGoogle, storedGid, fileNames } = await getStoredState(placeId, count);
+  const { urls: cached, skipGoogle, storedGid, storedCount, fileNames } = await getStoredState(placeId, count);
 
   // Admin manually cleared photos — don't auto-refetch from Google.
   if (skipGoogle) return [];
 
   if (googlePlaceId) {
     // ── Place-ID path ──────────────────────────────────────────────────────
-    // Cache hit: photos were fetched with the same Place ID → trust them.
-    if (storedGid === googlePlaceId && cached.length > 0) return cached;
+    // Cache hit: photos were fetched with the same Place ID.
+    // Use storedCount (from sentinel filename) as the authoritative cap — prevents
+    // stale leftover photos from leaking in even if the pre-clear DELETE failed.
+    if (storedGid === googlePlaceId && storedCount > 0) return cached.slice(0, storedCount);
 
     // Cache miss or stale (different source): clear old photos/gid and re-fetch.
     if (!GOOGLE_KEY) return [];
@@ -387,14 +409,22 @@ export async function getPlacePhotos(
     const { refs, businessStatus } = await fetchGoogleDataById(googlePlaceId, count);
     if (businessStatus) saveBusinessStatus(placeId, businessStatus).catch(() => {});
 
-    // Record the source regardless of how many photos we get.
-    await writeGidSentinel(placeId, googlePlaceId);
-
-    if (!refs.length) return [];
+    if (!refs.length) {
+      // No photos from this Place ID — write a zero-count sentinel so we don't
+      // re-fetch every page load, and return empty.
+      await writeGidSentinel(placeId, googlePlaceId, 0);
+      return [];
+    }
 
     const results = await Promise.all(refs.map((ref, i) => downloadAndStore(placeId, ref, i)));
+    const stored = results.filter(Boolean) as string[];
+
+    // Record source + exact count stored. On the next cache read, slice(0, storedCount)
+    // ensures no stale photos beyond this count can be served.
+    await writeGidSentinel(placeId, googlePlaceId, stored.length);
+
     // Return only what this Place ID provided — never supplement from another source.
-    return results.filter(Boolean) as string[];
+    return stored;
   }
 
   // ── Text-search path (no googlePlaceId) ───────────────────────────────────
