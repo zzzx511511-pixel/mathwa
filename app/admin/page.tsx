@@ -91,6 +91,16 @@ function PlaceMapModal({
     setGeoLoading(true);
     setGeoError("");
     try {
+      // Try Google Places first (finds business names)
+      const placeRes = await fetch(`/api/place-search?q=${encodeURIComponent(q)}`);
+      const placeData = await placeRes.json() as { results: { lat?: number; lng?: number }[] };
+      const first = placeData.results?.[0];
+      if (first?.lat != null && first?.lng != null) {
+        mapInstanceRef.current.flyTo([first.lat, first.lng], 17, { duration: 1 });
+        return;
+      }
+
+      // Fall back to Nominatim for pure geographic names
       const url = new URL("https://nominatim.openstreetmap.org/search");
       url.searchParams.set("q", `${q} الرياض`);
       url.searchParams.set("format", "json");
@@ -101,7 +111,7 @@ function PlaceMapModal({
       if (data[0]) {
         mapInstanceRef.current.flyTo([parseFloat(data[0].lat), parseFloat(data[0].lon)], 16, { duration: 1 });
       } else {
-        setGeoError("لم يُعثر على هذا الموقع — جرب اسماً آخر");
+        setGeoError("لم يُعثر على هذا المكان — جرب اسماً آخر");
       }
     } catch {
       setGeoError("خطأ في البحث — تحقق من الاتصال");
@@ -133,7 +143,7 @@ function PlaceMapModal({
               value={geoQuery}
               onChange={(e) => { setGeoQuery(e.target.value); setGeoError(""); }}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), flyToLocation())}
-              placeholder="ابحث عن حي أو معلم... (مثال: حي الياسمين، KAFD)"
+              placeholder="ابحث عن منشأة أو حي... (مثال: مطعم سهيل، حي الياسمين)"
               className="flex-1 rounded-xl border border-sal-200 bg-white px-3 py-1.5 text-sm focus:border-sal-400 focus:outline-none transition"
               style={{ direction: "rtl" }}
             />

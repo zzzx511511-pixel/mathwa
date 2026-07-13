@@ -24,9 +24,9 @@ export async function GET(req: NextRequest) {
     const data = await res.json();
     if (data.status !== "OK") return NextResponse.json({ results: [] });
 
-    const results = (data.results as { place_id: string; name: string; formatted_address: string }[])
+    const results = (data.results as { place_id: string; name: string; formatted_address: string; geometry?: { location?: { lat: number; lng: number } } }[])
       .slice(0, 10)
-      .map((r) => ({ place_id: r.place_id, name: r.name, address: r.formatted_address }));
+      .map((r) => ({ place_id: r.place_id, name: r.name, address: r.formatted_address, lat: r.geometry?.location?.lat, lng: r.geometry?.location?.lng }));
 
     return NextResponse.json({ results });
   } catch {
