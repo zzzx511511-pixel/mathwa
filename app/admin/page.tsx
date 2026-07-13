@@ -23,9 +23,12 @@ function PlaceMapModal({
   const mapDivRef      = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<import("leaflet").Map | null>(null);
   const markerRef      = useRef<import("leaflet").Marker | null>(null);
-  const [nearby, setNearby]     = useState<{ place_id: string; name: string; address: string }[]>([]);
-  const [loading, setLoading]   = useState(false);
-  const [clicked, setClicked]   = useState(false);
+  const [nearby, setNearby]       = useState<{ place_id: string; name: string; address: string }[]>([]);
+  const [loading, setLoading]     = useState(false);
+  const [clicked, setClicked]     = useState(false);
+  const [geoQuery, setGeoQuery]   = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError]   = useState("");
 
   useEffect(() => {
     if (!mapDivRef.current || mapInstanceRef.current) return;
@@ -82,6 +85,31 @@ function PlaceMapModal({
     return () => { mapInstanceRef.current?.remove(); mapInstanceRef.current = null; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  async function flyToLocation() {
+    const q = geoQuery.trim();
+    if (!q || !mapInstanceRef.current) return;
+    setGeoLoading(true);
+    setGeoError("");
+    try {
+      const url = new URL("https://nominatim.openstreetmap.org/search");
+      url.searchParams.set("q", `${q} الرياض`);
+      url.searchParams.set("format", "json");
+      url.searchParams.set("limit", "1");
+      url.searchParams.set("countrycodes", "sa");
+      const res  = await fetch(url.toString(), { headers: { "Accept-Language": "ar" } });
+      const data = await res.json() as { lat: string; lon: string }[];
+      if (data[0]) {
+        mapInstanceRef.current.flyTo([parseFloat(data[0].lat), parseFloat(data[0].lon)], 16, { duration: 1 });
+      } else {
+        setGeoError("لم يُعثر على هذا الموقع — جرب اسماً آخر");
+      }
+    } catch {
+      setGeoError("خطأ في البحث — تحقق من الاتصال");
+    } finally {
+      setGeoLoading(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -98,13 +126,34 @@ function PlaceMapModal({
           <button type="button" onClick={onClose} className="text-xl leading-none text-ink-400 hover:text-ink-700">✕</button>
         </div>
 
-        {/* Hint */}
-        <p className="border-b border-sal-100 bg-sal-50 px-5 py-2 text-xs text-ink-500">
-          اضغط على موقع المنشأة مباشرةً — ستظهر الأماكن القريبة في القائمة أدناه للاختيار
-        </p>
+        {/* Location search */}
+        <div className="border-b border-sal-100 bg-sal-50 px-4 py-2.5 space-y-1.5">
+          <div className="flex gap-2">
+            <input
+              value={geoQuery}
+              onChange={(e) => { setGeoQuery(e.target.value); setGeoError(""); }}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), flyToLocation())}
+              placeholder="ابحث عن حي أو معلم... (مثال: حي الياسمين، KAFD)"
+              className="flex-1 rounded-xl border border-sal-200 bg-white px-3 py-1.5 text-sm focus:border-sal-400 focus:outline-none transition"
+              style={{ direction: "rtl" }}
+            />
+            <button
+              type="button"
+              onClick={flyToLocation}
+              disabled={geoLoading || !geoQuery.trim()}
+              className="whitespace-nowrap rounded-xl border border-sal-300 bg-white px-3 py-1.5 text-xs font-bold text-sal-700 hover:bg-sal-50 disabled:opacity-40 transition"
+            >
+              {geoLoading ? "⏳" : "🔍 انتقل"}
+            </button>
+          </div>
+          {geoError && <p className="text-[11px] text-red-500">{geoError}</p>}
+          <p className="text-[11px] text-ink-400">
+            بعد الانتقال، اضغط على الموقع الدقيق للمنشأة في الخريطة
+          </p>
+        </div>
 
         {/* Map */}
-        <div ref={mapDivRef} style={{ height: 320, flexShrink: 0 }} />
+        <div ref={mapDivRef} style={{ height: 300, flexShrink: 0 }} />
 
         {/* Results panel */}
         <div className="max-h-56 overflow-y-auto border-t border-sal-100">
