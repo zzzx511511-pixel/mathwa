@@ -1133,6 +1133,9 @@ function AdminDashboard() {
           <p className="text-sm text-ink-600">{places.length} مكان مسجّل</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/admin/branch-review" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
+            📍 مراجعة الفروع
+          </Link>
           <Link href="/" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
             ← العودة للموقع
           </Link>
