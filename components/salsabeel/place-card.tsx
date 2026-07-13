@@ -50,7 +50,8 @@ export function PlaceCard({ place, status }: { place: Place; status?: string }) 
       const url =
         `/api/place-photos/${encodeURIComponent(place.id)}` +
         `?name=${encodeURIComponent(place.name)}` +
-        (nbh ? `&nbh=${encodeURIComponent(nbh)}` : "");
+        (nbh ? `&nbh=${encodeURIComponent(nbh)}` : "") +
+        (place.googlePlaceId ? `&gid=${encodeURIComponent(place.googlePlaceId)}` : "");
       fetch(url, { signal: controller.signal })
         .then((r) => r.json())
         .then((data: { photos: string[] }) => {

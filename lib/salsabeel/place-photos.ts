@@ -35,12 +35,14 @@ async function ensureBucket(): Promise<void> {
   }
 }
 
-// List cached photos and check for the skip-Google sentinel (.skip file).
+// List cached photos, check for sentinels, and return raw file names for cleanup.
+// .skip  → admin deleted photos, don't auto-refetch
+// .gid-* → the Google Place ID that was used to fetch the cached photos
 async function getStoredState(
   placeId: string,
   count: number
-): Promise<{ urls: string[]; skipGoogle: boolean }> {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return { urls: [], skipGoogle: false };
+): Promise<{ urls: string[]; skipGoogle: boolean; storedGid: string | null; fileNames: string[] }> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return { urls: [], skipGoogle: false, storedGid: null, fileNames: [] };
   try {
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
       method: "POST",
@@ -51,17 +53,50 @@ async function getStoredState(
         sortBy: { column: "name", order: "asc" },
       }),
     });
-    if (!res.ok) return { urls: [], skipGoogle: false };
+    if (!res.ok) return { urls: [], skipGoogle: false, storedGid: null, fileNames: [] };
     const files: { name: string }[] = await res.json();
+    const fileNames = files.map((f) => f.name);
     const skipGoogle = files.some((f) => f.name === ".skip");
+    const gidFile = files.find((f) => f.name.startsWith(".gid-"));
+    const storedGid = gidFile ? decodeURIComponent(gidFile.name.slice(5)) : null;
     const urls = files
       .filter((f) => /photo_\d+\.(jpg|jpeg|png|webp)$/i.test(f.name))
       .slice(0, count)
       .map((f) => `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${placeId}/${f.name}`);
-    return { urls, skipGoogle };
+    return { urls, skipGoogle, storedGid, fileNames };
   } catch {
-    return { urls: [], skipGoogle: false };
+    return { urls: [], skipGoogle: false, storedGid: null, fileNames: [] };
   }
+}
+
+// Delete all photo files and any .gid-* sentinels (but leave .skip intact).
+async function clearPhotosAndGid(placeId: string, fileNames: string[]): Promise<void> {
+  const toClear = fileNames.filter(
+    (n) => /photo_\d+\.(jpg|jpeg|png|webp)$/i.test(n) || n.startsWith(".gid-")
+  );
+  if (!toClear.length) return;
+  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+    method: "DELETE",
+    headers: storageHeaders(),
+    body: JSON.stringify({ prefixes: toClear.map((n) => `${placeId}/${n}`) }),
+  });
+}
+
+// Write a sentinel recording which Google Place ID was used for the cached photos.
+async function writeGidSentinel(placeId: string, googlePlaceId: string): Promise<void> {
+  await fetch(
+    `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${placeId}/.gid-${encodeURIComponent(googlePlaceId)}`,
+    {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "text/plain",
+        "x-upsert": "true",
+      },
+      body: "1",
+    }
+  );
 }
 
 async function writeSentinel(placeId: string): Promise<void> {
@@ -318,6 +353,11 @@ async function downloadAndStore(
 /**
  * Get up to `count` photos for a place.
  * Checks Supabase Storage first; fetches from Google and stores if missing.
+ *
+ * When `googlePlaceId` is provided the function ONLY ever fetches from that
+ * exact Place ID — no text-search fallback, no mixing from other sources.
+ * If the Place ID yields fewer photos than `count`, only those photos are
+ * returned; the count is never padded from another source.
  */
 export async function getPlacePhotos(
   placeId: string,
@@ -328,36 +368,48 @@ export async function getPlacePhotos(
 ): Promise<string[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
 
-  // 1. Check cache and skip-sentinel in one Storage call.
-  const { urls: cached, skipGoogle } = await getStoredState(placeId, count);
-  if (cached.length >= count) return cached.slice(0, count);
+  // 1. Check cache, skip-sentinel, and source tracking in one Storage call.
+  const { urls: cached, skipGoogle, storedGid, fileNames } = await getStoredState(placeId, count);
+
   // Admin manually cleared photos — don't auto-refetch from Google.
   if (skipGoogle) return [];
 
-  // 2. Fetch new photos from Google.
+  if (googlePlaceId) {
+    // ── Place-ID path ──────────────────────────────────────────────────────
+    // Cache hit: photos were fetched with the same Place ID → trust them.
+    if (storedGid === googlePlaceId && cached.length > 0) return cached;
+
+    // Cache miss or stale (different source): clear old photos/gid and re-fetch.
+    if (!GOOGLE_KEY) return [];
+    await ensureBucket();
+    await clearPhotosAndGid(placeId, fileNames);
+
+    const { refs, businessStatus } = await fetchGoogleDataById(googlePlaceId, count);
+    if (businessStatus) saveBusinessStatus(placeId, businessStatus).catch(() => {});
+
+    // Record the source regardless of how many photos we get.
+    await writeGidSentinel(placeId, googlePlaceId);
+
+    if (!refs.length) return [];
+
+    const results = await Promise.all(refs.map((ref, i) => downloadAndStore(placeId, ref, i)));
+    // Return only what this Place ID provided — never supplement from another source.
+    return results.filter(Boolean) as string[];
+  }
+
+  // ── Text-search path (no googlePlaceId) ───────────────────────────────────
+  if (cached.length >= count) return cached.slice(0, count);
   if (!GOOGLE_KEY) return cached;
   await ensureBucket();
 
-  // Use Place ID (accurate) when available, else fall back to text search.
-  const { refs, businessStatus } = googlePlaceId
-    ? await fetchGoogleDataById(googlePlaceId, count)
-    : await fetchGoogleData(
-        [placeName, neighborhood, "الرياض"].filter(Boolean).join(" "),
-        count
-      );
-
-  if (businessStatus) {
-    // Fire-and-forget — don't block photo delivery on DB write.
-    saveBusinessStatus(placeId, businessStatus).catch(() => {});
-  }
-
+  const { refs, businessStatus } = await fetchGoogleData(
+    [placeName, neighborhood, "الرياض"].filter(Boolean).join(" "),
+    count
+  );
+  if (businessStatus) saveBusinessStatus(placeId, businessStatus).catch(() => {});
   if (!refs.length) return cached;
 
-  // 3. Download images and store in Supabase; run in parallel.
-  const results = await Promise.all(
-    refs.map((ref, i) => downloadAndStore(placeId, ref, i))
-  );
-
+  const results = await Promise.all(refs.map((ref, i) => downloadAndStore(placeId, ref, i)));
   const stored = results.filter(Boolean) as string[];
   return stored.length ? stored : cached;
 }
