@@ -96,8 +96,22 @@ async function scan(): Promise<{ folders: string[]; caseA: FolderEntry[]; caseB:
   return { folders, caseA, caseB };
 }
 
+// Fetch all place {id, name} pairs from custom_places table.
+async function fetchAllPlaceIds(): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/custom_places?select=data->>id,data->>name&order=data->>id.asc&limit=5000`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+  );
+  if (!res.ok) throw new Error(`DB fetch failed: ${res.status}`);
+  const rows: { id: string; name: string }[] = await res.json();
+  // Deduplicate by id (same logic as getCustomPlaces).
+  const seen = new Set<string>();
+  return rows.filter((r) => r.id && !seen.has(r.id) && seen.add(r.id));
+}
+
 // GET → dry-run scan, returns full details for preview.
-// Add ?debug=<folder> (e.g. ?debug=c104) to get raw Supabase data for that folder.
+// ?debug=<folder>   — raw Supabase data for that specific folder
+// ?compare=true     — compare DB place IDs vs Storage folders; shows which places have no folder
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
   if (!SUPABASE_URL || !SUPABASE_KEY)
@@ -115,6 +129,22 @@ export async function GET(req: NextRequest) {
         first_10_folders:  folders.slice(0, 10),
         raw_files:         rawFiles,
         isLegacyGid_results: rawFiles.map((n) => ({ name: n, isLegacy: isLegacyGid(n), isValid: isValidGid(n) })),
+      });
+    } catch (err) {
+      return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    }
+  }
+
+  if (req.nextUrl.searchParams.get("compare") === "true") {
+    try {
+      const [allPlaces, storageFolders] = await Promise.all([fetchAllPlaceIds(), listFolders()]);
+      const folderSet = new Set(storageFolders);
+      const noFolder  = allPlaces.filter((p) => !folderSet.has(p.id));
+      return NextResponse.json({
+        total_db:            allPlaces.length,
+        total_storage:       storageFolders.length,
+        gap:                 noFolder.length,
+        places_without_folder: noFolder,
       });
     } catch (err) {
       return NextResponse.json({ error: (err as Error).message }, { status: 500 });
