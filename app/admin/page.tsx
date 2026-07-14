@@ -10,6 +10,7 @@ import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import { LocationPicker } from "@/components/salsabeel/location-picker";
 import type { PendingRequest } from "@/lib/salsabeel/supabase-requests";
+import { SentinelCleanup } from "@/components/salsabeel/sentinel-cleanup";
 
 // ── Name similarity check ─────────────────────────────────────────────────────
 // Returns true when the two names are likely the same place (safe to auto-select).
@@ -1711,6 +1712,9 @@ function AdminDashboard() {
       {/* ── PLACES TAB ───────────────────────────────────────────────── */}
       {tab === "places" && (
         <div className="space-y-4">
+          {/* Storage maintenance */}
+          <SentinelCleanup />
+
           {/* Search */}
           <div className="relative">
             <svg className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
