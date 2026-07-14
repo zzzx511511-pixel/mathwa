@@ -97,10 +97,30 @@ async function scan(): Promise<{ folders: string[]; caseA: FolderEntry[]; caseB:
 }
 
 // GET → dry-run scan, returns full details for preview.
+// Add ?debug=<folder> (e.g. ?debug=c104) to get raw Supabase data for that folder.
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
   if (!SUPABASE_URL || !SUPABASE_KEY)
     return NextResponse.json({ error: "Supabase env vars not configured" }, { status: 500 });
+
+  const debugFolder = req.nextUrl.searchParams.get("debug");
+  if (debugFolder) {
+    try {
+      const folders = await listFolders();
+      const idx     = folders.indexOf(debugFolder);
+      const rawFiles = await listFiles(debugFolder);
+      return NextResponse.json({
+        folder_in_list:    idx !== -1,
+        folder_list_index: idx,
+        first_10_folders:  folders.slice(0, 10),
+        raw_files:         rawFiles,
+        isLegacyGid_results: rawFiles.map((n) => ({ name: n, isLegacy: isLegacyGid(n), isValid: isValidGid(n) })),
+      });
+    } catch (err) {
+      return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    }
+  }
+
   try {
     const { folders, caseA, caseB } = await scan();
     return NextResponse.json({ folders_scanned: folders.length, case_a: caseA, case_b: caseB });
