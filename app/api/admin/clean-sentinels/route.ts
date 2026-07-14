@@ -12,14 +12,34 @@ const headers = {
 };
 
 async function listFolders(): Promise<string[]> {
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ prefix: "", limit: 1000, sortBy: { column: "name", order: "asc" } }),
-  });
-  if (!res.ok) throw new Error(`list root: ${res.status}`);
-  const items: { name: string; id: string | null }[] = await res.json();
-  return items.filter((i) => i.id === null && i.name).map((i) => i.name);
+  const PAGE = 1000; // Supabase max per request
+  const all: string[] = [];
+  let offset = 0;
+
+  // Paginate until all folders are fetched (bucket may have >1000 entries).
+  while (true) {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        prefix: "",
+        limit:  PAGE,
+        offset,
+        sortBy: { column: "name", order: "asc" },
+      }),
+    });
+    if (!res.ok) throw new Error(`list root (offset=${offset}): ${res.status}`);
+    const items: { name: string }[] = await res.json();
+
+    // Do NOT filter by id===null — Supabase folder items may have non-null ids
+    // depending on bucket configuration. Any name at root level is a folder.
+    all.push(...items.map((i) => i.name).filter(Boolean));
+
+    if (items.length < PAGE) break; // last page
+    offset += PAGE;
+  }
+
+  return all;
 }
 
 async function listFiles(folder: string): Promise<string[]> {
