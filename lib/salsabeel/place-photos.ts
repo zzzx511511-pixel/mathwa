@@ -8,6 +8,13 @@ const GOOGLE_KEY   = process.env.GOOGLE_PLACES_API_KEY ?? "";
 const BUCKET       = "place-photos";
 const PLACES_BASE  = "https://maps.googleapis.com/maps/api/place";
 
+// Per-Place-ID photo indices to skip when fetching from Google.
+// Only needed when Google's own data for a specific place contains photos
+// from a neighbouring business (a Google Maps data error, not a code bug).
+const PHOTO_INDEX_SKIP: Record<string, number[]> = {
+  "ChIJZ90PzfzjLj4RMLsLHRLkIAY": [0], // بيك — Google photo[0] is فلافل ثمار
+};
+
 function storageHeaders(extra?: Record<string, string>) {
   return {
     apikey: SUPABASE_KEY,
@@ -237,8 +244,10 @@ async function fetchGoogleDataById(
       return { refs: [], businessStatus: null };
     }
     const photos: { photo_reference: string }[] = data.result?.photos ?? [];
+    const skip     = PHOTO_INDEX_SKIP[googlePlaceId] ?? [];
+    const eligible = skip.length ? photos.filter((_, i) => !skip.includes(i)) : photos;
     return {
-      refs: photos.slice(0, count).map((p: { photo_reference: string }) => p.photo_reference),
+      refs: eligible.slice(0, count).map((p: { photo_reference: string }) => p.photo_reference),
       businessStatus: data.result?.business_status ?? null,
     };
   } catch (err) {
