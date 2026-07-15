@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // ── Local type definitions (mirrors the API route types) ──────────────────────
 type PlaceRef = {
@@ -60,6 +60,20 @@ function StatusIcon({ state }: { state: MergeState }) {
   return null;
 }
 
+// ── localStorage helpers ──────────────────────────────────────────────────────
+function lsGet<T>(key: string, fallback: T): T {
+  try { return JSON.parse(localStorage.getItem(key) ?? "null") ?? fallback; }
+  catch { return fallback; }
+}
+function lsSet(key: string, value: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* quota */ }
+}
+
+const LS_SUBSET_CHECKS  = "mrv-subset-checks";
+const LS_SUBSET_ACTIONS = "mrv-subset-actions";
+const LS_SUBSET_STATUS  = "mrv-subset-status";
+const LS_EXACT_STATUS   = "mrv-exact-status";
+
 // ── SUBSET Section ────────────────────────────────────────────────────────────
 function SubsetSection({
   groups,
@@ -71,20 +85,40 @@ function SubsetSection({
   const [status, setStatus]   = useState<Record<string, MergeState>>({});
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const initialized = useRef(false);
 
-  // Initialise checkboxes pre-checked and actions defaulting to "branch".
+  // Load from localStorage, fall back to defaults for any new key.
   useEffect(() => {
     if (!groups.length) return;
-    const initChecks: Record<string, boolean> = {};
+    const savedChecks  = lsGet<Record<string, boolean>>(LS_SUBSET_CHECKS, {});
+    const savedActions = lsGet<Record<string, SubsetAction>>(LS_SUBSET_ACTIONS, {});
+    const savedStatus  = lsGet<Record<string, MergeState>>(LS_SUBSET_STATUS, {});
+    const initChecks:  Record<string, boolean>      = {};
     const initActions: Record<string, SubsetAction> = {};
     for (const g of groups) {
       const key = `${g.place_a.id}__${g.place_b.id}`;
-      initChecks[key]  = true;
-      initActions[key] = "branch" as SubsetAction;
+      initChecks[key]  = savedChecks[key]  ?? true;
+      initActions[key] = savedActions[key] ?? ("branch" as SubsetAction);
     }
     setChecks(initChecks);
     setActions(initActions);
+    if (Object.keys(savedStatus).length) setStatus(savedStatus);
+    initialized.current = true;
   }, [groups]);
+
+  // Persist state after initialization (guard against saving empty initial state).
+  useEffect(() => {
+    if (!initialized.current) return;
+    lsSet(LS_SUBSET_CHECKS, checks);
+  }, [checks]);
+  useEffect(() => {
+    if (!initialized.current) return;
+    lsSet(LS_SUBSET_ACTIONS, actions);
+  }, [actions]);
+  useEffect(() => {
+    if (!initialized.current) return;
+    lsSet(LS_SUBSET_STATUS, status);
+  }, [status]);
 
   const allSelected  = groups.every((g) => checks[`${g.place_a.id}__${g.place_b.id}`]);
   const noneSelected = groups.every((g) => !checks[`${g.place_a.id}__${g.place_b.id}`]);
@@ -406,6 +440,18 @@ export default function MergeReviewPage() {
   // EXACT state
   const [exactGroups, setExactGroups]   = useState<DuplicateGroup[]>([]);
   const [exactStatus, setExactStatus]   = useState<Record<string, MergeState>>({});
+  const exactInitialized = useRef(false);
+
+  // Load and persist exactStatus
+  useEffect(() => {
+    const saved = lsGet<Record<string, MergeState>>(LS_EXACT_STATUS, {});
+    if (Object.keys(saved).length) setExactStatus(saved);
+    exactInitialized.current = true;
+  }, []);
+  useEffect(() => {
+    if (!exactInitialized.current) return;
+    lsSet(LS_EXACT_STATUS, exactStatus);
+  }, [exactStatus]);
 
   useEffect(() => {
     fetch("/api/admin/find-duplicates")
@@ -448,13 +494,27 @@ export default function MergeReviewPage() {
     <div dir="rtl" className="mx-auto max-w-screen-lg space-y-10 px-5 py-10">
 
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-ink-900">مراجعة التكرارات والدمج</h1>
-        {!loading && !error && (
-          <p className="mt-1 text-sm text-ink-500">
-            {totalGroups} حالة مكتشفة — {exactCount} متطابق · {subsetCount} فرع محتمل
-          </p>
-        )}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-extrabold text-ink-900">مراجعة التكرارات والدمج</h1>
+          {!loading && !error && (
+            <p className="mt-1 text-sm text-ink-500">
+              {totalGroups} حالة مكتشفة — {exactCount} متطابق · {subsetCount} فرع محتمل
+            </p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            [LS_SUBSET_CHECKS, LS_SUBSET_ACTIONS, LS_SUBSET_STATUS, LS_EXACT_STATUS].forEach(
+              (k) => localStorage.removeItem(k)
+            );
+            window.location.reload();
+          }}
+          className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-500 hover:bg-ink-50 transition"
+        >
+          ↺ مسح المحفوظات وإعادة التحميل
+        </button>
       </div>
 
       {/* Loading */}
