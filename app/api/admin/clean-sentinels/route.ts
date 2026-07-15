@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
+import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
+import { mergePlaces } from "@/lib/salsabeel/data";
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
@@ -96,22 +98,9 @@ async function scan(): Promise<{ folders: string[]; caseA: FolderEntry[]; caseB:
   return { folders, caseA, caseB };
 }
 
-// Fetch all place {id, name} pairs from custom_places table.
-async function fetchAllPlaceIds(): Promise<{ id: string; name: string }[]> {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/custom_places?select=data->>id,data->>name&order=data->>id.asc&limit=5000`,
-    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-  );
-  if (!res.ok) throw new Error(`DB fetch failed: ${res.status}`);
-  const rows: { id: string; name: string }[] = await res.json();
-  // Deduplicate by id (same logic as getCustomPlaces).
-  const seen = new Set<string>();
-  return rows.filter((r) => r.id && !seen.has(r.id) && seen.add(r.id));
-}
-
 // GET → dry-run scan, returns full details for preview.
 // ?debug=<folder>   — raw Supabase data for that specific folder
-// ?compare=true     — compare DB place IDs vs Storage folders; shows which places have no folder
+// ?compare=true     — compare all place IDs vs Storage folders; shows which places have no folder
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
   if (!SUPABASE_URL || !SUPABASE_KEY)
@@ -137,13 +126,19 @@ export async function GET(req: NextRequest) {
 
   if (req.nextUrl.searchParams.get("compare") === "true") {
     try {
-      const [allPlaces, storageFolders] = await Promise.all([fetchAllPlaceIds(), listFolders()]);
+      // Use mergePlaces (static data + Supabase custom places) — same as all pages.
+      const [allPlaces, storageFolders] = await Promise.all([
+        mergePlaces(await getCustomPlaces()),
+        listFolders(),
+      ]);
       const folderSet = new Set(storageFolders);
-      const noFolder  = allPlaces.filter((p) => !folderSet.has(p.id));
+      const noFolder  = allPlaces
+        .filter((p) => !folderSet.has(p.id))
+        .map((p) => ({ id: p.id, name: p.name }));
       return NextResponse.json({
-        total_db:            allPlaces.length,
-        total_storage:       storageFolders.length,
-        gap:                 noFolder.length,
+        total_db:              allPlaces.length,
+        total_storage:         storageFolders.length,
+        gap:                   noFolder.length,
         places_without_folder: noFolder,
       });
     } catch (err) {
