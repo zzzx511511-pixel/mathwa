@@ -1,7 +1,8 @@
 /**
  * GET /api/admin/find-duplicates
  *
- * Scans custom_places for records that appear to be duplicated:
+ * Scans ALL places (static data merged with Supabase custom places) for records
+ * that appear to be duplicated:
  *   EXACT        — two main places with identical normalised names
  *   SUBSET       — name A starts with name B (or vice-versa) in same category
  *                  suggesting one is a branch of the other stored as a main place
@@ -13,15 +14,14 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
+import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
+import { mergePlaces } from "@/lib/salsabeel/data";
 import type { Place, Branch } from "@/lib/salsabeel/types";
-
-const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 // Arabic text normalisation: remove diacritics, unify letters, collapse spaces.
 function norm(s: string): string {
   return s
-    .replace(/[ً-ٰٟ]/g, "")   // tashkeel
+    .replace(/[ً-ٰٟ]/g, "")   // tashkeel
     .replace(/[إأآٱ]/g, "ا")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
@@ -41,32 +41,14 @@ type DuplicateGroup = {
   note:        string;
 };
 
-async function fetchAllPlaces(): Promise<Place[]> {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/custom_places?select=data&limit=5000`,
-    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-  );
-  if (!res.ok) throw new Error(`DB fetch: ${res.status}`);
-  const rows: { data: Place }[] = await res.json();
-  // Deduplicate rows (same id).
-  const seen = new Set<string>();
-  const out: Place[] = [];
-  for (const r of rows) {
-    if (r.data?.id && !r.data._deleted && !seen.has(r.data.id)) {
-      seen.add(r.data.id);
-      out.push(r.data);
-    }
-  }
-  return out;
-}
-
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
-  if (!SUPABASE_URL || !SUPABASE_KEY)
-    return NextResponse.json({ error: "Supabase env vars not configured" }, { status: 500 });
 
   try {
-    const places = await fetchAllPlaces();
+    // Merge static data with Supabase custom places — same logic as all page components.
+    const custom = await getCustomPlaces();
+    const places: Place[] = mergePlaces(custom);
+
     const groups: DuplicateGroup[] = [];
 
     // Build a map: normalised name → places with that name (for EXACT check).
