@@ -32,10 +32,30 @@ function norm(s: string): string {
 
 type DuplicateKind = "EXACT" | "SUBSET" | "BRANCH_CLASH";
 
+type PlaceRef = {
+  id:            string;
+  name:          string;
+  category:      string;
+  branches_count: number;
+  neighborhood?: string;
+  address?:      string;
+};
+
+function placeRef(p: Place): PlaceRef {
+  return {
+    id:             p.id,
+    name:           p.name,
+    category:       p.category,
+    branches_count: p.branches.length,
+    neighborhood:   p.neighborhood ?? p.branches[0]?.neighborhood,
+    address:        p.address      ?? p.branches[0]?.address,
+  };
+}
+
 type DuplicateGroup = {
   kind:        DuplicateKind;
-  place_a:     { id: string; name: string; category: string; branches_count: number };
-  place_b:     { id: string; name: string; category: string; branches_count: number };
+  place_a:     PlaceRef;
+  place_b:     PlaceRef;
   /** For BRANCH_CLASH: the branch in place_a whose name matches place_b */
   matching_branch?: Branch;
   note:        string;
@@ -67,8 +87,8 @@ export async function GET(req: NextRequest) {
           const a = group[i], b = group[j];
           groups.push({
             kind:    "EXACT",
-            place_a: { id: a.id, name: a.name, category: a.category, branches_count: a.branches.length },
-            place_b: { id: b.id, name: b.name, category: b.category, branches_count: b.branches.length },
+            place_a: placeRef(a),
+            place_b: placeRef(b),
             note:    `كلا السجلين لهما نفس الاسم بالضبط (${a.name})`,
           });
         }
@@ -98,8 +118,8 @@ export async function GET(req: NextRequest) {
           if (!alreadyExact) {
             groups.push({
               kind:    "BRANCH_CLASH",
-              place_a: { id: a.id,     name: a.name,     category: a.category,     branches_count: a.branches.length },
-              place_b: { id: match.id, name: match.name, category: match.category, branches_count: match.branches.length },
+              place_a: placeRef(a),
+              place_b: placeRef(match),
               matching_branch: branch,
               note:    `"${match.name}" موجودة كمنشأة رئيسية مستقلة لكنها أيضاً مسجلة كفرع داخل "${a.name}"`,
             });
@@ -140,8 +160,8 @@ export async function GET(req: NextRequest) {
 
         groups.push({
           kind:    "SUBSET",
-          place_a: { id: shortPlace.id, name: shortPlace.name, category: shortPlace.category, branches_count: shortPlace.branches.length },
-          place_b: { id: longPlace.id,  name: longPlace.name,  category: longPlace.category,  branches_count: longPlace.branches.length },
+          place_a: placeRef(shortPlace),
+          place_b: placeRef(longPlace),
           note:    `"${longPlace.name}" قد تكون فرعاً من "${shortPlace.name}" مسجّل بالغلط كمنشأة رئيسية مستقلة`,
         });
       }
