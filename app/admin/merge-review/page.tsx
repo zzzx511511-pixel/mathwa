@@ -20,7 +20,8 @@ type DuplicateGroup = {
   note: string;
 };
 
-type MergeState = "idle" | "pending" | "done" | "error" | "skipped";
+type MergeState   = "idle" | "pending" | "done" | "error" | "skipped";
+type SubsetAction = "branch" | "delete" | "skip";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 async function doMerge(keep_id: string, merge_id: string, as_branch = true): Promise<boolean> {
@@ -66,21 +67,26 @@ function SubsetSection({
   groups: DuplicateGroup[];
 }) {
   const [checks, setChecks]   = useState<Record<string, boolean>>({});
+  const [actions, setActions] = useState<Record<string, SubsetAction>>({});
   const [status, setStatus]   = useState<Record<string, MergeState>>({});
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
-  // Initialise checkboxes pre-checked on first load.
+  // Initialise checkboxes pre-checked and actions defaulting to "branch".
   useEffect(() => {
     if (!groups.length) return;
-    const initial: Record<string, boolean> = {};
+    const initChecks: Record<string, boolean> = {};
+    const initActions: Record<string, SubsetAction> = {};
     for (const g of groups) {
-      initial[`${g.place_a.id}__${g.place_b.id}`] = true;
+      const key = `${g.place_a.id}__${g.place_b.id}`;
+      initChecks[key]  = true;
+      initActions[key] = "branch";
     }
-    setChecks(initial);
+    setChecks(initChecks);
+    setActions(initActions);
   }, [groups]);
 
-  const allSelected = groups.every((g) => checks[`${g.place_a.id}__${g.place_b.id}`]);
+  const allSelected  = groups.every((g) => checks[`${g.place_a.id}__${g.place_b.id}`]);
   const noneSelected = groups.every((g) => !checks[`${g.place_a.id}__${g.place_b.id}`]);
 
   function toggleAll() {
@@ -93,17 +99,25 @@ function SubsetSection({
 
   const selected = groups.filter((g) => checks[`${g.place_a.id}__${g.place_b.id}`]);
 
-  async function mergeAllSubset() {
+  async function runSelected() {
     if (!selected.length || running) return;
     setRunning(true);
     setProgress({ done: 0, total: selected.length });
 
     for (let i = 0; i < selected.length; i++) {
-      const g = selected[i];
-      const key = `${g.place_a.id}__${g.place_b.id}`;
+      const g      = selected[i];
+      const key    = `${g.place_a.id}__${g.place_b.id}`;
+      const action = actions[key] ?? "branch";
+
       setStatus((prev) => ({ ...prev, [key]: "pending" }));
-      const ok = await doMerge(g.place_a.id, g.place_b.id);
-      setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+
+      if (action === "skip") {
+        setStatus((prev) => ({ ...prev, [key]: "skipped" }));
+      } else {
+        const ok = await doMerge(g.place_a.id, g.place_b.id, action === "branch");
+        setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+      }
+
       setProgress({ done: i + 1, total: selected.length });
     }
 
@@ -138,22 +152,25 @@ function SubsetSection({
             <tr className="bg-sal-50 text-xs font-bold text-ink-600 border-b border-sal-100">
               <th className="px-3 py-2.5 text-right w-8"></th>
               <th className="px-3 py-2.5 text-right">المنشأة الأم (A)</th>
-              <th className="px-3 py-2.5 text-center w-8">←</th>
-              <th className="px-3 py-2.5 text-right">الفرع المحتمل (B)</th>
+              <th className="px-3 py-2.5 text-center w-6">←</th>
+              <th className="px-3 py-2.5 text-right">السجل المحتمل (B)</th>
               <th className="px-3 py-2.5 text-right">الموقع</th>
-              <th className="px-3 py-2.5 text-center w-10"></th>
+              <th className="px-3 py-2.5 text-right">الإجراء</th>
+              <th className="px-3 py-2.5 text-center w-8"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-sal-50">
             {groups.map((g) => {
-              const key = `${g.place_a.id}__${g.place_b.id}`;
-              const st  = status[key] ?? "idle";
-              const isDone = st === "done" || st === "error";
+              const key  = `${g.place_a.id}__${g.place_b.id}`;
+              const st   = status[key] ?? "idle";
+              const act  = actions[key] ?? "branch";
+              const isDone = st === "done" || st === "error" || st === "skipped";
               return (
                 <tr
                   key={key}
-                  className={`transition ${isDone ? "opacity-60" : "hover:bg-sal-50"}`}
+                  className={`transition ${isDone ? "opacity-50" : "hover:bg-sal-50"}`}
                 >
+                  {/* Checkbox */}
                   <td className="px-3 py-2.5">
                     <input
                       type="checkbox"
@@ -165,26 +182,62 @@ function SubsetSection({
                       className="h-4 w-4 accent-sal-600"
                     />
                   </td>
+
+                  {/* Place A */}
                   <td className="px-3 py-2.5">
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-semibold text-ink-900">{g.place_a.name}
+                      <span className="font-semibold text-ink-900">
+                        {g.place_a.name}
                         <span className="mr-1 text-[10px] text-ink-400">({g.place_a.branches_count} فرع)</span>
                       </span>
                       <PlaceLink id={g.place_a.id} name="عرض الصفحة" />
                     </div>
                   </td>
+
                   <td className="px-3 py-2.5 text-center text-ink-400">←</td>
+
+                  {/* Place B */}
                   <td className="px-3 py-2.5">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-ink-800">{g.place_b.name}</span>
                       <PlaceLink id={g.place_b.id} name="عرض الصفحة" />
                     </div>
                   </td>
+
+                  {/* Location */}
                   <td className="px-3 py-2.5">
                     <LocationLine place={g.place_b} />
                   </td>
+
+                  {/* Action selector */}
+                  <td className="px-3 py-2.5">
+                    {isDone ? (
+                      <StatusIcon state={st} />
+                    ) : (
+                      <select
+                        value={act}
+                        disabled={running || !checks[key]}
+                        onChange={(e) =>
+                          setActions((prev) => ({ ...prev, [key]: e.target.value as SubsetAction }))
+                        }
+                        className={`rounded-lg border px-2 py-1 text-[11px] font-semibold focus:outline-none disabled:opacity-40 ${
+                          act === "delete"
+                            ? "border-red-200 bg-red-50 text-red-700"
+                            : act === "skip"
+                            ? "border-ink-200 bg-ink-50 text-ink-500"
+                            : "border-sal-200 bg-sal-50 text-sal-700"
+                        }`}
+                      >
+                        <option value="branch">دمج B كفرع تحت A</option>
+                        <option value="delete">حذف B — تكرار حقيقي</option>
+                        <option value="skip">تجاهل</option>
+                      </select>
+                    )}
+                  </td>
+
+                  {/* Running spinner */}
                   <td className="px-3 py-2.5 text-center">
-                    <StatusIcon state={st} />
+                    {st === "pending" && <span className="text-xs text-amber-600">⏳</span>}
                   </td>
                 </tr>
               );
@@ -196,20 +249,20 @@ function SubsetSection({
       {/* Progress */}
       {progress && (
         <p className="text-xs text-ink-600">
-          {running ? "جاري الدمج..." : "اكتمل"} ({progress.done}/{progress.total})
+          {running ? "جاري التنفيذ..." : "اكتمل"} ({progress.done}/{progress.total})
         </p>
       )}
 
-      {/* Bulk merge button */}
+      {/* Bulk action button */}
       <button
         type="button"
-        onClick={mergeAllSubset}
+        onClick={runSelected}
         disabled={noneSelected || running}
         className="rounded-xl bg-sal-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-sal-700 disabled:opacity-40 transition"
       >
         {running
-          ? `جاري الدمج... (${progress?.done ?? 0}/${progress?.total ?? 0})`
-          : `دمج المحدد (${selected.length} حالة)`}
+          ? `جاري التنفيذ... (${progress?.done ?? 0}/${progress?.total ?? 0})`
+          : `تنفيذ المحدد (${selected.length} حالة)`}
       </button>
     </div>
   );
