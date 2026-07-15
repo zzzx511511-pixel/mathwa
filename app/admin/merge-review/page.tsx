@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 // ── Local type definitions (mirrors the API route types) ──────────────────────
 type PlaceRef = {
@@ -85,9 +85,9 @@ function SubsetSection({
   const [status, setStatus]   = useState<Record<string, MergeState>>({});
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-  const initialized = useRef(false);
 
-  // Load from localStorage, fall back to defaults for any new key.
+  // Load from localStorage on mount. No save effects — saves happen directly
+  // in handlers so there's zero risk of overwriting LS during initialization.
   useEffect(() => {
     if (!groups.length) return;
     const savedChecks  = lsGet<Record<string, boolean>>(LS_SUBSET_CHECKS, {});
@@ -103,22 +103,26 @@ function SubsetSection({
     setChecks(initChecks);
     setActions(initActions);
     if (Object.keys(savedStatus).length) setStatus(savedStatus);
-    initialized.current = true;
   }, [groups]);
 
-  // Persist state after initialization (guard against saving empty initial state).
-  useEffect(() => {
-    if (!initialized.current) return;
-    lsSet(LS_SUBSET_CHECKS, checks);
-  }, [checks]);
-  useEffect(() => {
-    if (!initialized.current) return;
-    lsSet(LS_SUBSET_ACTIONS, actions);
-  }, [actions]);
-  useEffect(() => {
-    if (!initialized.current) return;
-    lsSet(LS_SUBSET_STATUS, status);
-  }, [status]);
+  // ── direct-save helpers (called from handlers, never during init) ──────────
+  function saveChecks(next: Record<string, boolean>) {
+    setChecks(next);
+    lsSet(LS_SUBSET_CHECKS, next);
+  }
+  function saveAction(key: string, action: SubsetAction) {
+    setActions((prev) => {
+      const next = { ...prev, [key]: action };
+      lsSet(LS_SUBSET_ACTIONS, next);
+      return next;
+    });
+  }
+  function saveStatusKey(key: string, state: MergeState, base: Record<string, MergeState>) {
+    const next = { ...base, [key]: state };
+    setStatus(next);
+    lsSet(LS_SUBSET_STATUS, next);
+    return next;
+  }
 
   const allSelected  = groups.every((g) => checks[`${g.place_a.id}__${g.place_b.id}`]);
   const noneSelected = groups.every((g) => !checks[`${g.place_a.id}__${g.place_b.id}`]);
@@ -128,7 +132,7 @@ function SubsetSection({
     for (const g of groups) {
       next[`${g.place_a.id}__${g.place_b.id}`] = !allSelected;
     }
-    setChecks(next);
+    saveChecks(next);
   }
 
   const selected = groups.filter((g) => checks[`${g.place_a.id}__${g.place_b.id}`]);
@@ -138,26 +142,27 @@ function SubsetSection({
     setRunning(true);
     setProgress({ done: 0, total: selected.length });
 
+    let cur = { ...status };
+
     for (let i = 0; i < selected.length; i++) {
       const g      = selected[i];
       const key    = `${g.place_a.id}__${g.place_b.id}`;
       const action = actions[key] ?? "branch";
 
-      setStatus((prev) => ({ ...prev, [key]: "pending" }));
+      cur = saveStatusKey(key, "pending", cur);
 
+      let finalState: MergeState;
       if (action === "skip") {
-        setStatus((prev) => ({ ...prev, [key]: "skipped" }));
+        finalState = "skipped";
       } else if (action === "branch") {
-        const ok = await doMerge(g.place_a.id, g.place_b.id, true);
-        setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+        finalState = (await doMerge(g.place_a.id, g.place_b.id, true)) ? "done" : "error";
       } else if (action === "delete_b") {
-        const ok = await doMerge(g.place_a.id, g.place_b.id, false);
-        setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
-      } else if (action === "delete_a") {
-        const ok = await doMerge(g.place_b.id, g.place_a.id, false);
-        setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+        finalState = (await doMerge(g.place_a.id, g.place_b.id, false)) ? "done" : "error";
+      } else {
+        finalState = (await doMerge(g.place_b.id, g.place_a.id, false)) ? "done" : "error";
       }
 
+      cur = saveStatusKey(key, finalState, cur);
       setProgress({ done: i + 1, total: selected.length });
     }
 
@@ -217,7 +222,7 @@ function SubsetSection({
                       checked={!!checks[key]}
                       disabled={running || isDone}
                       onChange={(e) =>
-                        setChecks((prev) => ({ ...prev, [key]: e.target.checked }))
+                        saveChecks({ ...checks, [key]: e.target.checked })
                       }
                       className="h-4 w-4 accent-sal-600"
                     />
@@ -258,7 +263,7 @@ function SubsetSection({
                         value={act}
                         disabled={running || !checks[key]}
                         onChange={(e) =>
-                          setActions((prev) => ({ ...prev, [key]: e.target.value as SubsetAction }))
+                          saveAction(key, e.target.value as SubsetAction)
                         }
                         className={`rounded-lg border px-2 py-1 text-[11px] font-semibold focus:outline-none disabled:opacity-40 ${
                           act === "delete_b" || act === "delete_a"
@@ -440,18 +445,12 @@ export default function MergeReviewPage() {
   // EXACT state
   const [exactGroups, setExactGroups]   = useState<DuplicateGroup[]>([]);
   const [exactStatus, setExactStatus]   = useState<Record<string, MergeState>>({});
-  const exactInitialized = useRef(false);
 
-  // Load and persist exactStatus
+  // Load exactStatus from LS once on mount (no save effect — saved in handler).
   useEffect(() => {
     const saved = lsGet<Record<string, MergeState>>(LS_EXACT_STATUS, {});
     if (Object.keys(saved).length) setExactStatus(saved);
-    exactInitialized.current = true;
   }, []);
-  useEffect(() => {
-    if (!exactInitialized.current) return;
-    lsSet(LS_EXACT_STATUS, exactStatus);
-  }, [exactStatus]);
 
   useEffect(() => {
     fetch("/api/admin/find-duplicates")
@@ -471,19 +470,27 @@ export default function MergeReviewPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  function saveExactStatus(key: string, state: MergeState) {
+    setExactStatus((prev) => {
+      const next = { ...prev, [key]: state };
+      lsSet(LS_EXACT_STATUS, next);
+      return next;
+    });
+  }
+
   async function handleExactAction(group: DuplicateGroup, kind: ExactActionKind) {
     const key = `${group.place_a.id}__${group.place_b.id}`;
     if (kind === "skip") {
-      setExactStatus((prev) => ({ ...prev, [key]: "skipped" }));
+      saveExactStatus(key, "skipped");
       return;
     }
-    setExactStatus((prev) => ({ ...prev, [key]: "pending" }));
+    saveExactStatus(key, "pending");
     let ok = false;
     if (kind === "keep_a")           ok = await doMerge(group.place_a.id, group.place_b.id, false);
     if (kind === "keep_b")           ok = await doMerge(group.place_b.id, group.place_a.id, false);
     if (kind === "branch_b_under_a") ok = await doMerge(group.place_a.id, group.place_b.id, true);
     if (kind === "branch_a_under_b") ok = await doMerge(group.place_b.id, group.place_a.id, true);
-    setExactStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+    saveExactStatus(key, ok ? "done" : "error");
   }
 
   const totalGroups = groups.length;
