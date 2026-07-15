@@ -1191,6 +1191,9 @@ function AdminDashboard() {
           <Link href="/admin/merge-review" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
             🔀 دمج التكرارات
           </Link>
+          <Link href="/admin/full-branch-fetch" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
+            🌐 جلب فروع قوقل
+          </Link>
           <Link href="/" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
             ← العودة للموقع
           </Link>

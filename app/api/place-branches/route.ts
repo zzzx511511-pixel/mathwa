@@ -57,32 +57,52 @@ interface DetailResult {
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
 
-  const name  = req.nextUrl.searchParams.get("name")?.trim() ?? "";
-  const limit = Math.min(parseInt(req.nextUrl.searchParams.get("limit") ?? "15"), 20);
+  const name     = req.nextUrl.searchParams.get("name")?.trim() ?? "";
+  // paginate=true: fetch up to 3 Google pages (60 results) with pagetoken delays.
+  const paginate = req.nextUrl.searchParams.get("paginate") === "true";
+  const maxPages = paginate ? 3 : 1;
+  const limitDefault = paginate ? "60" : "15";
+  const limitMax     = paginate ? 60 : 20;
+  const limit        = Math.min(parseInt(req.nextUrl.searchParams.get("limit") ?? limitDefault), limitMax);
 
   if (!name || !GOOGLE_KEY) return NextResponse.json({ branches: [] });
 
-  // Step 1: textsearch for all chain locations in Riyadh.
-  const textParams = new URLSearchParams({
-    query: `${name} الرياض`,
-    language: "ar",
-    region: "sa",
-    key: GOOGLE_KEY,
-  });
-
+  // Step 1: textsearch for all chain locations in Riyadh, with optional pagination.
   let candidates: RawResult[] = [];
-  try {
-    const res  = await fetch(`${PLACES_BASE}/textsearch/json?${textParams}`, {
-      signal: AbortSignal.timeout(10000),
+  let pageToken: string | undefined;
+
+  for (let page = 0; page < maxPages; page++) {
+    const textParams = new URLSearchParams({
+      query: `${name} الرياض`,
+      language: "ar",
+      region: "sa",
+      key: GOOGLE_KEY,
     });
-    if (!res.ok) return NextResponse.json({ branches: [] });
-    const data = await res.json();
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS")
-      return NextResponse.json({ branches: [], error: data.status });
-    candidates = (data.results ?? []).slice(0, limit) as RawResult[];
-  } catch {
-    return NextResponse.json({ branches: [] });
+    if (pageToken) {
+      // Google requires a 2-second delay before the next page token is valid.
+      await new Promise((r) => setTimeout(r, 2000));
+      textParams.set("pagetoken", pageToken);
+    }
+    try {
+      const res = await fetch(`${PLACES_BASE}/textsearch/json?${textParams}`, {
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) break;
+      const data = await res.json();
+      if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+        if (page === 0) return NextResponse.json({ branches: [], error: data.status });
+        break;
+      }
+      candidates.push(...((data.results ?? []) as RawResult[]));
+      pageToken = data.next_page_token as string | undefined;
+      if (!pageToken) break;
+    } catch {
+      if (page === 0) return NextResponse.json({ branches: [] });
+      break;
+    }
   }
+
+  candidates = candidates.slice(0, limit);
 
   // Step 2: place/details for each candidate in parallel.
   const branches = await Promise.all(
