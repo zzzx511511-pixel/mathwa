@@ -23,13 +23,26 @@ type DuplicateGroup = {
 type MergeState = "idle" | "pending" | "done" | "error" | "skipped";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-async function doMerge(keep_id: string, merge_id: string): Promise<boolean> {
+async function doMerge(keep_id: string, merge_id: string, as_branch = true): Promise<boolean> {
   const res = await fetch("/api/admin/merge-places", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ keep_id, merge_id }),
+    body: JSON.stringify({ keep_id, merge_id, as_branch }),
   });
   return res.ok;
+}
+
+function PlaceLink({ id, name }: { id: string; name: string }) {
+  return (
+    <a
+      href={`/places/${id}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-[11px] font-semibold text-sal-600 hover:text-sal-800 underline"
+    >
+      {name} <span className="text-[10px]">↗</span>
+    </a>
+  );
 }
 
 function LocationLine({ place }: { place: PlaceRef }) {
@@ -153,14 +166,19 @@ function SubsetSection({
                     />
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="font-semibold text-ink-900">{g.place_a.name}</span>
-                    <span className="mr-1 text-[10px] text-ink-400">
-                      ({g.place_a.branches_count} فرع)
-                    </span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-semibold text-ink-900">{g.place_a.name}
+                        <span className="mr-1 text-[10px] text-ink-400">({g.place_a.branches_count} فرع)</span>
+                      </span>
+                      <PlaceLink id={g.place_a.id} name="عرض الصفحة" />
+                    </div>
                   </td>
                   <td className="px-3 py-2.5 text-center text-ink-400">←</td>
                   <td className="px-3 py-2.5">
-                    <span className="text-ink-800">{g.place_b.name}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-ink-800">{g.place_b.name}</span>
+                      <PlaceLink id={g.place_b.id} name="عرض الصفحة" />
+                    </div>
                   </td>
                   <td className="px-3 py-2.5">
                     <LocationLine place={g.place_b} />
@@ -197,6 +215,13 @@ function SubsetSection({
   );
 }
 
+type ExactActionKind =
+  | "keep_a"          // true duplicate: delete B, no branch added
+  | "keep_b"          // true duplicate: delete A, no branch added
+  | "branch_b_under_a" // B becomes a branch of A (A is the main)
+  | "branch_a_under_b" // A becomes a branch of B (B is the main)
+  | "skip";            // different places, do nothing
+
 // ── EXACT Card ────────────────────────────────────────────────────────────────
 function ExactCard({
   group,
@@ -205,89 +230,104 @@ function ExactCard({
 }: {
   group: DuplicateGroup;
   status: MergeState;
-  onAction: (keep_id: string, merge_id: string) => void;
+  onAction: (kind: ExactActionKind) => void;
 }) {
   const { place_a, place_b } = group;
   const isDone    = status === "done" || status === "error" || status === "skipped";
   const isPending = status === "pending";
 
+  const statusLabel =
+    status === "done"    ? "✓ تم" :
+    status === "skipped" ? "تجاهُل" :
+    status === "error"   ? "✗ خطأ" : "";
+
   return (
     <div
-      className={`rounded-2xl border bg-white shadow-sm transition-all duration-300 overflow-hidden ${
-        isDone ? "opacity-50" : "border-amber-200"
+      className={`rounded-2xl border bg-white shadow-sm overflow-hidden transition-opacity duration-300 ${
+        isDone ? "opacity-50 border-sal-100" : "border-amber-200"
       }`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-4 py-3">
         <span className="text-base">⚠️</span>
-        <p className="text-sm font-bold text-amber-900">
-          اسم متطابق: {place_a.name}
-        </p>
-        {isDone && (
-          <span className="mr-auto text-xs font-semibold text-ink-500">
-            {status === "done" ? "✓ تم الدمج" : status === "skipped" ? "تجاهُل" : "✗ خطأ"}
-          </span>
-        )}
+        <p className="text-sm font-bold text-amber-900">اسم متطابق: {place_a.name}</p>
+        {isDone && <span className="mr-auto text-xs font-semibold text-ink-500">{statusLabel}</span>}
       </div>
 
       {/* Body: two columns */}
-      <div className="grid grid-cols-2 gap-0 divide-x-0 sm:divide-x sm:divide-sal-100">
+      <div className="grid grid-cols-2 divide-x divide-x-reverse divide-sal-100">
         {/* Place A */}
-        <div className="px-4 py-3 space-y-1 border-b border-sal-100 sm:border-b-0">
-          <p className="text-[10px] font-bold text-ink-500 uppercase tracking-wide">
-            السجل A
-          </p>
+        <div className="px-4 py-3 space-y-1">
+          <p className="text-[10px] font-bold text-ink-400 uppercase tracking-wider">السجل A</p>
           <p className="font-mono text-[10px] text-ink-400">{place_a.id}</p>
           <p className="text-sm font-semibold text-ink-900">{place_a.name}</p>
-          <p className="text-[11px] text-ink-600">
-            فروع: {place_a.branches_count}
-          </p>
+          <p className="text-[11px] text-ink-500">فروع: {place_a.branches_count}</p>
           <LocationLine place={place_a} />
+          <PlaceLink id={place_a.id} name="عرض الصفحة الكاملة" />
         </div>
         {/* Place B */}
         <div className="px-4 py-3 space-y-1">
-          <p className="text-[10px] font-bold text-ink-500 uppercase tracking-wide">
-            السجل B
-          </p>
+          <p className="text-[10px] font-bold text-ink-400 uppercase tracking-wider">السجل B</p>
           <p className="font-mono text-[10px] text-ink-400">{place_b.id}</p>
           <p className="text-sm font-semibold text-ink-900">{place_b.name}</p>
-          <p className="text-[11px] text-ink-600">
-            فروع: {place_b.branches_count}
-          </p>
+          <p className="text-[11px] text-ink-500">فروع: {place_b.branches_count}</p>
           <LocationLine place={place_b} />
+          <PlaceLink id={place_b.id} name="عرض الصفحة الكاملة" />
         </div>
       </div>
 
       {/* Actions */}
       {!isDone && (
-        <div className="flex flex-wrap gap-2 border-t border-sal-100 bg-sal-50 px-4 py-3">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => onAction(place_a.id, place_b.id)}
-            className="rounded-xl border border-sal-300 bg-white px-3 py-1.5 text-xs font-bold text-ink-700 hover:bg-sal-50 disabled:opacity-50 transition"
-          >
-            احتفظ بـ A (احذف B)
-          </button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => onAction(place_b.id, place_a.id)}
-            className="rounded-xl border border-sal-300 bg-white px-3 py-1.5 text-xs font-bold text-ink-700 hover:bg-sal-50 disabled:opacity-50 transition"
-          >
-            احتفظ بـ B (احذف A)
-          </button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => onAction("__skip__", "__skip__")}
-            className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-500 hover:bg-ink-50 disabled:opacity-50 transition"
-          >
-            تجاهل (مختلفان)
-          </button>
-          {isPending && (
-            <span className="self-center text-xs text-amber-600">⏳ جاري الدمج...</span>
-          )}
+        <div className="border-t border-sal-100 bg-sal-50 px-4 py-3 space-y-2">
+
+          {/* Group 1: true duplicate */}
+          <div>
+            <p className="mb-1.5 text-[10px] font-bold text-ink-500 uppercase tracking-wider">
+              نسخة مكررة — نفس المكان أُدخل مرتين
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={isPending}
+                onClick={() => onAction("keep_a")}
+                className="rounded-xl border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50 transition">
+                احذف B — احتفظ بـ A
+              </button>
+              <button type="button" disabled={isPending}
+                onClick={() => onAction("keep_b")}
+                className="rounded-xl border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50 transition">
+                احذف A — احتفظ بـ B
+              </button>
+            </div>
+          </div>
+
+          {/* Group 2: same chain, different locations */}
+          <div>
+            <p className="mb-1.5 text-[10px] font-bold text-ink-500 uppercase tracking-wider">
+              فروع لنفس السلسلة — مواقع مختلفة
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={isPending}
+                onClick={() => onAction("branch_b_under_a")}
+                className="rounded-xl border border-sal-300 bg-white px-3 py-1.5 text-xs font-bold text-sal-700 hover:bg-sal-50 disabled:opacity-50 transition">
+                دمج B كفرع تحت A
+              </button>
+              <button type="button" disabled={isPending}
+                onClick={() => onAction("branch_a_under_b")}
+                className="rounded-xl border border-sal-300 bg-white px-3 py-1.5 text-xs font-bold text-sal-700 hover:bg-sal-50 disabled:opacity-50 transition">
+                دمج A كفرع تحت B
+              </button>
+            </div>
+          </div>
+
+          {/* Skip */}
+          <div className="flex items-center gap-3">
+            <button type="button" disabled={isPending}
+              onClick={() => onAction("skip")}
+              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-500 hover:bg-ink-50 disabled:opacity-50 transition">
+              تجاهل — مكانان مختلفان تمامًا
+            </button>
+            {isPending && <span className="text-xs text-amber-600">⏳ جاري التنفيذ...</span>}
+          </div>
+
         </div>
       )}
     </div>
@@ -325,18 +365,18 @@ export default function MergeReviewPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleExactAction(
-    group: DuplicateGroup,
-    keep_id: string,
-    merge_id: string,
-  ) {
+  async function handleExactAction(group: DuplicateGroup, kind: ExactActionKind) {
     const key = `${group.place_a.id}__${group.place_b.id}`;
-    if (keep_id === "__skip__") {
+    if (kind === "skip") {
       setExactStatus((prev) => ({ ...prev, [key]: "skipped" }));
       return;
     }
     setExactStatus((prev) => ({ ...prev, [key]: "pending" }));
-    const ok = await doMerge(keep_id, merge_id);
+    let ok = false;
+    if (kind === "keep_a")           ok = await doMerge(group.place_a.id, group.place_b.id, false);
+    if (kind === "keep_b")           ok = await doMerge(group.place_b.id, group.place_a.id, false);
+    if (kind === "branch_b_under_a") ok = await doMerge(group.place_a.id, group.place_b.id, true);
+    if (kind === "branch_a_under_b") ok = await doMerge(group.place_b.id, group.place_a.id, true);
     setExactStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
   }
 
@@ -421,9 +461,7 @@ export default function MergeReviewPage() {
                   key={key}
                   group={g}
                   status={exactStatus[key] ?? "idle"}
-                  onAction={(keep_id, merge_id) =>
-                    handleExactAction(g, keep_id, merge_id)
-                  }
+                  onAction={(kind) => handleExactAction(g, kind)}
                 />
               );
             })}

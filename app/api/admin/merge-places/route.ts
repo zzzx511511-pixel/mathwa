@@ -17,14 +17,14 @@ import type { Branch } from "@/lib/salsabeel/types";
 export async function POST(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
 
-  let body: { keep_id?: string; merge_id?: string };
+  let body: { keep_id?: string; merge_id?: string; as_branch?: boolean };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
 
-  const { keep_id, merge_id } = body;
+  const { keep_id, merge_id, as_branch = true } = body;
   if (!keep_id || !merge_id) {
     return NextResponse.json({ error: "keep_id and merge_id are required" }, { status: 400 });
   }
@@ -60,13 +60,16 @@ export async function POST(req: NextRequest) {
       mapsUrl:      mergePlace.mapsUrl       ?? mergePlace.branches[0]?.mapsUrl,
     };
 
-    // Upsert keepPlace with the new branch appended.
-    await upsertCustomPlace({
-      ...keepPlace,
-      branches: [...keepPlace.branches, branch],
-    });
+    // When merging as a branch: add the merged place as a new branch on the keeper.
+    // When deduplicating (as_branch=false): just tombstone — no branch created.
+    if (as_branch) {
+      await upsertCustomPlace({
+        ...keepPlace,
+        branches: [...keepPlace.branches, branch],
+      });
+    }
 
-    // Tombstone mergePlace.
+    // Tombstone mergePlace in both modes.
     await upsertCustomPlace({ ...mergePlace, _deleted: true });
 
     // Delete mergePlace's stored photos (best-effort; don't fail the merge if this errors).
@@ -80,7 +83,7 @@ export async function POST(req: NextRequest) {
       ok:           true,
       kept:         keep_id,
       merged:       merge_id,
-      branch_added: branch.name,
+      branch_added: as_branch ? branch.name : null,
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
