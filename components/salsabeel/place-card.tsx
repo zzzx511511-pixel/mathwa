@@ -96,8 +96,10 @@ export function PlaceCard({ place, status }: { place: Place; status?: string }) 
         {igPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={igPhoto}
+            src={igPhoto.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") + "?width=400&quality=75"}
             alt={place.name}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         ) : (

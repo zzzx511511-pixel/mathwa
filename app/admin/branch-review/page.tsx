@@ -378,7 +378,7 @@ function BranchReviewDashboard() {
 
     setSaveStates((prev) => ({ ...prev, [placeId]: "saving" }));
     try {
-      const updatedPlace = { ...place, branches: approvedBranches };
+      const updatedPlace = { ...place, branches: [...place.branches, ...approvedBranches] };
       const res = await fetch("/api/places", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

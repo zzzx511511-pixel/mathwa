@@ -858,9 +858,9 @@ function AdminDashboard() {
       googlePlaceId: place.googlePlaceId ?? "",
       lat: place.lat,
       lng: place.lng,
-      neighborhood: place.neighborhood ?? "",
-      address: place.address ?? "",
-      openingHours: place.openingHours ?? "",
+      neighborhood: place.neighborhood ?? place.branches[0]?.neighborhood ?? "",
+      address: place.address ?? place.branches[0]?.address ?? "",
+      openingHours: place.openingHours ?? place.branches[0]?.openingHours ?? "",
       photos: place.photos ? [...place.photos] : [],
       videos: place.videos ? [...place.videos] : [],
       branches: place.branches ? place.branches.map((b) => ({ ...b })) : [],
@@ -909,6 +909,18 @@ function AdminDashboard() {
         ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
         : editForm.tags ?? original.tags,
     };
+    // For single-branch places, keep branch[0]'s neighborhood/address in sync
+    // with the place-level fields so all display sections show consistent data.
+    if (updated.branches.length === 1) {
+      updated.branches = [
+        {
+          ...updated.branches[0],
+          neighborhood: updated.neighborhood ?? updated.branches[0].neighborhood,
+          address:      updated.address      ?? updated.branches[0].address,
+          openingHours: updated.openingHours ?? updated.branches[0].openingHours,
+        },
+      ];
+    }
     setPlaces((prev) => prev.map((p) => p.id === updated.id ? updated : p));
     setEditingId(null);
     setEditForm(null);

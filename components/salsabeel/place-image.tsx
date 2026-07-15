@@ -233,7 +233,7 @@ export function PlaceImage({
   const src = photos?.[0];
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} className={`object-cover ${className}`} />;
+    return <img src={src} alt={name} loading="lazy" decoding="async" className={`object-cover ${className}`} />;
   }
   return <CategoryPlaceholder category={category} className={className} />;
 }
