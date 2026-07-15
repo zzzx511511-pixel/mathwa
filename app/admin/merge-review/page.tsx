@@ -21,7 +21,7 @@ type DuplicateGroup = {
 };
 
 type MergeState   = "idle" | "pending" | "done" | "error" | "skipped";
-type SubsetAction = "branch" | "delete" | "skip";
+type SubsetAction = "branch" | "delete_b" | "delete_a" | "skip";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 async function doMerge(keep_id: string, merge_id: string, as_branch = true): Promise<boolean> {
@@ -80,7 +80,7 @@ function SubsetSection({
     for (const g of groups) {
       const key = `${g.place_a.id}__${g.place_b.id}`;
       initChecks[key]  = true;
-      initActions[key] = "branch";
+      initActions[key] = "branch" as SubsetAction;
     }
     setChecks(initChecks);
     setActions(initActions);
@@ -113,8 +113,14 @@ function SubsetSection({
 
       if (action === "skip") {
         setStatus((prev) => ({ ...prev, [key]: "skipped" }));
-      } else {
-        const ok = await doMerge(g.place_a.id, g.place_b.id, action === "branch");
+      } else if (action === "branch") {
+        const ok = await doMerge(g.place_a.id, g.place_b.id, true);
+        setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+      } else if (action === "delete_b") {
+        const ok = await doMerge(g.place_a.id, g.place_b.id, false);
+        setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
+      } else if (action === "delete_a") {
+        const ok = await doMerge(g.place_b.id, g.place_a.id, false);
         setStatus((prev) => ({ ...prev, [key]: ok ? "done" : "error" }));
       }
 
@@ -221,7 +227,7 @@ function SubsetSection({
                           setActions((prev) => ({ ...prev, [key]: e.target.value as SubsetAction }))
                         }
                         className={`rounded-lg border px-2 py-1 text-[11px] font-semibold focus:outline-none disabled:opacity-40 ${
-                          act === "delete"
+                          act === "delete_b" || act === "delete_a"
                             ? "border-red-200 bg-red-50 text-red-700"
                             : act === "skip"
                             ? "border-ink-200 bg-ink-50 text-ink-500"
@@ -229,7 +235,8 @@ function SubsetSection({
                         }`}
                       >
                         <option value="branch">دمج B كفرع تحت A</option>
-                        <option value="delete">حذف B — تكرار حقيقي</option>
+                        <option value="delete_b">حذف B — احتفظ بـ A</option>
+                        <option value="delete_a">حذف A — احتفظ بـ B</option>
                         <option value="skip">تجاهل</option>
                       </select>
                     )}
