@@ -323,7 +323,7 @@ export default function FullBranchFetchPage() {
     await doPhotoReset(selectedPlace.id, resetGid.trim(), selectedPlace.name, resetCount);
   }
 
-  const allChecked  = (fetched ?? []).every((b) => checks[b._googlePlaceId]);
+  const allChecked  = (fetched ?? []).length > 0 && (fetched ?? []).every((b) => checks[b._googlePlaceId]);
   const noneChecked = (fetched ?? []).every((b) => !checks[b._googlePlaceId]);
 
   function toggleAll() {
@@ -445,28 +445,20 @@ export default function FullBranchFetchPage() {
                       idx !== 0 ? "border-t border-sal-50" : ""
                     } ${isConfirmed ? "bg-green-50/40" : "opacity-60"}`}
                   >
-                    {/* Confirm / reject toggle */}
+                    {/* Single toggle: confirmed ↔ rejected */}
                     <div className="flex flex-col items-center gap-1 pt-0.5 shrink-0">
                       <button
                         type="button"
-                        title="تأكيد — سيُحفظ"
-                        onClick={() => setChecks((p) => ({ ...p, [b._googlePlaceId]: true }))}
-                        className={`h-7 w-7 rounded-full border text-xs font-bold transition ${
+                        title={isConfirmed ? "مؤكد — اضغط للاستبعاد" : "مستبعد — اضغط للتأكيد"}
+                        onClick={() => setChecks((p) => ({ ...p, [b._googlePlaceId]: !p[b._googlePlaceId] }))}
+                        className={`h-9 w-9 rounded-full border-2 text-sm font-bold transition ${
                           isConfirmed
-                            ? "border-green-500 bg-green-500 text-white"
-                            : "border-ink-200 bg-white text-ink-400 hover:border-green-400 hover:text-green-600"
+                            ? "border-green-500 bg-green-500 text-white hover:border-red-400 hover:bg-red-50 hover:text-red-500"
+                            : "border-red-300 bg-red-50 text-red-400 hover:border-green-500 hover:bg-green-50 hover:text-green-600"
                         }`}
-                      >✓</button>
-                      <button
-                        type="button"
-                        title="استبعاد — لن يُحفظ"
-                        onClick={() => setChecks((p) => ({ ...p, [b._googlePlaceId]: false }))}
-                        className={`h-7 w-7 rounded-full border text-xs font-bold transition ${
-                          !isConfirmed
-                            ? "border-red-400 bg-red-50 text-red-500"
-                            : "border-ink-200 bg-white text-ink-300 hover:border-red-300 hover:text-red-400"
-                        }`}
-                      >✗</button>
+                      >
+                        {isConfirmed ? "✓" : "✗"}
+                      </button>
                     </div>
 
                     <div className="flex-1 min-w-0">
