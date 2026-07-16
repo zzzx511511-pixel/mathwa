@@ -76,6 +76,9 @@ export async function GET(req: NextRequest) {
       query: `${name} الرياض`,
       language: "ar",
       region: "sa",
+      // M4: bias results to Riyadh (centre ≈ 24.71°N 46.68°E, radius 35 km)
+      location: "24.7136,46.6753",
+      radius: "35000",
       key: GOOGLE_KEY,
     });
     if (pageToken) {
@@ -139,7 +142,8 @@ export async function GET(req: NextRequest) {
           lng:          r.geometry?.location?.lng ?? c.geometry?.location?.lng,
           openingHours: summarizeHours(r.opening_hours?.weekday_text),
           phone:        r.formatted_phone_number || undefined,
-          mapsUrl:      r.url || undefined,
+          // M2: fall back to a stable Google Maps URL when the detail URL is missing
+          mapsUrl:      r.url || `https://www.google.com/maps/place/?q=place_id:${c.place_id}`,
         };
       } catch {
         return null;
