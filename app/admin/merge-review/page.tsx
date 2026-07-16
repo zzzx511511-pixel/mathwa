@@ -21,20 +21,30 @@ type DuplicateGroup = {
 };
 
 type MergeState   = "idle" | "pending" | "done" | "error" | "skipped";
-type SubsetAction = "branch" | "delete_b" | "delete_a" | "skip";
+type SubsetAction = "branch" | "delete_b" | "delete_a" | "delete_both" | "skip";
 type ExactActionKind =
   | "keep_a"
   | "keep_b"
   | "branch_b_under_a"
   | "branch_a_under_b"
+  | "delete_both"
   | "skip";
 
-// ── API helper ────────────────────────────────────────────────────────────────
+// ── API helpers ───────────────────────────────────────────────────────────────
 async function doMerge(keep_id: string, merge_id: string, as_branch = true): Promise<boolean> {
   const res = await fetch("/api/admin/merge-places", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ keep_id, merge_id, as_branch }),
+  });
+  return res.ok;
+}
+
+async function doDeleteBoth(id_a: string, id_b: string): Promise<boolean> {
+  const res = await fetch("/api/admin/merge-places", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ keep_id: id_a, merge_id: id_b, delete_both: true }),
   });
   return res.ok;
 }
@@ -140,10 +150,11 @@ function SubsetSection({ groups }: { groups: DuplicateGroup[] }) {
     const action = actions[key] ?? "branch";
     let cur = saveStatus(key, "pending", status);
     let fin: MergeState;
-    if (action === "skip")      fin = "skipped";
-    else if (action === "branch")   fin = (await doMerge(g.place_a.id, g.place_b.id, true))  ? "done" : "error";
-    else if (action === "delete_b") fin = (await doMerge(g.place_a.id, g.place_b.id, false)) ? "done" : "error";
-    else                            fin = (await doMerge(g.place_b.id, g.place_a.id, false)) ? "done" : "error";
+    if (action === "skip")           fin = "skipped";
+    else if (action === "branch")    fin = (await doMerge(g.place_a.id, g.place_b.id, true))       ? "done" : "error";
+    else if (action === "delete_b")  fin = (await doMerge(g.place_a.id, g.place_b.id, false))      ? "done" : "error";
+    else if (action === "delete_a")  fin = (await doMerge(g.place_b.id, g.place_a.id, false))      ? "done" : "error";
+    else                             fin = (await doDeleteBoth(g.place_a.id, g.place_b.id))         ? "done" : "error";
     saveStatus(key, fin, cur);
   }
 
@@ -159,10 +170,11 @@ function SubsetSection({ groups }: { groups: DuplicateGroup[] }) {
       const action = actions[key] ?? "branch";
       cur = saveStatus(key, "pending", cur);
       let fin: MergeState;
-      if (action === "skip")      fin = "skipped";
-      else if (action === "branch")   fin = (await doMerge(g.place_a.id, g.place_b.id, true))  ? "done" : "error";
-      else if (action === "delete_b") fin = (await doMerge(g.place_a.id, g.place_b.id, false)) ? "done" : "error";
-      else                            fin = (await doMerge(g.place_b.id, g.place_a.id, false)) ? "done" : "error";
+      if (action === "skip")           fin = "skipped";
+      else if (action === "branch")    fin = (await doMerge(g.place_a.id, g.place_b.id, true))  ? "done" : "error";
+      else if (action === "delete_b")  fin = (await doMerge(g.place_a.id, g.place_b.id, false)) ? "done" : "error";
+      else if (action === "delete_a")  fin = (await doMerge(g.place_b.id, g.place_a.id, false)) ? "done" : "error";
+      else                             fin = (await doDeleteBoth(g.place_a.id, g.place_b.id))    ? "done" : "error";
       cur = saveStatus(key, fin, cur);
       setBulkProg({ done: i + 1, total: selectedPending.length });
     }
@@ -253,13 +265,15 @@ function SubsetSection({ groups }: { groups: DuplicateGroup[] }) {
                       <select value={act} disabled={bulkRun || isPending}
                         onChange={(e) => saveAction(key, e.target.value as SubsetAction)}
                         className={`rounded-lg border px-2 py-1 text-[11px] font-semibold focus:outline-none disabled:opacity-40 ${
-                          act === "delete_b" || act === "delete_a" ? "border-red-200 bg-red-50 text-red-700"
+                          act === "delete_b" || act === "delete_a" || act === "delete_both"
+                            ? "border-red-200 bg-red-50 text-red-700"
                             : act === "skip" ? "border-ink-200 bg-ink-50 text-ink-500"
                             : "border-sal-200 bg-sal-50 text-sal-700"
                         }`}>
                         <option value="branch">دمج B كفرع تحت A</option>
                         <option value="delete_b">حذف B — احتفظ بـ A</option>
                         <option value="delete_a">حذف A — احتفظ بـ B</option>
+                        <option value="delete_both">حذف الاثنين معاً</option>
                         <option value="skip">تجاهل</option>
                       </select>
                     </td>
@@ -373,6 +387,10 @@ function ExactCard({
               className="rounded-xl border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50 transition">
               احذف A — احتفظ بـ B
             </button>
+            <button type="button" disabled={isPending} onClick={() => onAction("delete_both")}
+              className="rounded-xl border border-red-400 bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50 transition">
+              احذف الاثنين معاً
+            </button>
           </div>
         </div>
         <div>
@@ -453,6 +471,7 @@ export default function MergeReviewPage() {
     if (kind === "keep_b")           ok = await doMerge(group.place_b.id, group.place_a.id, false);
     if (kind === "branch_b_under_a") ok = await doMerge(group.place_a.id, group.place_b.id, true);
     if (kind === "branch_a_under_b") ok = await doMerge(group.place_b.id, group.place_a.id, true);
+    if (kind === "delete_both")      ok = await doDeleteBoth(group.place_a.id, group.place_b.id);
     saveExactStatus(key, ok ? "done" : "error");
   }
 

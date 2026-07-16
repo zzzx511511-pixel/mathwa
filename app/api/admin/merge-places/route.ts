@@ -17,14 +17,14 @@ import type { Branch } from "@/lib/salsabeel/types";
 export async function POST(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
 
-  let body: { keep_id?: string; merge_id?: string; as_branch?: boolean };
+  let body: { keep_id?: string; merge_id?: string; as_branch?: boolean; delete_both?: boolean };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
 
-  const { keep_id, merge_id, as_branch = true } = body;
+  const { keep_id, merge_id, as_branch = true, delete_both = false } = body;
   if (!keep_id || !merge_id) {
     return NextResponse.json({ error: "keep_id and merge_id are required" }, { status: 400 });
   }
@@ -43,6 +43,15 @@ export async function POST(req: NextRequest) {
     const mergePlace = allPlaces.find((p) => p.id === merge_id);
     if (!mergePlace) {
       return NextResponse.json({ error: `merge_id "${merge_id}" not found` }, { status: 400 });
+    }
+
+    // delete_both: tombstone both places and wipe their photos.
+    if (delete_both) {
+      await upsertCustomPlace({ ...keepPlace,  _deleted: true });
+      await upsertCustomPlace({ ...mergePlace, _deleted: true });
+      try { await deleteStoredPhotos(keep_id);  } catch { /* non-fatal */ }
+      try { await deleteStoredPhotos(merge_id); } catch { /* non-fatal */ }
+      return NextResponse.json({ ok: true, kept: null, merged: merge_id, branch_added: null, deleted_both: true });
     }
 
     // Build a Branch from mergePlace, using place-level fields with branch[0] fallback.
