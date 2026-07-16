@@ -280,12 +280,12 @@ export default function FullBranchFetchPage() {
       } else {
         setSaveMsg(`تم حفظ ${data.added} فرع. إجمالي الفروع الآن: ${data.total}`);
         setSaveState("done");
-        // Auto-fill photo reset section with the first confirmed branch's Place ID
-        if (selected[0]?._googlePlaceId) {
-          setResetGid(selected[0]._googlePlaceId);
-          setResetState("idle");
-          // Give the DOM time to render, then scroll to the photo section
+        const gid = selected[0]?._googlePlaceId;
+        if (gid) {
+          setResetGid(gid);
           setTimeout(() => photoSectionRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+          // Auto-fetch photos immediately — no manual button press needed
+          await doPhotoReset(selectedPlace.id, gid, selectedPlace.name, resetCount);
         }
       }
     } catch (err) {
@@ -294,8 +294,7 @@ export default function FullBranchFetchPage() {
     }
   }
 
-  async function resetPhotoCache() {
-    if (!selectedPlace || !resetGid.trim()) return;
+  async function doPhotoReset(placeId: string, gid: string, placeName: string, count: number) {
     setResetState("loading");
     setResetPhotos([]);
     setResetError("");
@@ -303,12 +302,7 @@ export default function FullBranchFetchPage() {
       const res = await fetch("/api/admin/reset-place-cache", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          place_id:        selectedPlace.id,
-          google_place_id: resetGid.trim(),
-          place_name:      selectedPlace.name,
-          count:           resetCount,
-        }),
+        body: JSON.stringify({ place_id: placeId, google_place_id: gid, place_name: placeName, count }),
       });
       const data = await res.json() as { new_photos?: string[]; error?: string };
       if (!res.ok || data.error) {
@@ -322,6 +316,11 @@ export default function FullBranchFetchPage() {
       setResetError((err as Error).message);
       setResetState("error");
     }
+  }
+
+  async function resetPhotoCache() {
+    if (!selectedPlace || !resetGid.trim()) return;
+    await doPhotoReset(selectedPlace.id, resetGid.trim(), selectedPlace.name, resetCount);
   }
 
   const allChecked  = (fetched ?? []).every((b) => checks[b._googlePlaceId]);
@@ -575,7 +574,7 @@ export default function FullBranchFetchPage() {
               <p className="text-sm font-semibold text-green-700">✓ {saveMsg}</p>
               {resetGid && (
                 <p className="mt-1 text-xs text-green-600">
-                  تم تعبئة معرّف الصورة تلقائيًا بالأسفل — اضغط &quot;تحديث&quot; لجلب الصور الصحيحة ↓
+                  جاري جلب الصور تلقائيًا... ↓
                 </p>
               )}
             </div>
@@ -593,8 +592,7 @@ export default function FullBranchFetchPage() {
         <section ref={photoSectionRef} className="space-y-3 border-t border-sal-100 pt-6">
           <h2 className="text-sm font-bold text-ink-700">تحديث صور المنشأة بمعرّف قوقل</h2>
           <p className="text-[11px] text-ink-500">
-            إذا كانت صور &quot;{selectedPlace.name}&quot; خاطئة، أدخل الـ Place ID الصحيح لمسح ذاكرة التخزين
-            وإعادة الجلب. يُعبَّأ تلقائيًا بعد الحفظ.
+            تُجلب الصور تلقائيًا بعد الحفظ. لإعادة الجلب يدويًا أو تصحيح Place ID خاطئ، عدّله أدناه ثم اضغط &quot;تحديث&quot;.
           </p>
 
           <div className="flex gap-2">
