@@ -506,11 +506,14 @@ export default function MergeReviewPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <Link href="/admin"
-            className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-sal-600 hover:text-sal-800">
-            ← لوحة التحكم
-          </Link>
-          <h1 className="text-2xl font-extrabold text-ink-900">مراجعة التكرارات والدمج</h1>
+          <div className="mb-2 flex items-center gap-2 text-xs flex-wrap">
+            <Link href="/admin" className="font-semibold text-sal-600 hover:text-sal-800">← لوحة التحكم</Link>
+            <span className="text-ink-300">·</span>
+            <Link href="/admin/branch-review" className="text-ink-400 hover:text-sal-600">فروع — مراجعة الكل</Link>
+            <span className="text-ink-300">·</span>
+            <Link href="/admin/full-branch-fetch" className="text-ink-400 hover:text-sal-600">فروع — منشأة بعينها</Link>
+          </div>
+          <h1 className="text-2xl font-extrabold text-ink-900">تنظيف التكرارات — دمج وحذف</h1>
           {!loading && !error && (
             <p className="mt-1 text-sm text-ink-500">
               {totalGroups} حالة مكتشفة — {exactCount} متطابق · {subsetCount} فرع محتمل

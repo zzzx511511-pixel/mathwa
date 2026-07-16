@@ -1184,15 +1184,21 @@ function AdminDashboard() {
           <h1 className="text-2xl font-extrabold text-ink-900">لوحة التحكم</h1>
           <p className="text-sm text-ink-600">{places.length} مكان مسجّل</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/admin/branch-review" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            📍 مراجعة الفروع
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/branch-review"
+            title="مراجعة كل المنشآت ذات الفرع الواحد دفعة وحدة"
+            className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
+            📋 فروع — مراجعة الكل
           </Link>
-          <Link href="/admin/merge-review" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            🔀 دمج التكرارات
+          <Link href="/admin/full-branch-fetch"
+            title="إضافة فروع لمنشأة واحدة محددة مع التحقق من التكرار وإدارة الصور"
+            className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
+            🎯 فروع — منشأة بعينها
           </Link>
-          <Link href="/admin/full-branch-fetch" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            🌐 جلب فروع قوقل
+          <Link href="/admin/merge-review"
+            title="مراجعة المنشآت المكررة (EXACT/SUBSET) ودمجها أو حذفها"
+            className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
+            🔀 تنظيف التكرارات
           </Link>
           <Link href="/" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
             ← العودة للموقع

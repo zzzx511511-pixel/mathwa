@@ -13,6 +13,7 @@ type SaveStatus  = "idle" | "saving" | "saved" | "error";
 
 interface FetchedBranch {
   _googlePlaceId: string;
+  _placeName?: string;  // Original Google chain name — used for match-quality warning
   name: string;
   address: string;
   city: string;
@@ -22,6 +23,28 @@ interface FetchedBranch {
   openingHours?: string;
   phone?: string;
   mapsUrl?: string;
+}
+
+// Returns true when the Google result's chain name reasonably matches the search query.
+// False → likely a different place surfaced by phonetic similarity (e.g. "لوسين" → "لوسيال").
+function nameMatchesQuery(searchQuery: string, googlePlaceName: string): boolean {
+  if (!googlePlaceName) return true; // unknown — don't warn
+  const norm = (s: string) =>
+    s.replace(/[ً-ْٰ]/g, "") // strip tashkeel
+     .replace(/[أإآا]/g, "ا")               // normalize alef
+     .replace(/[ةه]/g, "ه")
+     .replace(/[يى]/g, "ي")
+     .replace(/\([^)]*\)/g, "")             // remove parentheticals like "(Leciel)"
+     .replace(/\s+/g, " ")
+     .trim()
+     .toLowerCase();
+  const q = norm(searchQuery);
+  const r = norm(googlePlaceName);
+  if (!q || !r) return true;
+  if (r.includes(q) || q.includes(r)) return true;
+  // Word-level overlap: any meaningful word (≥ 3 chars) from query in result
+  const qWords = q.split(/\s+/).filter(w => w.length >= 3);
+  return qWords.some(w => r.includes(w));
 }
 
 interface PlaceFetchState {
@@ -189,7 +212,8 @@ function PlaceReviewPanel({
 
           {/* Branch cards */}
           {branches.map((b, i) => {
-            const checked = approval?.[i] ?? true;
+            const checked   = approval?.[i] ?? true;
+            const goodMatch = nameMatchesQuery(place.name, b._placeName ?? "");
             return (
               <label
                 key={b._googlePlaceId}
@@ -204,12 +228,26 @@ function PlaceReviewPanel({
                   className="mt-0.5 h-4 w-4 accent-sal-600"
                 />
                 <div className="flex-1 min-w-0 space-y-0.5">
-                  <p className="text-sm font-bold text-ink-900">{b.name}</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-sm font-bold text-ink-900">{b.name}</p>
+                    {!goodMatch && b._placeName && (
+                      <span
+                        title={`قوقل أرجع: "${b._placeName}" — قد لا يكون "${place.name}"`}
+                        className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700"
+                      >
+                        ⚠️ اسم مختلف: {b._placeName}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-ink-600">📍 {b.neighborhood ? `${b.neighborhood}، ` : ""}{b.address}</p>
                   {b.openingHours && <p className="text-xs text-ink-500">⏰ {b.openingHours}</p>}
                   {b.phone && <p className="text-xs text-ink-500" dir="ltr">📞 {b.phone}</p>}
-                  {(b.lat != null || b.mapsUrl) && (
-                    <p className="text-[10px] font-semibold text-green-600">✓ موقع جغرافي متوفر</p>
+                  {b.mapsUrl && (
+                    <a href={b.mapsUrl} target="_blank" rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="block text-[10px] text-sal-500 underline hover:text-sal-700">
+                      تحقق في قوقل مابس ↗
+                    </a>
                   )}
                 </div>
               </label>
@@ -358,11 +396,10 @@ function BranchReviewDashboard() {
     const approval = approvals[placeId];
     if (!place || state?.status !== "done" || !approval) return;
 
-    const ts = Date.now();
     const approvedBranches: Branch[] = state.branches
       .filter((_, i) => approval[i])
-      .map((b, i) => ({
-        id:           `${placeId}-b${ts}-${i + 1}`,
+      .map((b) => ({
+        id:           "",  // stamped by add-branches route
         name:         b.name,
         address:      b.address,
         city:         b.city,
@@ -378,15 +415,22 @@ function BranchReviewDashboard() {
 
     setSaveStates((prev) => ({ ...prev, [placeId]: "saving" }));
     try {
-      const updatedPlace = { ...place, branches: [...place.branches, ...approvedBranches] };
-      const res = await fetch("/api/places", {
+      const res = await fetch("/api/admin/add-branches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedPlace),
+        body: JSON.stringify({ place_id: placeId, branches: approvedBranches }),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "فشل الحفظ");
       setSaveStates((prev) => ({ ...prev, [placeId]: "saved" }));
-      setAllPlaces((prev) => prev.map((p) => (p.id === placeId ? updatedPlace : p)));
+      // Update local display (IDs will be stamped server-side)
+      setAllPlaces((prev) =>
+        prev.map((p) =>
+          p.id === placeId
+            ? { ...p, branches: [...p.branches, ...approvedBranches] }
+            : p
+        )
+      );
     } catch {
       setSaveStates((prev) => ({ ...prev, [placeId]: "error" }));
     }
@@ -408,7 +452,7 @@ function BranchReviewDashboard() {
 
       {/* ── Top bar ── */}
       <div className="flex shrink-0 items-center justify-between border-b border-sal-200 bg-white px-4 py-3 gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             href="/admin"
             className="rounded-lg border border-sal-200 bg-sal-50 px-3 py-1.5 text-xs font-semibold text-sal-700 hover:bg-sal-100 transition"
@@ -416,7 +460,12 @@ function BranchReviewDashboard() {
             ← لوحة التحكم
           </Link>
           <span className="text-ink-300">/</span>
-          <h1 className="text-sm font-extrabold text-ink-900">مراجعة الفروع</h1>
+          <div>
+            <h1 className="text-sm font-extrabold text-ink-900">مراجعة الفروع — دفعة شاملة</h1>
+            <p className="text-[10px] text-ink-400">جلب فروع كل المنشآت ذات الفرع الواحد تلقائيًا · لمنشأة واحدة بعينها ←
+              <Link href="/admin/full-branch-fetch" className="mr-1 text-sal-600 underline hover:text-sal-800">جلب مستهدف</Link>
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2 text-[11px]">
           {savedCount > 0 && (

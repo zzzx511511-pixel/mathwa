@@ -4,6 +4,7 @@
  * Body: { place_id: string; branches: Branch[] }
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
 import { getCustomPlaces, upsertCustomPlace } from "@/lib/salsabeel/supabase-places";
 import { mergePlaces } from "@/lib/salsabeel/data";
@@ -44,6 +45,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (!ok) return NextResponse.json({ error: "upsert failed" }, { status: 500 });
+
+    revalidatePath("/places");
+    revalidatePath("/category/[slug]", "page");
+    revalidatePath(`/places/${place_id}`);
 
     return NextResponse.json({
       ok:      true,

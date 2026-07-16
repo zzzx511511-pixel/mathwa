@@ -47,6 +47,7 @@ interface RawResult {
 }
 
 interface DetailResult {
+  name?: string;
   formatted_address?: string;
   geometry?: { location?: { lat: number; lng: number } };
   opening_hours?: { weekday_text?: string[] };
@@ -58,7 +59,7 @@ interface DetailResult {
 async function fetchBranchDetail(c: RawResult, index: number) {
   const detailParams = new URLSearchParams({
     place_id: c.place_id,
-    fields: "formatted_address,geometry,opening_hours,formatted_phone_number,url",
+    fields: "name,formatted_address,geometry,opening_hours,formatted_phone_number,url",
     language: "ar",
     key: GOOGLE_KEY,
   });
@@ -78,6 +79,8 @@ async function fetchBranchDetail(c: RawResult, index: number) {
 
     return {
       _googlePlaceId: c.place_id,
+      // Original Google place name (chain name), used for search-quality warnings.
+      _placeName:   r.name ?? c.name ?? "",
       name:         branchName,
       address:      address || rawAddress,
       city:         "الرياض",

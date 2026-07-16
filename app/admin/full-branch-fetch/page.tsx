@@ -13,6 +13,7 @@ type PlaceOption = {
 
 type FetchedBranch = {
   _googlePlaceId: string;
+  _placeName?: string;   // Original Google chain name — used for search-quality warning
   name: string;
   address: string;
   city: string;
@@ -37,6 +38,19 @@ const CATEGORY_LABELS: Record<string, string> = {
   cafes: "مقاهي", restaurants: "مطاعم",
   clinics: "عيادات", salons: "صالونات", malls: "مولات",
 };
+
+// Returns true when the Google result's chain name reasonably matches the query.
+function nameMatchesQuery(searchQuery: string, googlePlaceName: string): boolean {
+  if (!googlePlaceName) return true;
+  const norm = (s: string) =>
+    s.replace(/[ً-ْٰ]/g, "").replace(/[أإآا]/g, "ا").replace(/[ةه]/g, "ه").replace(/[يى]/g, "ي")
+     .replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+  const q = norm(searchQuery);
+  const r = norm(googlePlaceName);
+  if (!q || !r) return true;
+  if (r.includes(q) || q.includes(r)) return true;
+  return q.split(/\s+/).filter(w => w.length >= 3).some(w => r.includes(w));
+}
 
 function haversineM(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
@@ -324,13 +338,17 @@ export default function FullBranchFetchPage() {
 
       {/* Back link + Header */}
       <div>
-        <Link href="/admin"
-          className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-sal-600 hover:text-sal-800">
-          ← لوحة التحكم
-        </Link>
-        <h1 className="text-2xl font-extrabold text-ink-900">جلب الفروع الكاملة من قوقل</h1>
+        <div className="mb-3 flex items-center gap-2 text-xs flex-wrap">
+          <Link href="/admin" className="font-semibold text-sal-600 hover:text-sal-800">← لوحة التحكم</Link>
+          <span className="text-ink-300">·</span>
+          <Link href="/admin/branch-review" className="text-ink-400 hover:text-sal-600">مراجعة الكل دفعة</Link>
+          <span className="text-ink-300">·</span>
+          <Link href="/admin/merge-review" className="text-ink-400 hover:text-sal-600">تنظيف التكرارات</Link>
+        </div>
+        <h1 className="text-2xl font-extrabold text-ink-900">فروع منشأة بعينها — جلب من قوقل</h1>
         <p className="mt-1 text-sm text-ink-500">
-          اختر منشأة، ثم اجلب كل فروعها من قوقل مابس لمراجعتها وحفظها.
+          للمنشآت بفرع واحد فقط وتريد مراجعة الكل دفعة، استخدم{" "}
+          <Link href="/admin/branch-review" className="text-sal-600 underline">مراجعة الكل</Link>.
         </p>
       </div>
 
@@ -463,6 +481,14 @@ export default function FullBranchFetchPage() {
                         {isConfirmed && !alreadyReg && (
                           <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">
                             مؤكد
+                          </span>
+                        )}
+                        {b._placeName && !nameMatchesQuery(searchName, b._placeName) && (
+                          <span
+                            title={`قوقل أرجع: "${b._placeName}" — قد لا يكون المطلوب`}
+                            className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700"
+                          >
+                            ⚠️ {b._placeName}
                           </span>
                         )}
                       </div>
