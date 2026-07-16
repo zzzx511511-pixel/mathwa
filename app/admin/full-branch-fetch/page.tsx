@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -37,7 +38,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   clinics: "عيادات", salons: "صالونات", malls: "مولات",
 };
 
-// Returns distance in metres between two lat/lng pairs (haversine).
 function haversineM(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -47,6 +47,16 @@ function haversineM(lat1: number, lng1: number, lat2: number, lng2: number): num
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Extract a Google Place ID from a Maps URL or bare ChIJ... string.
+function extractPlaceId(raw: string): string {
+  const trimmed = raw.trim();
+  const m1 = trimmed.match(/place_id[=:]([A-Za-z0-9_-]+)/);
+  if (m1) return m1[1];
+  const m2 = trimmed.match(/\b(ChIJ[A-Za-z0-9_-]+)/);
+  if (m2) return m2[1];
+  return trimmed;
 }
 
 // ── PlaceSelector ─────────────────────────────────────────────────────────────
@@ -111,37 +121,38 @@ function PlaceSelector({
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function FullBranchFetchPage() {
-  // Step 1: load all places for the selector
-  const [allPlaces, setAllPlaces] = useState<PlaceOption[]>([]);
+  const [allPlaces, setAllPlaces]     = useState<PlaceOption[]>([]);
   const [placesLoading, setPlacesLoading] = useState(true);
-
-  // Step 2: user selections
   const [selectedPlace, setSelectedPlace] = useState<PlaceOption | null>(null);
-  const [searchName, setSearchName] = useState("");
-
-  // M1: existing branches for the selected place
+  const [searchName, setSearchName]   = useState("");
   const [existingBranches, setExistingBranches] = useState<ExistingBranch[]>([]);
 
-  // Step 3: Google fetch
-  const [fetchLoading, setFetchLoading]   = useState(false);
-  const [fetchError, setFetchError]       = useState<string | null>(null);
-  const [fetched, setFetched]             = useState<FetchedBranch[] | null>(null);
+  // Google fetch
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [fetchError, setFetchError]     = useState<string | null>(null);
+  const [fetched, setFetched]           = useState<FetchedBranch[] | null>(null);
 
-  // Step 4: checklist
+  // Checklist
   const [checks, setChecks] = useState<Record<string, boolean>>({});
 
-  // Step 5: save
+  // Manual single-GID add
+  const [manualGid, setManualGid]           = useState("");
+  const [manualLoading, setManualLoading]   = useState(false);
+  const [manualError, setManualError]       = useState("");
+
+  // Save
   const [saveState, setSaveState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [saveMsg, setSaveMsg]     = useState("");
 
   // M5: photo cache reset
-  const [resetGid, setResetGid]         = useState("");
-  const [resetCount, setResetCount]     = useState(2);
-  const [resetState, setResetState]     = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [resetPhotos, setResetPhotos]   = useState<string[]>([]);
-  const [resetError, setResetError]     = useState("");
+  const [resetGid, setResetGid]     = useState("");
+  const [resetCount, setResetCount] = useState(2);
+  const [resetState, setResetState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [resetPhotos, setResetPhotos] = useState<string[]>([]);
+  const [resetError, setResetError]   = useState("");
 
-  // Load place list on mount
+  const photoSectionRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetch("/api/admin/all-places")
       .then((r) => r.json())
@@ -150,7 +161,7 @@ export default function FullBranchFetchPage() {
       .finally(() => setPlacesLoading(false));
   }, []);
 
-  // M1: fetch existing branches whenever the selected place changes
+  // Fetch existing branches whenever selected place changes (for M1 comparison)
   useEffect(() => {
     if (!selectedPlace) { setExistingBranches([]); return; }
     fetch(`/api/admin/place-info?place_id=${encodeURIComponent(selectedPlace.id)}`)
@@ -159,7 +170,6 @@ export default function FullBranchFetchPage() {
       .catch(() => setExistingBranches([]));
   }, [selectedPlace]);
 
-  // M1: check if a lat/lng is within 200 m of any already-registered branch
   function isNearExisting(lat?: number, lng?: number): boolean {
     if (lat == null || lng == null) return false;
     return existingBranches.some((b) => {
@@ -168,7 +178,6 @@ export default function FullBranchFetchPage() {
     });
   }
 
-  // When user picks a place, pre-fill the search name
   function handlePlaceSelect(p: PlaceOption | null) {
     setSelectedPlace(p);
     if (p) setSearchName(p.name);
@@ -177,6 +186,8 @@ export default function FullBranchFetchPage() {
     setSaveState("idle");
     setResetState("idle");
     setResetGid("");
+    setManualGid("");
+    setManualError("");
   }
 
   async function fetchBranches() {
@@ -192,7 +203,7 @@ export default function FullBranchFetchPage() {
       if (data.error) { setFetchError(data.error); return; }
       const branches = data.branches ?? [];
       setFetched(branches);
-      // M1: pre-uncheck branches that are already registered
+      // M1: pre-uncheck branches already registered within 200 m
       const initial: Record<string, boolean> = {};
       branches.forEach((b) => {
         initial[b._googlePlaceId] = !isNearExisting(b.lat, b.lng);
@@ -202,6 +213,38 @@ export default function FullBranchFetchPage() {
       setFetchError((err as Error).message);
     } finally {
       setFetchLoading(false);
+    }
+  }
+
+  // Add a single branch by its Google Place ID
+  async function fetchManualBranch() {
+    const pid = extractPlaceId(manualGid);
+    if (!pid) return;
+    setManualLoading(true);
+    setManualError("");
+    try {
+      const res = await fetch(`/api/place-branches?gid=${encodeURIComponent(pid)}`);
+      const data = await res.json() as { branches?: FetchedBranch[] };
+      const branches = data.branches ?? [];
+      if (!branches.length) {
+        setManualError("لم يُعثر على بيانات لهذا المعرّف — تأكد من صحته");
+        return;
+      }
+      // Append to list if not already present
+      setFetched((prev) => {
+        const base = prev ?? [];
+        const existing = new Set(base.map((b) => b._googlePlaceId));
+        const fresh = branches.filter((b) => !existing.has(b._googlePlaceId));
+        return [...base, ...fresh];
+      });
+      // Pre-check the new branch
+      const gid = branches[0]._googlePlaceId;
+      setChecks((prev) => ({ ...prev, [gid]: true }));
+      setManualGid("");
+    } catch (err) {
+      setManualError((err as Error).message);
+    } finally {
+      setManualLoading(false);
     }
   }
 
@@ -223,6 +266,13 @@ export default function FullBranchFetchPage() {
       } else {
         setSaveMsg(`تم حفظ ${data.added} فرع. إجمالي الفروع الآن: ${data.total}`);
         setSaveState("done");
+        // Auto-fill photo reset section with the first confirmed branch's Place ID
+        if (selected[0]?._googlePlaceId) {
+          setResetGid(selected[0]._googlePlaceId);
+          setResetState("idle");
+          // Give the DOM time to render, then scroll to the photo section
+          setTimeout(() => photoSectionRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+        }
       }
     } catch (err) {
       setSaveMsg((err as Error).message);
@@ -230,7 +280,6 @@ export default function FullBranchFetchPage() {
     }
   }
 
-  // M5: reset photo cache with a new Google Place ID
   async function resetPhotoCache() {
     if (!selectedPlace || !resetGid.trim()) return;
     setResetState("loading");
@@ -247,7 +296,7 @@ export default function FullBranchFetchPage() {
           count:           resetCount,
         }),
       });
-      const data = await res.json() as { new_photos?: string[]; count?: number; error?: string };
+      const data = await res.json() as { new_photos?: string[]; error?: string };
       if (!res.ok || data.error) {
         setResetError(data.error ?? "خطأ غير معروف");
         setResetState("error");
@@ -273,8 +322,12 @@ export default function FullBranchFetchPage() {
   return (
     <div dir="rtl" className="mx-auto max-w-3xl space-y-8 px-5 py-10">
 
-      {/* Header */}
+      {/* Back link + Header */}
       <div>
+        <Link href="/admin"
+          className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-sal-600 hover:text-sal-800">
+          ← لوحة التحكم
+        </Link>
         <h1 className="text-2xl font-extrabold text-ink-900">جلب الفروع الكاملة من قوقل</h1>
         <p className="mt-1 text-sm text-ink-500">
           اختر منشأة، ثم اجلب كل فروعها من قوقل مابس لمراجعتها وحفظها.
@@ -287,11 +340,7 @@ export default function FullBranchFetchPage() {
         {placesLoading ? (
           <p className="text-xs text-ink-500">جاري تحميل قائمة المنشآت...</p>
         ) : (
-          <PlaceSelector
-            places={allPlaces}
-            value={selectedPlace}
-            onChange={handlePlaceSelect}
-          />
+          <PlaceSelector places={allPlaces} value={selectedPlace} onChange={handlePlaceSelect} />
         )}
         {selectedPlace && (
           <p className="text-[11px] text-ink-500">
@@ -314,6 +363,7 @@ export default function FullBranchFetchPage() {
             type="text"
             value={searchName}
             onChange={(e) => setSearchName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && fetchBranches()}
             placeholder="مثال: ستاربكس"
             className="flex-1 rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-sal-400 focus:outline-none"
           />
@@ -341,7 +391,7 @@ export default function FullBranchFetchPage() {
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-ink-700">
-              3. راجع النتائج
+              3. راجع النتائج وأكّد الفروع
               <span className="mr-2 rounded-full bg-sal-100 px-2 py-0.5 text-xs font-bold text-sal-700">
                 {fetched.length} نتيجة
               </span>
@@ -354,37 +404,65 @@ export default function FullBranchFetchPage() {
               >
                 {allChecked ? "إلغاء الكل" : "تحديد الكل"}
               </button>
-              <span className="text-xs text-ink-500">{selected.length} محدد</span>
+              <span className="text-xs text-ink-500">{selected.length} مؤكد</span>
             </div>
           </div>
 
           {fetched.length === 0 ? (
-            <p className="text-sm text-ink-500 px-1">لم يُعثر على نتائج.</p>
+            <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm">
+              <p className="font-semibold text-amber-700">لم يُعثر على نتائج</p>
+              <p className="mt-1 text-xs text-amber-600">
+                قد يكون اسم المنشأة مختلفًا في قوقل. جرّب تعديل اسم البحث (مثال: أضف &quot;مطعم&quot; أو غيّر الإملاء)،
+                أو استخدم &quot;إضافة فرع بـ Place ID&quot; أدناه لإضافة فرع تعرف معرّفه مباشرة.
+              </p>
+            </div>
           ) : (
             <div className="overflow-hidden rounded-2xl border border-sal-100 bg-white">
               {fetched.map((b, idx) => {
-                const alreadyReg = isNearExisting(b.lat, b.lng);
+                const alreadyReg  = isNearExisting(b.lat, b.lng);
+                const isConfirmed = !!checks[b._googlePlaceId];
                 return (
-                  <label
+                  <div
                     key={b._googlePlaceId}
-                    className={`flex cursor-pointer items-start gap-3 px-4 py-3 transition hover:bg-sal-50 ${
+                    className={`flex items-start gap-3 px-4 py-3 transition ${
                       idx !== 0 ? "border-t border-sal-50" : ""
-                    } ${alreadyReg ? "opacity-60" : ""}`}
+                    } ${isConfirmed ? "bg-green-50/40" : "opacity-60"}`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={!!checks[b._googlePlaceId]}
-                      onChange={(e) =>
-                        setChecks((prev) => ({ ...prev, [b._googlePlaceId]: e.target.checked }))
-                      }
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-sal-600"
-                    />
+                    {/* Confirm / reject toggle */}
+                    <div className="flex flex-col items-center gap-1 pt-0.5 shrink-0">
+                      <button
+                        type="button"
+                        title="تأكيد — سيُحفظ"
+                        onClick={() => setChecks((p) => ({ ...p, [b._googlePlaceId]: true }))}
+                        className={`h-7 w-7 rounded-full border text-xs font-bold transition ${
+                          isConfirmed
+                            ? "border-green-500 bg-green-500 text-white"
+                            : "border-ink-200 bg-white text-ink-400 hover:border-green-400 hover:text-green-600"
+                        }`}
+                      >✓</button>
+                      <button
+                        type="button"
+                        title="استبعاد — لن يُحفظ"
+                        onClick={() => setChecks((p) => ({ ...p, [b._googlePlaceId]: false }))}
+                        className={`h-7 w-7 rounded-full border text-xs font-bold transition ${
+                          !isConfirmed
+                            ? "border-red-400 bg-red-50 text-red-500"
+                            : "border-ink-200 bg-white text-ink-300 hover:border-red-300 hover:text-red-400"
+                        }`}
+                      >✗</button>
+                    </div>
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-semibold text-ink-900">{b.name}</p>
                         {alreadyReg && (
                           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                             مسجل بالفعل
+                          </span>
+                        )}
+                        {isConfirmed && !alreadyReg && (
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                            مؤكد
                           </span>
                         )}
                       </div>
@@ -399,19 +477,48 @@ export default function FullBranchFetchPage() {
                             href={b.mapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
                             className="text-sal-500 underline hover:text-sal-700"
                           >
-                            عرض في قوقل مابس ↗
+                            تحقق في قوقل مابس ↗
                           </a>
                         )}
+                        <span className="text-ink-300 font-mono">{b._googlePlaceId}</span>
                       </div>
                     </div>
-                  </label>
+                  </div>
                 );
               })}
             </div>
           )}
+
+          {/* Manual Place ID add */}
+          <div className="rounded-xl border border-dashed border-sal-200 bg-sal-50/40 px-4 py-3 space-y-2">
+            <p className="text-xs font-semibold text-ink-600">
+              الفرع الصحيح غير موجود في النتائج؟ أضفه يدويًا بـ Place ID أو رابط قوقل مابس
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                dir="ltr"
+                value={manualGid}
+                onChange={(e) => { setManualGid(e.target.value); setManualError(""); }}
+                onKeyDown={(e) => e.key === "Enter" && fetchManualBranch()}
+                placeholder="ChIJ... أو https://maps.google.com/..."
+                className="flex-1 rounded-xl border border-sal-200 bg-white px-3 py-2 text-xs text-ink-900 placeholder:text-ink-400 focus:border-sal-400 focus:outline-none font-mono"
+              />
+              <button
+                type="button"
+                onClick={fetchManualBranch}
+                disabled={!manualGid.trim() || manualLoading}
+                className="rounded-xl bg-sal-500 px-4 py-2 text-xs font-bold text-white hover:bg-sal-600 disabled:opacity-40 transition"
+              >
+                {manualLoading ? "..." : "جلب"}
+              </button>
+            </div>
+            {manualError && (
+              <p className="text-[11px] font-semibold text-red-600">{manualError}</p>
+            )}
+          </div>
         </section>
       )}
 
@@ -434,12 +541,17 @@ export default function FullBranchFetchPage() {
           >
             {saveState === "saving"
               ? "جاري الحفظ..."
-              : `حفظ ${selected.length} فرع تحت "${selectedPlace?.name ?? "..."}"`}
+              : `حفظ ${selected.length} فرع مؤكد تحت "${selectedPlace?.name ?? "..."}"`}
           </button>
 
           {saveState === "done" && (
             <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3">
               <p className="text-sm font-semibold text-green-700">✓ {saveMsg}</p>
+              {resetGid && (
+                <p className="mt-1 text-xs text-green-600">
+                  تم تعبئة معرّف الصورة تلقائيًا بالأسفل — اضغط &quot;تحديث&quot; لجلب الصور الصحيحة ↓
+                </p>
+              )}
             </div>
           )}
           {saveState === "error" && (
@@ -450,12 +562,13 @@ export default function FullBranchFetchPage() {
         </section>
       )}
 
-      {/* M5: reset photo cache with a corrected Google Place ID */}
+      {/* M5: photo cache reset */}
       {selectedPlace && (
-        <section className="space-y-3 border-t border-sal-100 pt-6">
-          <h2 className="text-sm font-bold text-ink-700">تحديث صور المنشأة بمعرّف قوقل جديد</h2>
+        <section ref={photoSectionRef} className="space-y-3 border-t border-sal-100 pt-6">
+          <h2 className="text-sm font-bold text-ink-700">تحديث صور المنشأة بمعرّف قوقل</h2>
           <p className="text-[11px] text-ink-500">
-            إذا كانت صور &quot;{selectedPlace.name}&quot; خاطئة بسبب معرّف قوقل مخزّن بشكل غلط، أدخل المعرّف الصحيح لمسح ذاكرة التخزين المؤقت وإعادة الجلب.
+            إذا كانت صور &quot;{selectedPlace.name}&quot; خاطئة، أدخل الـ Place ID الصحيح لمسح ذاكرة التخزين
+            وإعادة الجلب. يُعبَّأ تلقائيًا بعد الحفظ.
           </p>
 
           <div className="flex gap-2">

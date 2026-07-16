@@ -54,8 +54,57 @@ interface DetailResult {
   url?: string;
 }
 
+// Fetch Place Details for a single candidate and build a branch record.
+async function fetchBranchDetail(c: RawResult, index: number) {
+  const detailParams = new URLSearchParams({
+    place_id: c.place_id,
+    fields: "formatted_address,geometry,opening_hours,formatted_phone_number,url",
+    language: "ar",
+    key: GOOGLE_KEY,
+  });
+  try {
+    const res  = await fetch(`${PLACES_BASE}/details/json?${detailParams}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "OK") return null;
+    const r: DetailResult = data.result;
+
+    const rawAddress   = r.formatted_address ?? c.formatted_address;
+    const neighborhood = extractNeighborhood(rawAddress);
+    const address      = cleanAddress(rawAddress);
+    const branchName   = neighborhood ? `فرع ${neighborhood}` : `الفرع ${index + 1}`;
+
+    return {
+      _googlePlaceId: c.place_id,
+      name:         branchName,
+      address:      address || rawAddress,
+      city:         "الرياض",
+      neighborhood: neighborhood || undefined,
+      lat:          r.geometry?.location?.lat ?? c.geometry?.location?.lat,
+      lng:          r.geometry?.location?.lng ?? c.geometry?.location?.lng,
+      openingHours: summarizeHours(r.opening_hours?.weekday_text),
+      phone:        r.formatted_phone_number || undefined,
+      // M2: fall back to a stable Google Maps URL when the detail URL is missing
+      mapsUrl:      r.url || `https://www.google.com/maps/place/?q=place_id:${c.place_id}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
+
+  // Single-ID lookup: ?gid=ChIJ... bypasses textsearch and fetches details directly.
+  const gid = req.nextUrl.searchParams.get("gid")?.trim();
+  if (gid) {
+    if (!GOOGLE_KEY) return NextResponse.json({ branches: [] });
+    const candidate: RawResult = { place_id: gid, name: "", formatted_address: "" };
+    const branch = await fetchBranchDetail(candidate, 0);
+    return NextResponse.json({ branches: branch ? [branch] : [] });
+  }
 
   const name     = req.nextUrl.searchParams.get("name")?.trim() ?? "";
   // paginate=true: fetch up to 3 Google pages (60 results) with pagetoken delays.
@@ -108,48 +157,7 @@ export async function GET(req: NextRequest) {
   candidates = candidates.slice(0, limit);
 
   // Step 2: place/details for each candidate in parallel.
-  const branches = await Promise.all(
-    candidates.map(async (c, i) => {
-      const detailParams = new URLSearchParams({
-        place_id: c.place_id,
-        fields: "formatted_address,geometry,opening_hours,formatted_phone_number,url",
-        language: "ar",
-        key: GOOGLE_KEY,
-      });
-      try {
-        const res  = await fetch(`${PLACES_BASE}/details/json?${detailParams}`, {
-          signal: AbortSignal.timeout(10000),
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (data.status !== "OK") return null;
-        const r: DetailResult = data.result;
-
-        const rawAddress  = r.formatted_address ?? c.formatted_address;
-        const neighborhood = extractNeighborhood(rawAddress);
-        const address      = cleanAddress(rawAddress);
-        const branchName   = neighborhood
-          ? `فرع ${neighborhood}`
-          : `الفرع ${i + 1}`;
-
-        return {
-          _googlePlaceId: c.place_id,
-          name:         branchName,
-          address:      address || rawAddress,
-          city:         "الرياض",
-          neighborhood: neighborhood || undefined,
-          lat:          r.geometry?.location?.lat ?? c.geometry?.location?.lat,
-          lng:          r.geometry?.location?.lng ?? c.geometry?.location?.lng,
-          openingHours: summarizeHours(r.opening_hours?.weekday_text),
-          phone:        r.formatted_phone_number || undefined,
-          // M2: fall back to a stable Google Maps URL when the detail URL is missing
-          mapsUrl:      r.url || `https://www.google.com/maps/place/?q=place_id:${c.place_id}`,
-        };
-      } catch {
-        return null;
-      }
-    })
-  );
+  const branches = await Promise.all(candidates.map((c, i) => fetchBranchDetail(c, i)));
 
   return NextResponse.json({ branches: branches.filter(Boolean) });
 }

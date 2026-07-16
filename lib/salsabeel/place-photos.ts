@@ -64,7 +64,7 @@ async function getStoredState(
       }),
     });
     if (!res.ok) return { urls: [], skipGoogle: false, storedGid: null, storedCount: 0, fileNames: [] };
-    const files: { name: string }[] = await res.json();
+    const files: { name: string; updated_at?: string }[] = await res.json();
     const fileNames = files.map((f) => f.name);
     const skipGoogle = files.some((f) => f.name === ".skip");
 
@@ -91,7 +91,12 @@ async function getStoredState(
     const urls = files
       .filter((f) => /photo_\d+\.(jpg|jpeg|png|webp)$/i.test(f.name))
       .slice(0, count)
-      .map((f) => `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${placeId}/${f.name}`);
+      .map((f) => {
+        // Append updated_at as a cache-buster so CDN edges don't serve stale
+        // content after a delete+re-upload of the same filename.
+        const base = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${placeId}/${f.name}`;
+        return f.updated_at ? `${base}?t=${encodeURIComponent(f.updated_at)}` : base;
+      });
     return { urls, skipGoogle, storedGid, storedCount, fileNames };
   } catch {
     return { urls: [], skipGoogle: false, storedGid: null, storedCount: 0, fileNames: [] };

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -505,6 +506,10 @@ export default function MergeReviewPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
+          <Link href="/admin"
+            className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-sal-600 hover:text-sal-800">
+            ← لوحة التحكم
+          </Link>
           <h1 className="text-2xl font-extrabold text-ink-900">مراجعة التكرارات والدمج</h1>
           {!loading && !error && (
             <p className="mt-1 text-sm text-ink-500">
