@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { matchesQuery, expandQuery } from "@/lib/salsabeel/search";
 import Link from "next/link";
-import { PLACES as INITIAL_PLACES } from "@/lib/salsabeel/data";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import type { Place, Category, Branch, Region } from "@/lib/salsabeel/types";
@@ -596,7 +595,7 @@ export default function AdminPage() {
 }
 
 function AdminDashboard() {
-  const [places, setPlaces]         = useState<Place[]>(INITIAL_PLACES);
+  const [places, setPlaces]         = useState<Place[]>([]);
   const [editingId, setEditingId]   = useState<string | null>(null);
   const [editForm, setEditForm]     = useState<EditState | null>(null);
   const [deleteId, setDeleteId]     = useState<string | null>(null);
@@ -767,26 +766,12 @@ function AdminDashboard() {
     setFetchedBranchPreviews(null);
   }
 
-  // Load custom places from Supabase on mount.
-  // Supabase entries override static entries with the same id (so edits to static places persist).
+  // Load all places (static + custom overrides) from the auth-guarded API.
+  // This avoids bundling the 857 KB data.ts into the client JS.
   useEffect(() => {
-    fetch("/api/places")
+    fetch("/api/admin/places-full")
       .then((r) => r.json())
-      .then((custom: Place[]) => {
-        if (!custom.length) return;
-        setPlaces((prev) => {
-          const customById = new Map(custom.map((p) => [p.id, p]));
-          // Replace static places with their custom versions (edits / tombstones)
-          // Filter out tombstones (_deleted: true) so they disappear from the list
-          const merged = prev
-            .map((p) => customById.get(p.id) ?? p)
-            .filter((p) => !p._deleted);
-          // Add brand-new custom places (not in static data, not deleted)
-          const staticIds = new Set(prev.map((p) => p.id));
-          const brandNew  = custom.filter((p) => !staticIds.has(p.id) && !p._deleted);
-          return brandNew.length > 0 ? [...brandNew, ...merged] : merged;
-        });
-      })
+      .then((data: Place[]) => { if (Array.isArray(data)) setPlaces(data); })
       .catch(() => {});
   }, []);
 

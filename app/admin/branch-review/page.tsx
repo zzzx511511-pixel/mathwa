@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { PLACES as INITIAL_PLACES } from "@/lib/salsabeel/data";
 import { CATEGORIES, getCategoryMeta } from "@/lib/salsabeel/categories";
 import type { Place, Branch, Category } from "@/lib/salsabeel/types";
 
@@ -290,7 +289,7 @@ function PlaceReviewPanel({
 // ── Main dashboard ────────────────────────────────────────────────────────────
 
 function BranchReviewDashboard() {
-  const [allPlaces, setAllPlaces] = useState<Place[]>(INITIAL_PLACES);
+  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [search, setSearch]       = useState("");
   const [catFilter, setCatFilter] = useState<Category | "">("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -302,20 +301,11 @@ function BranchReviewDashboard() {
   const batchRunning = useRef(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
 
-  // Merge custom places from Supabase on mount
+  // Load all places (static + custom overrides) from the auth-guarded API.
   useEffect(() => {
-    fetch("/api/places")
+    fetch("/api/admin/places-full")
       .then((r) => r.json())
-      .then((custom: Place[]) => {
-        if (!custom.length) return;
-        setAllPlaces((prev) => {
-          const customById = new Map(custom.map((p) => [p.id, p]));
-          const merged = prev.map((p) => (customById.has(p.id) ? customById.get(p.id)! : p));
-          const existing = new Set(prev.map((p) => p.id));
-          const newOnes = custom.filter((p) => !existing.has(p.id) && !p._deleted);
-          return [...merged.filter((p) => !customById.get(p.id)?._deleted), ...newOnes];
-        });
-      })
+      .then((data: Place[]) => { if (Array.isArray(data)) setAllPlaces(data); })
       .catch(() => {});
   }, []);
 

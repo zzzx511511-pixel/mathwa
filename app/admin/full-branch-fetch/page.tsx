@@ -134,7 +134,7 @@ function PlaceSelector({
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function FullBranchFetchPage() {
+function FullBranchFetchDashboard() {
   const [allPlaces, setAllPlaces]     = useState<PlaceOption[]>([]);
   const [placesLoading, setPlacesLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<PlaceOption | null>(null);
@@ -642,4 +642,74 @@ export default function FullBranchFetchPage() {
 
     </div>
   );
+}
+
+// ── Password Gate ─────────────────────────────────────────────────────────────
+function PasswordGate({ onAuth }: { onAuth: () => void }) {
+  const [pw, setPw] = useState("");
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function tryLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw }),
+      });
+      if (res.ok) { onAuth(); } else { setError(true); setPw(""); }
+    } catch { setError(true); setPw(""); } finally { setLoading(false); }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-sal-50 px-4">
+      <div className="w-full max-w-sm rounded-3xl border border-sal-100 bg-white p-8 shadow-xl space-y-6">
+        <div className="text-center">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-sal-100 text-3xl">🔒</div>
+          <h1 className="text-xl font-extrabold text-ink-900">لوحة التحكم</h1>
+          <p className="mt-1 text-sm text-ink-600">أدخل كلمة المرور للمتابعة</p>
+        </div>
+        <form onSubmit={tryLogin} className="space-y-4">
+          <input
+            type="password"
+            value={pw}
+            onChange={(e) => { setPw(e.target.value); setError(false); }}
+            placeholder="كلمة المرور"
+            autoFocus
+            className={`w-full rounded-2xl border px-4 py-3 text-sm text-center tracking-widest focus:outline-none ${
+              error ? "border-red-400 bg-red-50" : "border-sal-200 focus:border-sal-500"
+            }`}
+          />
+          {error && <p className="text-center text-xs font-semibold text-red-600">كلمة المرور غير صحيحة</p>}
+          <button type="submit" disabled={loading}
+            className="w-full rounded-2xl bg-sal-600 py-3 text-sm font-bold text-white hover:bg-sal-700 transition disabled:opacity-60">
+            {loading ? "جاري التحقق…" : "دخول"}
+          </button>
+        </form>
+        <div className="text-center">
+          <Link href="/admin" className="text-xs text-ink-500 hover:text-sal-600">← لوحة التحكم الرئيسية</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page entry ────────────────────────────────────────────────────────────────
+export default function FullBranchFetchPage() {
+  const [authed, setAuthed] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin-auth")
+      .then((r) => r.json())
+      .then((d: { authed?: boolean }) => { if (d.authed) setAuthed(true); })
+      .catch(() => {})
+      .finally(() => setChecked(true));
+  }, []);
+
+  if (!checked) return null;
+  if (!authed) return <PasswordGate onAuth={() => setAuthed(true)} />;
+  return <FullBranchFetchDashboard />;
 }

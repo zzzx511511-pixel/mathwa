@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -7,6 +8,8 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const cache = new Map<string, string[]>();
 
 export async function POST(req: NextRequest) {
+  if (!isAdminAuthed(req)) return unauthorized();
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ terms: [] });
   }
