@@ -117,10 +117,13 @@ export default async function BranchDetailPage({
           📍 افتح في الخريطة
         </a>
 
-        {/* Place-level contact links */}
-        {(place.instagramUrl || place.website || place.phone) && (
+        {/* Place-level contact links.
+            branch.phone already appears in the card above, so only show place.phone
+            here when the branch has no phone of its own — avoids two different numbers
+            appearing on the same page with no label distinguishing them. */}
+        {(place.instagramUrl || place.website || (place.phone && !branch.phone)) && (
           <div className="flex flex-wrap gap-2 border-t border-sal-100 pt-4">
-            {place.phone && (
+            {place.phone && !branch.phone && (
               <a
                 href={`tel:${place.phone}`}
                 className="inline-flex items-center gap-2 rounded-xl border border-sal-200 bg-sal-50 px-4 py-2 text-sm font-bold text-sal-700 transition hover:bg-sal-100"

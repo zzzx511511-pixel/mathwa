@@ -39,8 +39,19 @@ export async function POST(req: NextRequest) {
       id: b.id || `${place_id}-bf${ts}-${i + 1}`,
     }));
 
+    // Derive place.googlePlaceId from the first new branch that has one,
+    // but only when the place doesn't already have a place-level ID set.
+    // This keeps the photo-cache sentinel (which uses the branch Place ID) in
+    // sync with what getPlacePhotos() looks up on the public page.
+    type BranchWithGid = Branch & { _googlePlaceId?: string };
+    const firstBranchGid = (stamped as BranchWithGid[])
+      .find((b) => b._googlePlaceId)?._googlePlaceId;
+    const existingGid = (place as { googlePlaceId?: string }).googlePlaceId;
+    const updatedGooglePlaceId = existingGid ?? firstBranchGid;
+
     const ok = await upsertCustomPlace({
       ...place,
+      ...(updatedGooglePlaceId ? { googlePlaceId: updatedGooglePlaceId } : {}),
       branches: [...place.branches, ...stamped],
     });
 

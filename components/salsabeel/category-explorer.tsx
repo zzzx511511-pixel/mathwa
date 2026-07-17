@@ -130,14 +130,17 @@ export function CategoryExplorer({
       );
     }
     if (sort === "nearest" && userCoords) {
+      // Helper: best available coords — place-level first, then first branch with GPS.
+      function bestCoords(p: Place): { lat: number; lng: number } | null {
+        if (p.lat != null && p.lng != null) return { lat: p.lat, lng: p.lng };
+        const b = p.branches.find((br) => br.lat != null && br.lng != null);
+        return b ? { lat: b.lat!, lng: b.lng! } : null;
+      }
       return [...filtered].sort((a, b) => {
-        // Places without precise coordinates → pushed to end (Infinity distance)
-        const distA = (a.lat != null && a.lng != null)
-          ? haversineKm(userCoords.lat, userCoords.lng, a.lat, a.lng)
-          : Infinity;
-        const distB = (b.lat != null && b.lng != null)
-          ? haversineKm(userCoords.lat, userCoords.lng, b.lat, b.lng)
-          : Infinity;
+        const ca = bestCoords(a);
+        const cb = bestCoords(b);
+        const distA = ca ? haversineKm(userCoords.lat, userCoords.lng, ca.lat, ca.lng) : Infinity;
+        const distB = cb ? haversineKm(userCoords.lat, userCoords.lng, cb.lat, cb.lng) : Infinity;
         return distA - distB;
       });
     }

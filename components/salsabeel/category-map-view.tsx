@@ -21,8 +21,20 @@ function spreadOffset(index: number): [number, number] {
   return [Math.sin(rad) * radius, Math.cos(rad) * radius];
 }
 
+// Returns true when we have a real GPS pin (place-level or branch-level).
+// False means we're falling back to a region-centre approximation.
+function hasExactPin(place: Place): boolean {
+  if (place.lat && place.lng) return true;
+  return place.branches.some((b) => b.lat && b.lng);
+}
+
 function getCoords(place: Place, index: number): [number, number] {
   if (place.lat && place.lng) return [place.lat, place.lng];
+  // Fall back to first branch that has GPS coords (e.g. from Google Places fetch).
+  // For single-branch places this IS the place's location.
+  // For multi-branch places it's the first branch — much better than a region centre.
+  const withCoords = place.branches.find((b) => b.lat && b.lng);
+  if (withCoords) return [withCoords.lat!, withCoords.lng!];
   const center  = REGION_CENTERS[place.region ?? "وسط"] ?? RIYADH_CENTER;
   const [dLat, dLng] = spreadOffset(index);
   return [center[0] + dLat, center[1] + dLng];
@@ -99,7 +111,7 @@ export function CategoryMapView({
     places.forEach((place, i) => {
       const [lat, lng] = coordsList[i];
       const key        = `${lat.toFixed(4)},${lng.toFixed(4)}`;
-      const isApprox   = !place.lat || !place.lng;
+      const isApprox   = !hasExactPin(place);
       if (!map.has(key)) map.set(key, { places: [], coords: [lat, lng], hasApprox: isApprox });
       map.get(key)!.places.push(place);
       if (isApprox) map.get(key)!.hasApprox = true;
@@ -107,8 +119,8 @@ export function CategoryMapView({
     return Array.from(map.values());
   }, [places, coordsList]);
 
-  const hasExact   = useMemo(() => places.some((p) => p.lat && p.lng),  [places]);
-  const approxCount = useMemo(() => places.filter((p) => !p.lat || !p.lng).length, [places]);
+  const hasExact    = useMemo(() => places.some((p) => hasExactPin(p)),   [places]);
+  const approxCount = useMemo(() => places.filter((p) => !hasExactPin(p)).length, [places]);
 
   useEffect(() => {
     if (!mapDivRef.current || mapInstanceRef.current) return;
