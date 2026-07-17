@@ -615,6 +615,8 @@ function AdminDashboard() {
   const [photoClearState, setPhotoClearState] = useState<Record<string, "clearing" | "done" | "error">>({});
   const [newNearby, setNewNearby]   = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [editNearby, setEditNearby] = useState<{ place_id: string; name: string; address: string }[]>([]);
+  const [saving, setSaving]         = useState(false);
+  const [saveError, setSaveError]   = useState<string | null>(null);
 
   async function generateWithAI(
     field: "description" | "opinion",
@@ -822,6 +824,7 @@ function AdminDashboard() {
     setVideoUrlInput("");
     setNewBranch({});
     setEditBranchId(null);
+    setSaveError(null);
     setEditForm({
       id: place.id,
       name: place.name,
@@ -835,7 +838,8 @@ function AdminDashboard() {
       tags: place.tags,
       keywords: place.keywords ?? [],
       isWomenOnly: place.isWomenOnly,
-      phone: place.phone ?? "",
+      phone: place.phone ?? (place.branches.length === 1 ? place.branches[0]?.phone ?? "" : ""),
+      priceRange: place.priceRange ?? "",
       instagramUrl: place.instagramUrl ?? "",
       instagramPosts: place.instagramPosts ?? [],
       website: place.website ?? "",
@@ -852,10 +856,12 @@ function AdminDashboard() {
     });
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editForm) return;
     const original = places.find((p) => p.id === editForm.id);
     if (!original) return;
+    setSaving(true);
+    setSaveError(null);
     const updated: Place = {
       ...original,
       name: editForm.name ?? original.name,
@@ -868,6 +874,7 @@ function AdminDashboard() {
       rejectionRate: editForm.rejectionRate !== undefined ? Number(editForm.rejectionRate) : original.rejectionRate,
       isWomenOnly: editForm.isWomenOnly,
       phone: (editForm.phone as string)?.trim() || undefined,
+      priceRange: (editForm.priceRange as string)?.trim() || undefined,
       instagramUrl: (editForm.instagramUrl as string)?.trim() || undefined,
       instagramPosts: Array.isArray(editForm.instagramPosts)
         ? (editForm.instagramPosts as string[]).filter(Boolean)
@@ -888,14 +895,13 @@ function AdminDashboard() {
           ? (editForm.keywords as string).split(",").map((k) => k.trim()).filter(Boolean)
           : original.keywords,
       photos: editForm.photos ?? original.photos,
-      videos: editForm.videos ?? original.videos,
+      videos: original.videos,
       branches: editForm.branches ?? original.branches,
       tags: typeof editForm.tags === "string"
         ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
         : editForm.tags ?? original.tags,
     };
-    // For single-branch places, keep branch[0]'s neighborhood/address in sync
-    // with the place-level fields so all display sections show consistent data.
+    // For single-branch places, keep branch[0] in sync with place-level fields.
     if (updated.branches.length === 1) {
       updated.branches = [
         {
@@ -903,20 +909,33 @@ function AdminDashboard() {
           neighborhood: updated.neighborhood ?? updated.branches[0].neighborhood,
           address:      updated.address      ?? updated.branches[0].address,
           openingHours: updated.openingHours ?? updated.branches[0].openingHours,
+          // Sync phone: place-level phone is the source of truth for single-branch places.
+          phone: updated.phone,
         },
       ];
     }
-    setPlaces((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-    setEditingId(null);
-    setEditForm(null);
-    setVideoUrlInput("");
-    setNewBranch({});
-    setEditBranchId(null);
-    fetch("/api/places", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    }).catch(() => {});
+    try {
+      const res = await fetch("/api/places", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setSaveError(body.error ?? `فشل الحفظ (${res.status})`);
+        return;
+      }
+      setPlaces((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+      setEditingId(null);
+      setEditForm(null);
+      setVideoUrlInput("");
+      setNewBranch({});
+      setEditBranchId(null);
+    } catch (err) {
+      setSaveError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function cancelEdit() {
@@ -1170,28 +1189,8 @@ function AdminDashboard() {
           <p className="text-sm text-ink-600">{places.length} مكان مسجّل</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/admin/branch-review"
-            title="مراجعة كل المنشآت ذات الفرع الواحد دفعة وحدة"
-            className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            📋 فروع — مراجعة الكل
-          </Link>
-          <Link href="/admin/full-branch-fetch"
-            title="إضافة فروع لمنشأة واحدة محددة مع التحقق من التكرار وإدارة الصور"
-            className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            🎯 فروع — منشأة بعينها
-          </Link>
-          <Link href="/admin/batch-geocode"
-            title="جلب إحداثيات GPS تلقائيًا لكل المنشآت بدون موقع محدد"
-            className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition">
-            📍 جلب الإحداثيات تلقائيًا
-          </Link>
-          <Link href="/admin/merge-review"
-            title="مراجعة المنشآت المكررة (EXACT/SUBSET) ودمجها أو حذفها"
-            className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            🔀 تنظيف التكرارات
-          </Link>
           <Link href="/" className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
-            ← العودة للموقع
+            ← الموقع
           </Link>
           <button
             onClick={logout}
@@ -1199,6 +1198,31 @@ function AdminDashboard() {
           >
             خروج
           </button>
+        </div>
+      </div>
+
+      {/* Tools directory */}
+      <div className="rounded-2xl border border-sal-100 bg-white p-4 shadow-sm">
+        <p className="mb-3 text-xs font-bold text-ink-500 uppercase tracking-wide">أدوات الإدارة</p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {([
+            { href: "/admin/branch-review",    icon: "📋", title: "مراجعة الفروع — الكل",     desc: "مراجعة منشآت الفرع الواحد دفعة وحدة وتحديث بياناتها" },
+            { href: "/admin/full-branch-fetch", icon: "🎯", title: "جلب فروع — منشأة بعينها", desc: "إضافة/تحديث فروع منشأة واحدة محددة عبر Google Places" },
+            { href: "/admin/batch-geocode",     icon: "📍", title: "جلب الإحداثيات تلقائيًا", desc: "جلب GPS لكل المنشآت بدون موقع محدد (يتطلب Google API Key)" },
+            { href: "/admin/merge-review",      icon: "🔀", title: "تنظيف التكرارات",          desc: "كشف المنشآت المكررة أو المتداخلة ودمجها أو حذفها" },
+          ] as const).map((tool) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className="flex items-start gap-3 rounded-xl border border-sal-100 bg-sal-50 px-4 py-3 hover:border-sal-300 hover:bg-sal-100 transition"
+            >
+              <span className="text-xl leading-none mt-0.5">{tool.icon}</span>
+              <div>
+                <p className="text-xs font-bold text-ink-900">{tool.title}</p>
+                <p className="mt-0.5 text-[11px] text-ink-500 leading-snug">{tool.desc}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -1950,14 +1974,44 @@ function AdminDashboard() {
 
                               {/* Phone */}
                               <div>
-                                <label className="mb-1 block text-xs font-semibold text-ink-700">هاتف المنشأة</label>
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">
+                                  هاتف المنشأة
+                                  {(editForm.branches as Branch[] | undefined)?.length === 1 && (
+                                    <span className="mr-1 text-[10px] font-normal text-ink-400">(يُطبَّق على الفرع الوحيد تلقائيًا)</span>
+                                  )}
+                                </label>
                                 <input
                                   value={(editForm.phone as string) ?? ""}
-                                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                  onChange={(e) => setEditForm((f) => f ? { ...f, phone: e.target.value } : f)}
                                   className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
                                   placeholder="05xxxxxxxx"
                                   dir="ltr"
                                 />
+                              </div>
+
+                              {/* Price Range */}
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-ink-700">نطاق السعر</label>
+                                <input
+                                  value={(editForm.priceRange as string) ?? ""}
+                                  onChange={(e) => setEditForm((f) => f ? { ...f, priceRange: e.target.value } : f)}
+                                  className="w-full rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
+                                  placeholder="مثال: 50–150 ريال"
+                                />
+                              </div>
+
+                              {/* Women Only */}
+                              <div className="flex items-center gap-3 rounded-xl border border-sal-200 bg-sal-50 px-4 py-3">
+                                <input
+                                  type="checkbox"
+                                  id="edit-women-only"
+                                  checked={!!(editForm.isWomenOnly)}
+                                  onChange={(e) => setEditForm((f) => f ? { ...f, isWomenOnly: e.target.checked } : f)}
+                                  className="h-4 w-4 rounded border-sal-400 text-sal-600 focus:ring-sal-500"
+                                />
+                                <label htmlFor="edit-women-only" className="text-xs font-semibold text-ink-700 cursor-pointer">
+                                  🚺 للنساء فقط
+                                </label>
                               </div>
 
                               {/* Instagram */}
@@ -1965,29 +2019,11 @@ function AdminDashboard() {
                                 <label className="mb-1 block text-xs font-semibold text-pink-600">انستقرام (رابط كامل)</label>
                                 <input
                                   value={(editForm.instagramUrl as string) ?? ""}
-                                  onChange={(e) => setEditForm({ ...editForm, instagramUrl: e.target.value })}
+                                  onChange={(e) => setEditForm((f) => f ? { ...f, instagramUrl: e.target.value } : f)}
                                   className="w-full rounded-xl border border-pink-300 bg-pink-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
                                   placeholder="https://instagram.com/..."
                                   dir="ltr"
                                 />
-                              </div>
-
-                              {/* Instagram Posts */}
-                              <div className="sm:col-span-2">
-                                <label className="mb-1 block text-xs font-semibold text-pink-600">📸 روابط منشورات انستقرام (للصور)</label>
-                                <textarea
-                                  value={
-                                    Array.isArray(editForm.instagramPosts)
-                                      ? (editForm.instagramPosts as string[]).join("\n")
-                                      : (editForm.instagramPosts as string) ?? ""
-                                  }
-                                  onChange={(e) => setEditForm({ ...editForm, instagramPosts: e.target.value })}
-                                  className="w-full rounded-xl border border-pink-300 bg-pink-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
-                                  placeholder={"https://www.instagram.com/p/ABC123/\nhttps://www.instagram.com/p/XYZ456/"}
-                                  dir="ltr"
-                                  rows={3}
-                                />
-                                <p className="mt-1 text-[10px] text-ink-500">رابط منشور واحد في كل سطر (حتى 5) — ليس رابط الملف الشخصي</p>
                               </div>
 
                               {/* Website */}
@@ -2138,44 +2174,6 @@ function AdminDashboard() {
                                 )}
                               </div>
 
-                              {/* Videos */}
-                              <div className="sm:col-span-2">
-                                <label className="mb-1 block text-xs font-semibold text-ink-700">روابط الفيديوهات</label>
-                                <div className="flex gap-2">
-                                  <input
-                                    value={videoUrlInput}
-                                    onChange={(e) => setVideoUrlInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addVideo())}
-                                    placeholder="https://youtube.com/..."
-                                    className="flex-1 rounded-xl border border-sal-300 px-3 py-2 text-sm focus:border-sal-500 focus:outline-none"
-                                    dir="ltr"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={addVideo}
-                                    className="rounded-xl bg-sal-600 px-4 py-2 text-xs font-bold text-white hover:bg-sal-700 transition"
-                                  >
-                                    إضافة
-                                  </button>
-                                </div>
-                                {(editForm.videos ?? []).length > 0 && (
-                                  <div className="mt-2 space-y-1.5">
-                                    {(editForm.videos ?? []).map((vid, i) => (
-                                      <div key={i} className="flex items-center gap-2 rounded-xl bg-sal-50 px-3 py-2 text-xs">
-                                        <span className="flex-1 truncate text-ink-700" dir="ltr">{vid}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => removeVideo(i)}
-                                          className="font-bold text-red-500 hover:text-red-700"
-                                        >
-                                          ×
-                                        </button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-
                               {/* ── Branches ── */}
                               <div className="sm:col-span-2">
                                 <div className="mb-2 flex items-center justify-between">
@@ -2185,14 +2183,6 @@ function AdminDashboard() {
                                       {(editForm.branches ?? []).length}
                                     </span>
                                   </label>
-                                  <button
-                                    type="button"
-                                    onClick={fetchBranchesFromGoogle}
-                                    disabled={fetchingBranches}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-sal-200 bg-white px-3 py-1 text-[11px] font-bold text-sal-700 hover:border-sal-400 hover:bg-sal-50 disabled:opacity-50 transition"
-                                  >
-                                    {fetchingBranches ? "⏳ جارٍ الجلب…" : "🌐 جلب الفروع من قوقل"}
-                                  </button>
                                 </div>
 
                                 {/* ── Google branch preview ── */}
@@ -2483,16 +2473,23 @@ function AdminDashboard() {
                             <div className="flex flex-col gap-2">
                               <button
                                 onClick={saveEdit}
-                                className="rounded-xl bg-sal-600 px-4 py-2 text-xs font-bold text-white hover:bg-sal-700 transition"
+                                disabled={saving}
+                                className="rounded-xl bg-sal-600 px-4 py-2 text-xs font-bold text-white hover:bg-sal-700 transition disabled:opacity-60"
                               >
-                                ✓ حفظ
+                                {saving ? "⏳ جارٍ الحفظ…" : "✓ حفظ"}
                               </button>
                               <button
                                 onClick={cancelEdit}
-                                className="rounded-xl border border-sal-200 px-4 py-2 text-xs font-semibold text-sal-700 hover:bg-sal-50 transition"
+                                disabled={saving}
+                                className="rounded-xl border border-sal-200 px-4 py-2 text-xs font-semibold text-sal-700 hover:bg-sal-50 transition disabled:opacity-60"
                               >
                                 إلغاء
                               </button>
+                              {saveError && (
+                                <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700">
+                                  ✗ {saveError}
+                                </p>
+                              )}
                             </div>
                           </td>
                         </>
