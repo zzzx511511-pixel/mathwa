@@ -1180,6 +1180,11 @@ function AdminDashboard() {
             className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
             🎯 فروع — منشأة بعينها
           </Link>
+          <Link href="/admin/batch-geocode"
+            title="جلب إحداثيات GPS تلقائيًا لكل المنشآت بدون موقع محدد"
+            className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+            📍 جلب الإحداثيات تلقائيًا
+          </Link>
           <Link href="/admin/merge-review"
             title="مراجعة المنشآت المكررة (EXACT/SUBSET) ودمجها أو حذفها"
             className="rounded-xl border border-sal-200 bg-white px-4 py-2 text-sm font-semibold text-sal-700 hover:bg-sal-50 transition">
