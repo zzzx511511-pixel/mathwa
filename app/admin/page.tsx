@@ -2222,7 +2222,7 @@ function AdminDashboard() {
                                           onChange={(e) =>
                                             setFetchedBranchPreviews((prev) =>
                                               prev
-                                                ? prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x)
+                                                ? prev.map((x) => x._googlePlaceId === b._googlePlaceId ? { ...x, selected: e.target.checked } : x)
                                                 : prev
                                             )
                                           }
