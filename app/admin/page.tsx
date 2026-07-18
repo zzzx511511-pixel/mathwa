@@ -773,7 +773,7 @@ function AdminDashboard() {
   // This avoids bundling the 857 KB data.ts into the client JS.
   useEffect(() => {
     function loadPlaces() {
-      fetch("/api/admin/places-full")
+      fetch("/api/admin/places-full", { cache: "no-store" })
         .then((r) => r.json())
         .then((data: Place[]) => { if (Array.isArray(data)) setPlaces(data); })
         .catch(() => {});

@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
   try {
     const places = mergePlaces(await getCustomPlaces());
-    return NextResponse.json(places);
+    return NextResponse.json(places, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
