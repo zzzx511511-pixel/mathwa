@@ -771,10 +771,17 @@ function AdminDashboard() {
   // Load all places (static + custom overrides) from the auth-guarded API.
   // This avoids bundling the 857 KB data.ts into the client JS.
   useEffect(() => {
-    fetch("/api/admin/places-full")
-      .then((r) => r.json())
-      .then((data: Place[]) => { if (Array.isArray(data)) setPlaces(data); })
-      .catch(() => {});
+    function loadPlaces() {
+      fetch("/api/admin/places-full")
+        .then((r) => r.json())
+        .then((data: Place[]) => { if (Array.isArray(data)) setPlaces(data); })
+        .catch(() => {});
+    }
+    loadPlaces();
+    // Re-sync when the tab regains focus so branches added in another tab
+    // (e.g. via full-branch-fetch) don't silently overwrite on the next save.
+    window.addEventListener("focus", loadPlaces);
+    return () => window.removeEventListener("focus", loadPlaces);
   }, []);
 
   // Load business statuses from Google Places cache.

@@ -78,8 +78,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "place_id, google_place_id, and place_name are required" }, { status: 400 });
 
   try {
-    // Step 1: clear existing photos + sentinel for the place
+    // Step 1: clear existing photos + .gid-* sentinels
     await clearPlaceStorage(place_id);
+
+    // Step 1b: also clear .skip — admin is explicitly requesting a re-fetch here,
+    // so the "don't auto-refetch" flag must not block getPlacePhotos below.
+    await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify({ prefixes: [`${place_id}/.skip`] }),
+    });
 
     // Step 2: delete _debug folder for this Google Place ID (if requested)
     if (delete_debug) {
