@@ -710,6 +710,7 @@ function AdminDashboard() {
   // Branch editing state (inside edit form)
   const [newBranch, setNewBranch] = useState<Partial<Branch>>({});
   const [editBranchId, setEditBranchId] = useState<string | null>(null);
+  const [deletingBranchId, setDeletingBranchId] = useState<string | null>(null);
 
   // Auto-fetch branches from Google
   type FetchedBranch = {
@@ -951,6 +952,7 @@ function AdminDashboard() {
     setVideoUrlInput("");
     setNewBranch({});
     setEditBranchId(null);
+    setDeletingBranchId(null);
   }
 
   // ── Branch helpers ──────────────────────────────────────────────────
@@ -2369,16 +2371,36 @@ function AdminDashboard() {
                                             </div>
                                           </div>
                                           <div className="flex shrink-0 gap-1">
-                                            <button
-                                              type="button"
-                                              onClick={() => setEditBranchId(branch.id)}
-                                              className="rounded-lg border border-sal-200 bg-white px-2 py-1 text-[11px] font-bold text-sal-700 hover:border-sal-400 transition"
-                                            >✏️ تعديل</button>
-                                            <button
-                                              type="button"
-                                              onClick={() => removeBranchFromEdit(branch.id)}
-                                              className="rounded-lg border border-red-100 bg-white px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 transition"
-                                            >🗑️</button>
+                                            {deletingBranchId === branch.id ? (
+                                              <>
+                                                <span className="self-center text-[10px] font-bold text-red-700">
+                                                  تأكيد حذف «{branch.name}»؟
+                                                </span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => { removeBranchFromEdit(branch.id); setDeletingBranchId(null); }}
+                                                  className="rounded-lg bg-red-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-red-700 transition"
+                                                >نعم</button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setDeletingBranchId(null)}
+                                                  className="rounded-lg border border-sal-200 bg-white px-2 py-1 text-[11px] font-bold text-ink-600 hover:bg-sal-50 transition"
+                                                >لا</button>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setEditBranchId(branch.id)}
+                                                  className="rounded-lg border border-sal-200 bg-white px-2 py-1 text-[11px] font-bold text-sal-700 hover:border-sal-400 transition"
+                                                >✏️ تعديل</button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setDeletingBranchId(branch.id)}
+                                                  className="rounded-lg border border-red-100 bg-white px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 transition"
+                                                >🗑️</button>
+                                              </>
+                                            )}
                                           </div>
                                         </div>
                                       )}
