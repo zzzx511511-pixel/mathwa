@@ -860,7 +860,18 @@ function AdminDashboard() {
       openingHours: place.openingHours ?? place.branches[0]?.openingHours ?? "",
       photos: place.photos ? [...place.photos] : [],
       videos: place.videos ? [...place.videos] : [],
-      branches: place.branches ? place.branches.map((b) => ({ ...b })) : [],
+      branches: (() => {
+        // Normalize branch IDs: duplicate or empty IDs cause the wrong branch to be
+        // deleted (filter removes all matching IDs). Guarantee uniqueness for this session.
+        const ts = Date.now();
+        const seen = new Set<string>();
+        return (place.branches ?? []).map((b, i) => {
+          const raw = typeof b.id === "string" ? b.id.trim() : "";
+          const id = raw && !seen.has(raw) ? raw : `${place.id}-b${ts}-${i}`;
+          seen.add(id);
+          return { ...b, id };
+        });
+      })(),
     });
   }
 
@@ -2624,9 +2635,30 @@ function AdminDashboard() {
                                     title="إعادة جلب صور من Google"
                                     onClick={async () => {
                                       setPhotoClearState((s) => ({ ...s, [place.id]: "clearing" }));
-                                      const res = await fetch(`/api/place-photos/${place.id}`, { method: "PATCH" });
-                                      setPhotoClearState((s) => ({ ...s, [place.id]: res.ok ? "error" : "error" }));
-                                      if (res.ok) setPhotoClearState((s) => { const n = { ...s }; delete n[place.id]; return n; });
+                                      // If the place has a Google Place ID, call reset-place-cache which
+                                      // clears old photos and immediately re-fetches fresh ones from Google.
+                                      // Otherwise fall back to clearing .skip only (lazy re-fetch on next visit).
+                                      let ok = false;
+                                      if (place.googlePlaceId) {
+                                        const res = await fetch("/api/admin/reset-place-cache", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            place_id: place.id,
+                                            google_place_id: place.googlePlaceId,
+                                            place_name: place.name,
+                                            count: 2,
+                                          }),
+                                        });
+                                        ok = res.ok;
+                                      } else {
+                                        const res = await fetch(`/api/place-photos/${place.id}`, { method: "PATCH" });
+                                        ok = res.ok;
+                                      }
+                                      setPhotoClearState((s) => {
+                                        if (ok) { const n = { ...s }; delete n[place.id]; return n; }
+                                        return { ...s, [place.id]: "error" };
+                                      });
                                     }}
                                     className="rounded-lg border border-green-200 bg-green-50 px-2 py-1 text-[10px] font-bold text-green-700 hover:bg-green-100 transition"
                                   >
