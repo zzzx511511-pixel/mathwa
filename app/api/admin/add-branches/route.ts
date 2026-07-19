@@ -1,6 +1,9 @@
 /**
  * POST /api/admin/add-branches
- * Appends a list of new branches to an existing place.
+ * Merges a list of fetched branches into an existing place.
+ * If a new branch shares a _googlePlaceId with an existing branch, the
+ * existing branch is updated in-place instead of duplicated.
+ * Only branches with no matching _googlePlaceId are appended as new entries.
  * Body: { place_id: string; branches: Branch[] }
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -32,27 +35,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `place "${place_id}" not found` }, { status: 400 });
     }
 
+    type BranchWithGid = Branch & { _googlePlaceId?: string };
+
     // Stamp IDs on the incoming branches if missing.
     const ts = Date.now();
-    const stamped: Branch[] = newBranches.map((b, i) => ({
+    const stamped = newBranches.map((b, i) => ({
       ...b,
       id: b.id || `${place_id}-bf${ts}-${i + 1}`,
-    }));
+    })) as BranchWithGid[];
 
-    // Derive place.googlePlaceId from the first new branch that has one,
+    // Merge incoming branches into existing ones:
+    // - If an existing branch already has the same _googlePlaceId as an
+    //   incoming branch → update it in-place (no duplicate).
+    // - Otherwise append as a new branch.
+    const existingGids = new Map<string, number>();
+    (place.branches as BranchWithGid[]).forEach((b, i) => {
+      if (b._googlePlaceId) existingGids.set(b._googlePlaceId, i);
+    });
+
+    const merged = [...place.branches] as BranchWithGid[];
+    let added = 0;
+    let updated = 0;
+
+    for (const incoming of stamped) {
+      const existingIdx = incoming._googlePlaceId
+        ? existingGids.get(incoming._googlePlaceId)
+        : undefined;
+
+      if (existingIdx !== undefined) {
+        // Update the existing branch, preserving its original id.
+        merged[existingIdx] = { ...merged[existingIdx], ...incoming, id: merged[existingIdx].id };
+        updated++;
+      } else {
+        merged.push(incoming);
+        if (incoming._googlePlaceId) existingGids.set(incoming._googlePlaceId, merged.length - 1);
+        added++;
+      }
+    }
+
+    // Derive place.googlePlaceId from the first incoming branch that has one,
     // but only when the place doesn't already have a place-level ID set.
-    // This keeps the photo-cache sentinel (which uses the branch Place ID) in
-    // sync with what getPlacePhotos() looks up on the public page.
-    type BranchWithGid = Branch & { _googlePlaceId?: string };
-    const firstBranchGid = (stamped as BranchWithGid[])
-      .find((b) => b._googlePlaceId)?._googlePlaceId;
-    const existingGid = (place as { googlePlaceId?: string }).googlePlaceId;
-    const updatedGooglePlaceId = existingGid ?? firstBranchGid;
+    const firstBranchGid = stamped.find((b) => b._googlePlaceId)?._googlePlaceId;
+    const existingPlaceGid = (place as { googlePlaceId?: string }).googlePlaceId;
+    const updatedGooglePlaceId = existingPlaceGid ?? firstBranchGid;
 
     const ok = await upsertCustomPlace({
       ...place,
       ...(updatedGooglePlaceId ? { googlePlaceId: updatedGooglePlaceId } : {}),
-      branches: [...place.branches, ...stamped],
+      branches: merged,
     });
 
     if (!ok) return NextResponse.json({ error: "upsert failed" }, { status: 500 });
@@ -64,8 +94,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok:      true,
       place_id,
-      added:   stamped.length,
-      total:   place.branches.length + stamped.length,
+      added,
+      updated,
+      total:   merged.length,
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
