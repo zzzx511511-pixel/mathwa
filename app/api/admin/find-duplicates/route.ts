@@ -9,6 +9,10 @@
  *   BRANCH_CLASH — a main place's name exactly matches a branch name already
  *                  stored inside another main place
  *
+ * Also scans branches WITHIN each place for intra-place duplicates:
+ *   BRANCH_SAME_GID  — two branches in the same place share a _googlePlaceId
+ *   BRANCH_NEAR      — two branches in the same place are within 200 m of each other
+ *
  * Returns a ranked list of candidate groups for admin review.
  * DOES NOT modify any data.
  */
@@ -30,7 +34,7 @@ function norm(s: string): string {
     .toLowerCase();
 }
 
-type DuplicateKind = "EXACT" | "SUBSET" | "BRANCH_CLASH";
+type DuplicateKind = "EXACT" | "SUBSET" | "BRANCH_CLASH" | "BRANCH_SAME_GID" | "BRANCH_NEAR";
 
 type PlaceRef = {
   id:            string;
@@ -52,14 +56,51 @@ function placeRef(p: Place): PlaceRef {
   };
 }
 
+type BranchRef = {
+  id:             string;
+  name:           string;
+  address?:       string;
+  neighborhood?:  string;
+  _googlePlaceId?: string;
+  lat?:           number;
+  lng?:           number;
+};
+
 type DuplicateGroup = {
   kind:        DuplicateKind;
   place_a:     PlaceRef;
-  place_b:     PlaceRef;
+  place_b?:    PlaceRef;
   /** For BRANCH_CLASH: the branch in place_a whose name matches place_b */
   matching_branch?: Branch;
+  /** For BRANCH_SAME_GID / BRANCH_NEAR: the two duplicate branches within place_a */
+  branch_x?:   BranchRef;
+  branch_y?:   BranchRef;
+  distance_m?: number;
   note:        string;
 };
+
+function haversineM(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function branchRef(b: Branch & { _googlePlaceId?: string }): BranchRef {
+  return {
+    id:             b.id,
+    name:           b.name,
+    address:        b.address,
+    neighborhood:   b.neighborhood,
+    _googlePlaceId: b._googlePlaceId,
+    lat:            b.lat,
+    lng:            b.lng,
+  };
+}
 
 export async function GET(req: NextRequest) {
   if (!isAdminAuthed(req)) return unauthorized();
@@ -112,8 +153,8 @@ export async function GET(req: NextRequest) {
           // Avoid adding if already captured as EXACT.
           const alreadyExact = groups.some(
             (g) => g.kind === "EXACT" &&
-              ((g.place_a.id === a.id && g.place_b.id === match.id) ||
-               (g.place_b.id === a.id && g.place_a.id === match.id))
+              ((g.place_a.id === a.id && g.place_b?.id === match.id) ||
+               (g.place_b?.id === a.id && g.place_a.id === match.id))
           );
           if (!alreadyExact) {
             groups.push({
@@ -153,8 +194,8 @@ export async function GET(req: NextRequest) {
         // Skip if already reported as BRANCH_CLASH for these two.
         const alreadyClash = groups.some(
           (g) => g.kind === "BRANCH_CLASH" &&
-            ((g.place_a.id === a.id && g.place_b.id === b.id) ||
-             (g.place_b.id === a.id && g.place_a.id === b.id))
+            ((g.place_a.id === a.id && g.place_b?.id === b.id) ||
+             (g.place_b?.id === a.id && g.place_a.id === b.id))
         );
         if (alreadyClash) continue;
 
@@ -167,8 +208,62 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Sort: EXACT first (highest confidence), then BRANCH_CLASH, then SUBSET.
-    const order: Record<DuplicateKind, number> = { EXACT: 0, BRANCH_CLASH: 1, SUBSET: 2 };
+    // ── Intra-place branch duplicates ─────────────────────────────────────────
+    // BRANCH_SAME_GID: two branches within the same place share a _googlePlaceId.
+    // BRANCH_NEAR: two branches within the same place are within 200 m of each other.
+    for (const place of places) {
+      type BranchWithGid = Branch & { _googlePlaceId?: string };
+      const bs = place.branches as BranchWithGid[];
+
+      for (let i = 0; i < bs.length; i++) {
+        for (let j = i + 1; j < bs.length; j++) {
+          const bx = bs[i], by = bs[j];
+          const ref = placeRef(place);
+
+          // Same googlePlaceId
+          if (bx._googlePlaceId && by._googlePlaceId && bx._googlePlaceId === by._googlePlaceId) {
+            groups.push({
+              kind:     "BRANCH_SAME_GID",
+              place_a:  ref,
+              branch_x: branchRef(bx),
+              branch_y: branchRef(by),
+              note:     `فرعان في "${place.name}" يتشاركان نفس Google Place ID (${bx._googlePlaceId})`,
+            });
+          }
+
+          // Within 200 m
+          if (bx.lat != null && bx.lng != null && by.lat != null && by.lng != null) {
+            const dist = Math.round(haversineM(bx.lat, bx.lng, by.lat, by.lng));
+            if (dist < 200) {
+              // Skip if already reported as SAME_GID for these two
+              const alreadySameGid =
+                bx._googlePlaceId &&
+                by._googlePlaceId &&
+                bx._googlePlaceId === by._googlePlaceId;
+              if (!alreadySameGid) {
+                groups.push({
+                  kind:       "BRANCH_NEAR",
+                  place_a:    ref,
+                  branch_x:   branchRef(bx),
+                  branch_y:   branchRef(by),
+                  distance_m: dist,
+                  note:       `فرعان في "${place.name}" على بُعد ${dist} متر من بعضهما — قد يكونان نفس الموقع`,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Sort: EXACT first (highest confidence), then BRANCH_SAME_GID, BRANCH_CLASH, BRANCH_NEAR, SUBSET.
+    const order: Record<DuplicateKind, number> = {
+      EXACT:          0,
+      BRANCH_SAME_GID: 1,
+      BRANCH_CLASH:   2,
+      BRANCH_NEAR:    3,
+      SUBSET:         4,
+    };
     groups.sort((a, b) => order[a.kind] - order[b.kind]);
 
     return NextResponse.json({
