@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { isAdminAuthed, unauthorized } from "@/lib/salsabeel/admin-auth";
 import { getCustomPlaces, upsertCustomPlace } from "@/lib/salsabeel/supabase-places";
 import { mergePlaces } from "@/lib/salsabeel/data";
+import { clearSkipSentinel } from "@/lib/salsabeel/place-photos";
 import type { Branch } from "@/lib/salsabeel/types";
 
 export async function POST(req: NextRequest) {
@@ -73,11 +74,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Derive place.googlePlaceId from the first incoming branch that has one,
-    // but only when the place doesn't already have a place-level ID set.
-    const firstBranchGid = stamped.find((b) => b._googlePlaceId)?._googlePlaceId;
+    const firstIncomingGid = stamped.find((b) => b._googlePlaceId)?._googlePlaceId;
     const existingPlaceGid = (place as { googlePlaceId?: string }).googlePlaceId;
-    const updatedGooglePlaceId = existingPlaceGid ?? firstBranchGid;
+
+    // Place-level googlePlaceId sync rules:
+    //
+    // Single-branch places (place.branches.length <= 1):
+    //   Always update to the incoming GID — this lets admins correct a wrong GID
+    //   by running full-branch-fetch again with the correct Place ID. The ?? fallback
+    //   keeps the existing value only when the incoming branches carry no GID at all.
+    //
+    // Multi-branch places:
+    //   Only set when there is no existing GID (first-time assignment). Changing the
+    //   primary GID for a multi-branch place requires explicit admin action in the
+    //   edit form, not an implicit side-effect of adding one more branch.
+    const updatedGooglePlaceId =
+      place.branches.length <= 1
+        ? (firstIncomingGid ?? existingPlaceGid)
+        : (existingPlaceGid ?? firstIncomingGid);
 
     const ok = await upsertCustomPlace({
       ...place,
@@ -87,16 +101,29 @@ export async function POST(req: NextRequest) {
 
     if (!ok) return NextResponse.json({ error: "upsert failed" }, { status: 500 });
 
+    // When the place-level GID changes, remove any .skip sentinel from Storage.
+    // Without this, getPlacePhotos() would short-circuit on .skip before it can
+    // detect the GID mismatch and auto-refresh the photo cache with the new GID.
+    const gidChanged =
+      updatedGooglePlaceId &&
+      existingPlaceGid &&
+      updatedGooglePlaceId !== existingPlaceGid;
+    if (gidChanged) {
+      await clearSkipSentinel(place_id).catch(() => {});
+    }
+
     revalidatePath("/places");
     revalidatePath("/category/[slug]", "page");
     revalidatePath(`/places/${place_id}`);
 
     return NextResponse.json({
-      ok:      true,
+      ok:          true,
       place_id,
       added,
       updated,
-      total:   merged.length,
+      total:       merged.length,
+      gid_changed: !!gidChanged,
+      new_gid:     gidChanged ? updatedGooglePlaceId : undefined,
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
