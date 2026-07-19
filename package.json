@@ -1,31 +1,25 @@
 {
-  "name": "mathwa-real-estate",
+  "name": "salsabeel",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.17.0"
+  },
   "scripts": {
-    "clean": "node scripts/clean.mjs",
-    "dev": "node scripts/dev-safe.mjs",
-    "dev:preview": "node scripts/dev-with-preview.mjs",
-    "dev:here": "next dev -p 3000",
-    "dev:clean": "npm run clean && npm run dev",
-    "dev:alt": "next dev -p 3002",
-    "sync": "node scripts/sync-to-local.mjs",
-    "dev:local": "powershell -ExecutionPolicy Bypass -File scripts/dev-on-local-disk.ps1",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.49.1",
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@types/leaflet": "^1.9.21",
     "leaflet": "^1.9.4",
     "next": "14.2.5",
     "react": "^18",
-    "react-dom": "^18",
-    "react-leaflet": "^4.2.1"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

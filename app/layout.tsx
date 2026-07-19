@@ -3,30 +3,27 @@ import "./globals.css";
 import { MainShell } from "@/components/layout/main-shell";
 
 export const metadata: Metadata = {
-  title: "مثوى العقارية",
-  description: "نظام إدارة العقارات الشامل لشركة مثوى العقارية"
+  title: "سلسبيل — اختر بثقة، قيّم بصدق",
+  description:
+    "سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات والمجمعات في الرياض",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
-  initialScale: 1
+  initialScale: 1,
 };
 
 export default function RootLayout({
-  children
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html dir="rtl" lang="ar">
-      <body
-        className="min-h-screen bg-brand-100 text-ink-900 antialiased"
-        style={{
-          backgroundColor: "#F0F7F0",
-          color: "#2C1F14",
-          fontFamily: "ui-sans-serif, system-ui, sans-serif"
-        }}
-      >
+      <head>
+        <meta name="google-site-verification" content="B1mipnKWy22MT3TvvBp6Gm1r4FfdeeSCha5InVuZtic" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      </head>
+      <body style={{ fontFamily: "'Tajawal', ui-sans-serif, system-ui, sans-serif" }}>
         <MainShell>{children}</MainShell>
       </body>
     </html>

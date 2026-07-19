@@ -1,523 +1,328 @@
 import Link from "next/link";
-import type { Route } from "next";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-import {
-  footerContactLines,
-  footerQuickLinks,
-  footerWorkingHoursLines,
-  heroBackgroundImagePath,
-  metrics,
-  suggestedGeneralImages,
-  suggestedIndustrialImages
-} from "@/lib/site/public-site-config";
-import {
-  commercialWorkersSamples,
-  industrialSamples,
-  landsSamples,
-  residentialSamples,
-  type SampleCard
-} from "@/lib/site/sample-offer-demos";
-import { completedProjects, projectsSectionIntro } from "@/lib/site/completed-projects";
-import { OfferPublicToolbar } from "@/components/offers/offer-public-toolbar";
-import { SampleOfferCard } from "@/components/offers/sample-offer-card";
-import { OccupancyBar } from "@/components/projects/occupancy-bar";
-import { filterPublicVacantOffers } from "@/lib/site/public-vacant-offers";
-import { showIndustrialRiskBadge } from "@/lib/marketing/listing-form-constants";
-import {
-  mapListingRowToUnifiedOffer,
-  mapPropertyRowToUnifiedOffer,
-  offersForHomeCategory,
-  type ListingRow,
-  type PropertyOfferRow,
-  type UnifiedPublicOffer
-} from "@/lib/site/marketing-listings-public";
-import type { OfferSectionKey } from "@/lib/marketing/offer-section";
+import { CATEGORIES } from "@/lib/salsabeel/categories";
+import { getRegionCounts } from "@/lib/salsabeel/data";
+import { ContactForm } from "@/components/salsabeel/contact-form";
+import { LogoDrop } from "@/components/salsabeel/logo";
+import { HomeSearch } from "@/components/salsabeel/home-search";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 
-type OfferRow = {
-  id: string | null;
-  title: string | null;
-  summary: string | null;
-  property_type: string | null;
-  price: number | null;
-  city: string | null;
-  district: string | null;
-  occupancy_status?: string | null;
-  status?: string | null;
-  property_status?: string | null;
+/* ── Category descriptions ─── */
+const CAT_DESC: Record<string, string> = {
+  cafes:       "نخبة كافيهات الرياض — specialty coffee وبرنش وقهوة مختصة بتقييمات دقيقة",
+  restaurants: "من الراقي إلى الشعبي — دليل شامل لأفضل مطاعم الرياض بكل أنواعها",
+  clinics:     "اختر عيادتك بثقة بناءً على تقييمات حقيقية ونسب قبول موثوقة",
+  salons:      "أفضل الصالونات النسائية في الرياض بأسعار معقولة وخدمة ممتازة",
+  malls:       "مجمعات تسوق وترفيه متكاملة تجمع أبرز الماركات والمطاعم والسينما",
 };
 
-export default async function PublicHomePage() {
-  let allOffers: UnifiedPublicOffer[] = [];
-  try {
-    const supabase = getSupabaseServerClient();
-    const [{ data: rpcData }, { data: listingData }] = await Promise.all([
-      supabase.rpc("get_public_property_offers", { p_limit: 48 }),
-      supabase.from("listings").select("*").eq("status", "published").order("created_at", { ascending: false }).limit(48)
-    ]);
-    const propertyRows = filterPublicVacantOffers((rpcData ?? []) as OfferRow[]) as PropertyOfferRow[];
-    const listingRows = (listingData ?? []) as ListingRow[];
-    const fromRpc = propertyRows.map((r, i) => mapPropertyRowToUnifiedOffer(r, i));
-    const fromListings = listingRows.map((r, i) => mapListingRowToUnifiedOffer(r, i));
-    const seen = new Set<string>();
-    for (const o of [...fromListings, ...fromRpc]) {
-      if (seen.has(o.id)) continue;
-      seen.add(o.id);
-      allOffers.push(o);
-    }
-  } catch {
-    /* لا نسقط الصفحة كاملة إذا تعذّر Supabase */
-  }
+const CAT_SUB: Record<string, string> = {
+  cafes:       "specialty coffee متخصص",
+  restaurants: "مطاعم الرياض بكل أنواعها",
+  clinics:     "أسنان • تجميل • علاج طبيعي",
+  salons:      "صالونات نسائية",
+  malls:       "تسوق وترفيه",
+};
 
-  const topIndustrial = takeWithFallback(
-    offersForHomeCategory(allOffers, "industrial" as OfferSectionKey, /مصنع|مستودع|ورشة|حوش|صناعي|أرض صناعية/i),
-    allOffers,
-    3
-  );
-  const topCommercialWorkers = takeWithFallback(
-    offersForHomeCategory(
-      allOffers,
-      "commercial-workers" as OfferSectionKey,
-      /تجاري|سكن عمال|عمائر|مكاتب|مكتب|عمارة|محل/i
-    ),
-    allOffers,
-    3
-  );
-  const topResidential = takeWithFallback(
-    offersForHomeCategory(allOffers, "residential" as OfferSectionKey, /سكني|شقة|فيلا|دور|دوبلكس|تاون|قصر/i),
-    allOffers,
-    3
-  );
-  const topLands = takeWithFallback(
-    offersForHomeCategory(allOffers, "lands" as OfferSectionKey, /أرض|اراضي|الأراضي|زراعية/i),
-    allOffers,
-    3
-  );
+const STEPS = [
+  { n: "١", title: "بحث شامل",     desc: "نجمع التقييمات من عدة مصادر لكل مكان ونحللها بدقة" },
+  { n: "٢", title: "تقييم موثوق",  desc: "نجمع النجمات ونسبة القبول والرفض ورأي الناس في جملة واحدة" },
+  { n: "٣", title: "تحديث مستمر", desc: "نتابع الأكثر زيارة خلال 28 يوماً لنعطيك الأحدث دائماً" },
+  { n: "٤", title: "توسع مستمر",  desc: "سلسبيل في نمو دائم — نضيف تصنيفات ومناطق جديدة باستمرار" },
+];
 
+const GRAD      = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
+const GRAD_DEEP = "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)";
+const GLOW      = "rgba(56,189,248,0.35)";
+
+export default function HomePage() {
   return (
-    <div id="top" className="space-y-10">
-      <section className="relative overflow-hidden rounded-3xl border border-gold-400/30 px-6 py-20 text-white lg:px-14">
+    <>
+      {/* ══════════════════════════════════ HERO ══ */}
+      <section
+        id="hero"
+        className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-5 py-32 text-center"
+        style={{ background: GRAD_DEEP }}
+      >
+        {/* Floating decorative orbs */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('${heroBackgroundImagePath}')` }}
+          className="anim-float pointer-events-none absolute -left-24 -top-24 h-[480px] w-[480px] rounded-full"
+          style={{ background: "rgba(56,189,248,0.07)" }}
         />
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-b from-[#2f160f]/40 via-[#2f160f]/50 to-[#2f160f]/82"
+          className="anim-float-slow pointer-events-none absolute -bottom-32 -right-20 h-[560px] w-[560px] rounded-full"
+          style={{ background: "rgba(56,189,248,0.05)" }}
         />
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <h1 className="mt-2 text-5xl font-extrabold leading-tight">مثوى</h1>
-          <p className="mt-3 text-2xl font-semibold text-gold-500">للتطوير والتسويق العقاري</p>
-          <p className="mt-2 text-base text-white/85">
-            نقودك إلى عقارك المناسب بخبرة سعودية ورؤية استثمارية دقيقة.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <a href="/login" className="rounded-xl bg-gold-400 px-6 py-3 font-bold text-ink-900 hover:bg-gold-500">
-              تسجيل الدخول
-            </a>
-            <a href="/employee/login" className="rounded-xl border border-white/30 bg-white/10 px-6 py-3 font-semibold hover:bg-white/20">
-              بوابة الموظفين
-            </a>
-          </div>
-        </div>
-      </section>
 
-      <section
-        aria-label="إنجازات مثوى"
-        className="rounded-2xl border border-gold-400/25 bg-gradient-to-b from-white to-[#f8f3ea] px-5 py-8 shadow-sm"
-      >
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-          {metrics.map((m) => (
-            <div key={m.label} className="text-center">
-              <p className="text-2xl font-extrabold text-brand-400 sm:text-3xl md:text-4xl">{m.value}</p>
-              <p className="mt-1.5 text-xs font-semibold text-ink-900/70 sm:text-sm">{m.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section
-        id="our-projects"
-        className="scroll-mt-24 rounded-2xl border border-gold-400/25 bg-gradient-to-b from-[#faf6ef] to-white px-5 py-10 shadow-sm"
-      >
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-extrabold text-ink-900">مشاريعنا</h2>
-          <p className="mt-3 text-sm leading-7 text-ink-900/75">{projectsSectionIntro}</p>
-          <Link
-            href="/projects"
-            prefetch
-            className="mt-4 inline-block rounded-xl border border-brand-400/40 bg-white px-5 py-2.5 text-sm font-bold text-brand-500 shadow-sm transition hover:border-gold-400 hover:bg-gold-400/10"
+        <div className="relative z-10 flex max-w-2xl flex-col items-center gap-5">
+          {/* Badge */}
+          <div
+            className="anim-fade-up inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-bold tracking-wide"
+            style={{
+              background: "rgba(56,189,248,0.12)",
+              borderColor: "rgba(56,189,248,0.3)",
+              color: "#38bdf8",
+            }}
           >
-            استعرض كل المشاريع والتفاصيل
-          </Link>
-        </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
-          {completedProjects.map((project) => (
-            <article
-              key={project.slug}
-              className="flex flex-col overflow-hidden rounded-2xl border border-ink-900/10 bg-white shadow-sm"
-            >
-              <div
-                className="h-44 bg-cover bg-center"
-                style={{ backgroundImage: `url('${project.coverImage}')` }}
-              />
-              <div className="flex flex-1 flex-col p-5">
-                <p className="text-xs font-medium text-brand-500">{project.city}</p>
-                <h3 className="mt-1 text-xl font-extrabold text-ink-900">{project.title}</h3>
-                <p className="mt-2 text-sm text-ink-900/75">{project.summary}</p>
-                <div className="mt-4">
-                  <OccupancyBar percent={project.occupancyPercent} />
-                </div>
-                <Link
-                  href={`/projects/${project.slug}` as Route}
-                  prefetch
-                  className="mt-4 inline-block rounded-lg bg-brand-500 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-400"
-                >
-                  عرض المشروع والعروض المرتبطة
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <CategorySection
-        id="industrial"
-        title="المصانع والمستودعات"
-        subtitle="ورش، مصانع، أحواش، ومستودعات - بيع وتأجير"
-        offers={topIndustrial}
-        images={suggestedIndustrialImages}
-        showRisk
-        sampleCards={industrialSamples}
-      />
-
-      <CategorySection
-        id="commercial-workers"
-        title="التجارية وسكن العمال"
-        subtitle="عقارات تجارية وسكن عمال - بيع وتأجير"
-        offers={topCommercialWorkers}
-        images={suggestedGeneralImages}
-        sampleCards={commercialWorkersSamples}
-      />
-
-      <CategorySection
-        id="residential"
-        title="السكني"
-        subtitle="شقق وفلل ووحدات سكنية - بيع وتأجير"
-        offers={topResidential}
-        images={suggestedGeneralImages}
-        sampleCards={residentialSamples}
-      />
-
-      <CategorySection
-        id="lands"
-        title="الأراضي"
-        subtitle="أراضٍ سكنية وتجارية وصناعية - بيع وتأجير"
-        offers={topLands}
-        images={suggestedGeneralImages}
-        sampleCards={landsSamples}
-      />
-
-      <section id="about" className="rounded-2xl bg-white p-8">
-        <h3 className="text-center text-3xl font-extrabold text-ink-900">من نحن</h3>
-        <p className="mx-auto mt-3 max-w-3xl text-center text-sm text-ink-900/75">
-          مثوى للتطوير والتسويق العقاري، نقدم حلولاً عقارية متكاملة بخبرة سعودية
-          ورؤية استثمارية دقيقة.
-        </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <InfoCard
-            title="من نحن"
-            text="منصة عقارية تركز على عرض الفرص بوضوح وتسهيل رحلة الباحث عن عقار."
-            icon="⌂"
-            href="#about-us-detail"
-            cta="المحتوى الكامل"
-          />
-          <InfoCard
-            title="رؤيتنا"
-            text="أن نكون الوجهة الأولى للفرص العقارية النوعية في السوق السعودي."
-            icon="◌"
-            href="#vision-detail"
-            cta="المحتوى الكامل"
-          />
-          <InfoCard
-            title="خدماتنا"
-            text="تسويق عقاري، تطوير فرص استثمارية، ودعم العملاء حتى إتمام القرار."
-            icon="↗"
-            href="/services"
-            cta="ادخل صفحة الخدمات"
-          />
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <article id="about-us-detail" className="rounded-2xl border border-ink-900/10 bg-[#f8f3ea] p-8">
-          <h3 className="text-2xl font-extrabold text-ink-900">من نحن</h3>
-          <p className="mt-3 text-sm leading-9 text-ink-900/80">
-            مثوى للتطوير والتسويق العقاري كيان وطني يعمل بخبرة ميدانية ممتدة في إدارة
-            الأصول العقارية وتسويقها وتقديم الحلول المناسبة للملاك والعملاء والمستثمرين.
-            نعتمد على منهج واضح يبدأ بتحليل احتياج العميل بشكل دقيق، ثم تقديم خيارات
-            مدروسة تراعي الموقع والقيمة التشغيلية وفرص النمو، مع متابعة مستمرة لكل
-            مرحلة حتى تكتمل الخدمة بجودة عالية. كما نؤمن بأن نجاح أي خدمة عقارية لا
-            يعتمد فقط على عرض العقار، بل على جودة التنفيذ والانضباط في المتابعة
-            والالتزام بالشفافية في المعلومات، ولهذا نحرص على بناء تجربة متوازنة تجمع
-            بين المهنية والوضوح وسرعة الاستجابة.
-          </p>
-        </article>
-
-        <article id="vision-detail" className="rounded-2xl border border-ink-900/10 bg-[#f8f3ea] p-8">
-          <h3 className="text-2xl font-extrabold text-ink-900">رؤيتنا</h3>
-          <p className="mt-3 text-sm leading-9 text-ink-900/80">
-            رؤيتنا في مثوى تقوم على أن نكون مرجعًا موثوقًا في القطاع العقاري من خلال
-            الوضوح الكامل في كل ما نقدمه، سواء في وصف العروض أو شروط الخدمة أو آلية
-            التواصل والمتابعة. نلتزم بروح رؤية المملكة في تطوير جودة الخدمات ورفع
-            كفاءة السوق العقاري وتمكين الحلول الذكية التي تحسن تجربة العميل وتدعم
-            قراره الاستثماري بثقة. لذلك نعمل بأسلوب مهذب ومسؤول، ونضع الدقة والشفافية
-            أساسًا لكل خطوة، مع الحرص على تقديم قيمة حقيقية طويلة الأمد لا تقتصر على
-            البيع أو التأجير فقط، بل تمتد إلى بناء علاقة مهنية مستدامة مع كل عميل.
-          </p>
-        </article>
-      </section>
-
-      <section className="rounded-2xl border border-ink-900/10 bg-[#f8f3ea] p-8">
-        <h3 className="text-2xl font-extrabold text-ink-900">أوقات الدوام</h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <WorkingHourRow day="الأحد" time="8:00 ص - 5:00 م" />
-          <WorkingHourRow day="الاثنين" time="8:00 ص - 5:00 م" />
-          <WorkingHourRow day="الثلاثاء" time="8:00 ص - 5:00 م" />
-          <WorkingHourRow day="الأربعاء" time="8:00 ص - 5:00 م" />
-          <WorkingHourRow day="الخميس" time="8:00 ص - 5:00 م" />
-          <WorkingHourRow day="الجمعة / السبت" time="مغلق" />
-        </div>
-      </section>
-
-      <footer id="contact" className="rounded-2xl bg-[#2f160f] px-6 py-10 text-white">
-        <div className="grid gap-6 md:grid-cols-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-lg bg-white/95 px-3 py-1.5 text-ink-900">
-              <div className="h-5 w-5 rounded bg-[#d4a14f]" />
-              <span className="font-extrabold">مثوى</span>
-            </div>
-            <p className="mt-3 text-sm text-white/75">
-              شركة رائدة في مجال التطوير العقاري والاستثمار في المملكة العربية السعودية.
-            </p>
+            <span className="h-1.5 w-1.5 rounded-full bg-sal-400" />
+            تقييمات الرياض الأولى ✦
           </div>
-          <FooterQuickLinks title="روابط سريعة" links={footerQuickLinks} />
-          <FooterCol title="معلومات التواصل" lines={footerContactLines} />
-          <FooterCol title="أوقات العمل" lines={footerWorkingHoursLines} />
-        </div>
-      </footer>
-    </div>
-  );
-}
 
-function CategorySection({
-  id,
-  title,
-  subtitle,
-  offers,
-  images,
-  showRisk,
-  sampleCards
-}: {
-  id: string;
-  title: string;
-  subtitle: string;
-  offers: UnifiedPublicOffer[];
-  images: string[];
-  showRisk?: boolean;
-  sampleCards?: SampleCard[];
-}) {
-  const cards = sampleCards ?? [];
+          {/* Logo icon */}
+          <div className="anim-fade-up-d1">
+            <LogoDrop size="lg" />
+          </div>
 
-  return (
-    <section id={id} className="rounded-2xl border border-ink-900/10 bg-white p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="text-3xl font-extrabold text-ink-900">{title}</h3>
-          <p className="text-sm text-ink-900/70">{subtitle}</p>
+          {/* Title */}
+          <h1
+            className="anim-fade-up-d1 text-6xl font-black leading-tight text-white md:text-8xl"
+            style={{ fontFamily: "Tajawal, sans-serif" }}
+          >
+            اختر بثقة
+            <br />
+            <span style={{ color: "#38bdf8" }}>قيّم بصدق</span>
+          </h1>
+
+          <p className="anim-fade-up-d2 max-w-xl text-lg leading-relaxed text-white/60">
+            سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
+          </p>
+
+          <div className="anim-fade-up-d3 w-full flex justify-center">
+            <HomeSearch />
+          </div>
+
+          <div className="anim-fade-up-d3 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/places"
+              className="inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-base font-black text-white shadow-lg transition hover:-translate-y-0.5"
+              style={{ background: GRAD, boxShadow: `0 8px 30px ${GLOW}` }}
+            >
+              🔍 استكشف الأماكن
+            </Link>
+            <Link
+              href="#contact"
+              className="rounded-2xl border px-8 py-4 text-base font-bold text-white transition hover:bg-white/15"
+              style={{ background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.2)" }}
+            >
+              تواصل معنا
+            </Link>
+          </div>
         </div>
-        <a href={`/offers?section=${id}`} className="rounded-lg border border-ink-900/20 px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-brand-50">
-          عرض كل العروض
-        </a>
+      </section>
+
+      {/* ══════════════════════════════════ STATS ══ */}
+      <div
+        className="flex flex-wrap justify-center gap-14 px-10 py-14"
+        style={{ background: "#fff", borderBottom: "1px solid #e0f2fe" }}
+      >
+        {[
+          { num: "5",  label: "تصنيفات رئيسية" },
+          { num: "5",  label: "مناطق في الرياض" },
+          { num: "✦",  label: "تقييمات موثوقة ودقيقة" },
+          { num: "∞",  label: "توسع مستمر في التغطية" },
+        ].map((s) => (
+          <div key={s.label} className="text-center">
+            <p className="text-5xl font-black leading-none" style={{ color: "#0ea5e9" }}>
+              {s.num}
+            </p>
+            <p className="mt-2 text-sm font-medium text-ink-600">{s.label}</p>
+          </div>
+        ))}
       </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {cards.length > 0
-          ? cards.map((card) => (
-              <SampleOfferCard
-                key={`${id}-${card.slug}`}
-                card={card}
-                showRisk={showRisk}
-              />
-            ))
-          : offers.map((offer, idx) => (
-              <OfferCard
-                key={`${id}-${offer.id}`}
-                offer={offer}
-                imageUrl={images[idx % images.length]}
-                showRisk={showRisk}
-              />
+
+      {/* ══════════════════════════════════ CATEGORIES ══ */}
+      <section id="categories" className="scroll-mt-20 px-5 py-24">
+        <div className="mx-auto max-w-screen-xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            التصنيفات
+          </p>
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-4xl font-black text-ink-900">كل ما تحتاجه في مكان واحد</h2>
+              <p className="mt-2 max-w-xl text-base leading-relaxed text-ink-600">
+                سلسبيل يغطي أهم تصنيفات الخدمات في الرياض بتقييمات دقيقة ومعلومات موثوقة.
+              </p>
+            </div>
+            <Link
+              href="/places"
+              className="inline-flex shrink-0 items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black text-white shadow transition hover:-translate-y-0.5"
+              style={{ background: GRAD, boxShadow: `0 8px 24px ${GLOW}` }}
+            >
+              🔍 استكشف الأماكن
+            </Link>
+          </div>
+
+          <p className="mb-10 text-sm font-medium text-ink-400">
+            منصة سلسبيل (نسخة تجريبية Beta) — دليل خدمي تجريبي لمدينة الرياض.
+          </p>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                className="group relative overflow-hidden rounded-3xl border p-8 transition hover:-translate-y-1 hover:shadow-xl"
+                style={{ background: "#fff", borderColor: "#e0f2fe" }}
+              >
+                {/* Corner gradient accent */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-bl-[80px]"
+                  style={{ background: GRAD, opacity: 0.07 }}
+                />
+                {cat.badge && (
+                  <span
+                    className="mb-3 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white"
+                    style={{ background: cat.color }}
+                  >
+                    {cat.badge}
+                  </span>
+                )}
+                <span className="mb-4 block text-5xl">{cat.icon}</span>
+                <p className="text-xl font-black text-ink-900">{cat.label}</p>
+                <p className="mt-1 text-sm font-bold" style={{ color: "#0ea5e9" }}>
+                  {CAT_SUB[cat.slug] ?? (cat.count > 0 ? `+${cat.count}` : "")}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-ink-600">
+                  {CAT_DESC[cat.slug]}
+                </p>
+              </Link>
             ))}
-      </div>
-      <div className="mt-5 text-center">
-        <a href={`/offers?section=${id}`} className="text-sm font-semibold text-brand-400 hover:underline">
-          عودة إلى العروض
-        </a>
-      </div>
-    </section>
-  );
-}
-
-function takeWithFallback(primary: UnifiedPublicOffer[], all: UnifiedPublicOffer[], count: number) {
-  if (primary.length >= count) return primary.slice(0, count);
-  const used = new Set(primary.map((item) => item.id));
-  const fill = all.filter((item) => !used.has(item.id)).slice(0, Math.max(0, count - primary.length));
-  return [...primary, ...fill];
-}
-
-function OfferCard({
-  offer,
-  imageUrl,
-  showRisk
-}: {
-  offer: UnifiedPublicOffer;
-  imageUrl: string;
-  showRisk?: boolean;
-}) {
-  const detailHref = `/offers/${offer.id}` as Route;
-  const heroUrl = offer.imageUrl || imageUrl;
-  const riskLabel =
-    offer.risk === "high"
-      ? "خطورة عالية"
-      : offer.risk === "medium"
-      ? "خطورة متوسطة"
-      : "خطورة منخفضة";
-  const riskClass =
-    offer.risk === "high"
-      ? "bg-red-600 text-white"
-      : offer.risk === "medium"
-      ? "bg-blue-600 text-white"
-      : "bg-emerald-600 text-white";
-
-  const showRiskBadge = showIndustrialRiskBadge(offer.type);
-
-  return (
-    <article className="overflow-hidden rounded-xl border border-ink-900/10 bg-white p-0">
-      <Link
-        href={detailHref}
-        prefetch
-        className="relative block h-36 bg-cover bg-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2"
-        style={{ backgroundImage: `url('${heroUrl}')` }}
-        aria-label={`فتح تفاصيل: ${offer.title}`}
-      >
-        <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-black/65 px-2 py-1 text-[11px] font-bold text-white">
-          {offer.modeLabel}
-        </span>
-        {showRiskBadge ? (
-          <span className={`pointer-events-none absolute right-2 top-2 rounded-md px-2 py-1 text-[11px] font-bold ${riskClass}`}>
-            {riskLabel}
-          </span>
-        ) : null}
-      </Link>
-      <div className="space-y-2 p-4">
-        <Link href={detailHref} prefetch className="block rounded-lg py-1 hover:bg-[#f8f3ea]/60">
-          <h4 className="font-bold text-ink-900">{offer.title}</h4>
-          <p className="text-xs text-ink-900/75">{offer.details}</p>
-          <p className="text-xs text-ink-900/70">📍 {offer.area}</p>
-          <p className="text-sm font-extrabold text-brand-400">{offer.price}</p>
-        </Link>
-        <div className="mt-2">
-          <OfferPublicToolbar
-            compact
-            path={`/offers/${offer.id}`}
-            title={offer.title}
-            kind="offer"
-          />
+          </div>
         </div>
-        <Link
-          href={detailHref}
-          prefetch
-          className="mt-1 block rounded-lg border border-ink-900/15 px-3 py-2 text-center text-xs font-semibold text-ink-900 hover:bg-[#f8f3ea]"
-        >
-          عرض التفاصيل والصور
-        </Link>
-        <a
-          href={`/login?mode=signup&role=client&returnTo=${encodeURIComponent(`/offers/${offer.id}`)}`}
-          className="mt-2 block rounded-lg bg-brand-500 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-brand-400"
-        >
-          تواصل مع المسؤول عن العرض
-        </a>
-      </div>
-    </article>
-  );
-}
+      </section>
 
-function InfoCard({
-  title,
-  text,
-  icon,
-  href,
-  cta
-}: {
-  title: string;
-  text: string;
-  icon: string;
-  href: string;
-  cta: string;
-}) {
-  return (
-    <article className="rounded-xl border border-ink-900/10 bg-[#f8f3ea] p-5 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#d4a14f]/90 text-lg text-white">
-        {icon}
-      </div>
-      <h4 className="mt-3 text-xl font-bold text-ink-900">{title}</h4>
-      <p className="mt-2 text-sm text-ink-900/70">{text}</p>
-      <a
-        href={href}
-        className="mt-3 inline-block rounded-lg border border-ink-900/15 bg-white px-3 py-1.5 text-sm font-semibold text-brand-400 hover:border-gold-400 hover:bg-gold-400/10"
-      >
-        {cta}
-      </a>
-    </article>
-  );
-}
+      {/* ══════════════════════════════════ HOW IT WORKS ══ */}
+      <section id="how" className="scroll-mt-20 px-5 py-24" style={{ background: GRAD_DEEP }}>
+        <div className="mx-auto max-w-screen-xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#38bdf8" }}>
+            كيف يعمل
+          </p>
+          <h2 className="mb-3 text-4xl font-black text-white">بحث شامل ونتائج موثوقة</h2>
+          <p className="mb-14 max-w-xl text-base leading-relaxed text-white/55">
+            فريق سلسبيل يجمع ويحلل آلاف التقييمات من مصادر متعددة ليقدم لك خلاصة موثوقة ودقيقة.
+          </p>
 
-function WorkingHourRow({ day, time }: { day: string; time: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-ink-900/10 bg-white px-4 py-3">
-      <span className="font-semibold text-ink-900">{day}</span>
-      <span className="text-sm text-brand-400">{time}</span>
-    </div>
-  );
-}
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((step) => (
+              <div
+                key={step.n}
+                className="rounded-2xl p-7"
+                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(56,189,248,0.2)" }}
+              >
+                <div
+                  className="mb-5 flex h-11 w-11 items-center justify-center rounded-full text-lg font-black text-white"
+                  style={{ background: GRAD, boxShadow: `0 4px 16px ${GLOW}` }}
+                >
+                  {step.n}
+                </div>
+                <p className="mb-2 text-lg font-black text-white">{step.title}</p>
+                <p className="text-sm leading-relaxed text-white/50">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-function FooterCol({ title, lines }: { title: string; lines: string[] }) {
-  return (
-    <div>
-      <h5 className="mb-2 text-lg font-bold text-gold-500">{title}</h5>
-      <ul className="space-y-1 text-sm text-white/80">
-        {lines.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+      {/* ══════════════════════════════════ REGIONS ══ */}
+      <section id="regions" className="scroll-mt-20 px-5 py-24" style={{ background: "#fff" }}>
+        <div className="mx-auto max-w-screen-xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            التغطية الجغرافية
+          </p>
+          <h2 className="mb-3 text-4xl font-black text-ink-900">الرياض كاملة بين يديك</h2>
+          <p className="mb-12 max-w-xl text-base leading-relaxed text-ink-600">
+            نغطي جميع مناطق الرياض — اختر التصنيف الذي يناسبك ثم فلتر بالمنطقة من داخله.
+          </p>
 
-function FooterQuickLinks({ title, links }: { title: string; links: { href: string; label: string }[] }) {
-  return (
-    <div>
-      <h5 className="mb-2 text-lg font-bold text-gold-500">{title}</h5>
-      <ul className="space-y-1.5 text-sm">
-        {links.map((link) => (
-          <li key={link.href}>
-            <a href={link.href} className="text-white/80 transition hover:text-gold-500 hover:underline">
-              {link.label}
+          {/* Region coverage grid (informational) */}
+          {(() => {
+            const counts = getRegionCounts();
+            const REGION_TILES = [
+              { value: "شمال", label: "شمال الرياض", icon: "⬆️" },
+              { value: "جنوب", label: "جنوب الرياض", icon: "⬇️" },
+              { value: "شرق",  label: "شرق الرياض",  icon: "➡️" },
+              { value: "غرب",  label: "غرب الرياض",  icon: "⬅️" },
+              { value: "وسط",  label: "وسط الرياض",  icon: "🎯" },
+            ];
+            return (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {REGION_TILES.map((r) => (
+                  <div
+                    key={r.value}
+                    className="flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-5 text-center"
+                    style={{ background: "#f0f9ff", borderColor: "#e0f2fe" }}
+                  >
+                    <span className="text-2xl">{r.icon}</span>
+                    <p className="text-sm font-bold" style={{ color: "#0c4a6e" }}>{r.label}</p>
+                    <p className="text-xs font-semibold" style={{ color: "#0ea5e9" }}>
+                      {counts[r.value] ?? 0}+ مكان
+                    </p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          <p className="mt-6 text-center text-sm text-ink-500">
+            لتصفية الأماكن بالمنطقة —{" "}
+            <a href="#categories" className="font-semibold underline" style={{ color: "#0ea5e9" }}>
+              اختر تصنيفاً أولاً ↑
             </a>
-          </li>
-        ))}
-      </ul>
-    </div>
+          </p>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════ CONTACT ══ */}
+      <section id="contact" className="scroll-mt-20 px-5 py-24" style={{ background: "#f0f9ff" }}>
+        <div className="mx-auto grid max-w-screen-xl gap-16 lg:grid-cols-2 lg:items-center">
+          {/* Info */}
+          <div>
+            <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+              تواصل معنا
+            </p>
+            <h2 className="mb-4 text-4xl font-black leading-tight text-ink-900">
+              هل أنت مؤسسة أو فرد؟
+              <br />
+              نسعد بتواصلك
+            </h2>
+            <p className="mb-8 max-w-sm text-base leading-relaxed text-ink-600">
+              آراؤك واقتراحاتك تسعدنا — سواء كنت تريد إضافة مكان أو لديك فكرة تطوير أو تريد الإعلان.
+            </p>
+
+            {[
+              { icon: "📧", label: "البريد الإلكتروني", value: "salsabelapp@gmail.com" },
+              { icon: "📍", label: "التغطية",           value: "الرياض — المملكة العربية السعودية" },
+              { icon: "⚡", label: "وقت الرد",          value: "خلال 24 ساعة" },
+            ].map((item) => (
+              <div key={item.label} className="mb-6 flex items-start gap-4">
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl"
+                  style={{ background: GRAD, boxShadow: `0 4px 14px ${GLOW}` }}
+                >
+                  {item.icon}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-ink-600">{item.label}</p>
+                  <p className="mt-0.5 text-base font-bold text-ink-900">{item.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Form */}
+          <div>
+            <div className="mb-5 rounded-2xl border border-sal-100 bg-white px-5 py-4">
+              <p className="text-sm leading-relaxed text-ink-600">
+                جميع البيانات والتقييمات مجمعة من مصادر عامة ومتاحة للعموم. المنصة لا تتبنى الآراء الواردة، ولأصحاب المنشآت كامل الحق في طلب التعديل أو الحذف عبر وسائل التواصل بالأسفل.
+              </p>
+            </div>
+            <ContactForm />
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

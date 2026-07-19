@@ -1,22 +1,45 @@
-@import "leaflet/dist/leaflet.css";
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  @apply bg-brand-100 text-ink-900 antialiased;
+  background: #f0f9ff;
+  color: #0c1a2e;
+  font-family: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
 }
 
-a {
-  @apply transition-colors;
+a { @apply transition-colors; }
+html { scroll-behavior: smooth; }
+::selection { background: #38bdf8; color: #082f49; }
+
+/* ── Animations ───────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-html {
-  scroll-behavior: smooth;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-24px); }
 }
 
-::selection {
-  background: #e8c96a;
-  color: #2c1f14;
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 40px rgba(56,189,248,0.4), 0 0 80px rgba(56,189,248,0.2); }
+  50%       { box-shadow: 0 0 60px rgba(56,189,248,0.7), 0 0 120px rgba(56,189,248,0.35); }
 }
+
+@keyframes star-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255,255,255,0.5)); }
+  50%       { filter: drop-shadow(0 0 14px rgba(255,255,255,0.9)); }
+}
+
+.anim-fade-up          { animation: fadeUp 0.8s ease forwards; }
+.anim-fade-up-d1       { animation: fadeUp 0.8s ease 0.1s both; }
+.anim-fade-up-d2       { animation: fadeUp 0.8s ease 0.2s both; }
+.anim-fade-up-d3       { animation: fadeUp 0.8s ease 0.3s both; }
+.anim-float            { animation: float 8s ease-in-out infinite; }
+.anim-float-slow       { animation: float 12s ease-in-out infinite reverse; }
+.anim-pulse-glow       { animation: pulse-glow 3s ease-in-out infinite; }
+.anim-star-glow        { animation: star-glow 3s ease-in-out infinite; }
