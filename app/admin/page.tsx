@@ -920,18 +920,17 @@ function AdminDashboard() {
         ? (editForm.tags as string).split(",").map((t) => t.trim()).filter(Boolean)
         : editForm.tags ?? original.tags,
     };
-    // For single-branch places, keep branch[0] in sync with place-level fields.
+    // For single-branch places, let the remaining branch be the source of truth
+    // for location fields — sync up to place-level, not down to the branch.
+    // Rationale: the branch may have fresher data (e.g. fetched from Google after
+    // place-level fields were last edited), so overwriting it with stale place-level
+    // values would silently revert correct branch data.
     if (updated.branches.length === 1) {
-      updated.branches = [
-        {
-          ...updated.branches[0],
-          neighborhood: updated.neighborhood ?? updated.branches[0].neighborhood,
-          address:      updated.address      ?? updated.branches[0].address,
-          openingHours: updated.openingHours ?? updated.branches[0].openingHours,
-          // Sync phone: place-level phone is the source of truth for single-branch places.
-          phone: updated.phone,
-        },
-      ];
+      const b = updated.branches[0];
+      updated.neighborhood = b.neighborhood ?? updated.neighborhood;
+      updated.address      = b.address      ?? updated.address;
+      updated.openingHours = b.openingHours ?? updated.openingHours;
+      updated.branches = [{ ...b, phone: updated.phone }];
     }
     try {
       const res = await fetch("/api/places", {
