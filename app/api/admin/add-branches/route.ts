@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
     const merged = [...place.branches] as BranchWithGid[];
     let added = 0;
     let updated = 0;
+    let firstAddedGid: string | undefined;
 
     for (const incoming of stamped) {
       const existingIdx = incoming._googlePlaceId
@@ -69,7 +70,10 @@ export async function POST(req: NextRequest) {
         updated++;
       } else {
         merged.push(incoming);
-        if (incoming._googlePlaceId) existingGids.set(incoming._googlePlaceId, merged.length - 1);
+        if (incoming._googlePlaceId) {
+          existingGids.set(incoming._googlePlaceId, merged.length - 1);
+          if (!firstAddedGid) firstAddedGid = incoming._googlePlaceId;
+        }
         added++;
       }
     }
@@ -80,18 +84,24 @@ export async function POST(req: NextRequest) {
     // Place-level googlePlaceId sync rules:
     //
     // Single-branch places (place.branches.length <= 1):
-    //   Always update to the incoming GID — this lets admins correct a wrong GID
-    //   by running full-branch-fetch again with the correct Place ID. The ?? fallback
-    //   keeps the existing value only when the incoming branches carry no GID at all.
+    //   Always update to the incoming GID — covers initial set and correction of
+    //   a wrong GID by re-running full-branch-fetch with the correct Place ID.
     //
-    // Multi-branch places:
-    //   Only set when there is no existing GID (first-time assignment). Changing the
-    //   primary GID for a multi-branch place requires explicit admin action in the
-    //   edit form, not an implicit side-effect of adding one more branch.
+    // Multi-branch places where NEW branches are being added (added > 0):
+    //   Use the first newly-added branch's GID. The admin explicitly supplied this
+    //   Place ID (via manual input or branch selection), so it represents their
+    //   intentional choice for the place's primary photo source — even when the
+    //   place already had a different (possibly wrong) GID from a previous fetch.
+    //
+    // Multi-branch places where only existing branches are updated:
+    //   Preserve the current GID; it already matches the source branch.
+    //   Fall back to firstIncomingGid only on first-time assignment (no existing GID).
     const updatedGooglePlaceId =
       place.branches.length <= 1
         ? (firstIncomingGid ?? existingPlaceGid)
-        : (existingPlaceGid ?? firstIncomingGid);
+        : firstAddedGid
+          ? firstAddedGid
+          : (existingPlaceGid ?? firstIncomingGid);
 
     const ok = await upsertCustomPlace({
       ...place,
