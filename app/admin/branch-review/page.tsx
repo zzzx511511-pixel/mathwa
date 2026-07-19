@@ -386,20 +386,21 @@ function BranchReviewDashboard() {
     const approval = approvals[placeId];
     if (!place || state?.status !== "done" || !approval) return;
 
-    const approvedBranches: Branch[] = state.branches
+    const approvedBranches = state.branches
       .filter((_, i) => approval[i])
       .map((b) => ({
-        id:           "",  // stamped by add-branches route
-        name:         b.name,
-        address:      b.address,
-        city:         b.city,
-        neighborhood: b.neighborhood,
-        lat:          b.lat,
-        lng:          b.lng,
-        openingHours: b.openingHours,
-        phone:        b.phone,
-        mapsUrl:      b.mapsUrl,
-      }));
+        id:              "",  // stamped by add-branches route
+        name:            b.name,
+        address:         b.address,
+        city:            b.city,
+        neighborhood:    b.neighborhood,
+        lat:             b.lat,
+        lng:             b.lng,
+        openingHours:    b.openingHours,
+        phone:           b.phone,
+        mapsUrl:         b.mapsUrl,
+        _googlePlaceId:  b._googlePlaceId,  // required for dedup in add-branches route
+      })) as (Branch & { _googlePlaceId?: string })[];
 
     if (!approvedBranches.length) return;
 
@@ -410,14 +411,14 @@ function BranchReviewDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ place_id: placeId, branches: approvedBranches }),
       });
-      const data = await res.json() as { ok?: boolean; error?: string };
+      const data = await res.json() as { ok?: boolean; added?: number; updated?: number; total?: number; error?: string };
       if (!res.ok || !data.ok) throw new Error(data.error ?? "فشل الحفظ");
       setSaveStates((prev) => ({ ...prev, [placeId]: "saved" }));
-      // Update local display (IDs will be stamped server-side)
+      // Update local branch count — actual branch data is reloaded from server on next open.
       setAllPlaces((prev) =>
         prev.map((p) =>
           p.id === placeId
-            ? { ...p, branches: [...p.branches, ...approvedBranches] }
+            ? { ...p, branches: Array.from({ length: data.total ?? p.branches.length + (data.added ?? 0) }) as Branch[] }
             : p
         )
       );

@@ -273,12 +273,15 @@ function FullBranchFetchDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ place_id: selectedPlace.id, branches: selected }),
       });
-      const data = await res.json() as { ok?: boolean; added?: number; total?: number; error?: string };
+      const data = await res.json() as { ok?: boolean; added?: number; updated?: number; total?: number; error?: string };
       if (!res.ok || !data.ok) {
         setSaveMsg(data.error ?? "خطأ غير معروف");
         setSaveState("error");
       } else {
-        setSaveMsg(`تم حفظ ${data.added} فرع. إجمالي الفروع الآن: ${data.total}`);
+        const parts = [];
+        if (data.added)   parts.push(`${data.added} فرع جديد`);
+        if (data.updated) parts.push(`${data.updated} فرع مُحدَّث`);
+        setSaveMsg(`${parts.join(" · ")}. إجمالي الفروع الآن: ${data.total}`);
         setSaveState("done");
         const gid = selected[0]?._googlePlaceId;
         if (gid) {
