@@ -26,6 +26,10 @@ export type Branch = {
   lat?: number;
   lng?: number;
   openingHours?: string;
+  /** When true, always show this branch in the public branches list even if it is the
+   *  place-level "hero" branch (whose data appears in the top info card). Defaults to
+   *  false (hero branch is hidden from the list to avoid visual duplication). */
+  showInBranchesListEvenIfHero?: boolean;
 };
 
 export type Place = {
