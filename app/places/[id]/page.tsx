@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPlaceById } from "@/lib/salsabeel/data";
 import { getCustomPlaces } from "@/lib/salsabeel/supabase-places";
+import type { Branch } from "@/lib/salsabeel/types";
 import { getCategoryMeta } from "@/lib/salsabeel/categories";
 import { RatingStars } from "@/components/salsabeel/rating-stars";
 import { BranchPanel } from "@/components/salsabeel/branch-panel";
@@ -41,6 +42,22 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
   // so the place-level card must not copy a specific branch's address.
   const mainBranch     = place.branches[0];
   const singleBranch   = place.branches.length === 1 ? mainBranch : null;
+
+  // For multi-branch places, the branch whose _googlePlaceId matches place.googlePlaceId
+  // is the "hero" branch: its data is already visible in the top info card
+  // (neighborhood / address / openingHours were synced up to place-level).
+  // Showing it again in the branches list below would duplicate it visually.
+  // Filter it out by default; admins can override per-branch via showInBranchesListEvenIfHero.
+  type BranchWithMeta = Branch & { _googlePlaceId?: string };
+  const displayedBranches: Branch[] =
+    place.branches.length <= 1
+      ? place.branches
+      : (place.branches as BranchWithMeta[]).filter(
+          (b) =>
+            b.showInBranchesListEvenIfHero ||
+            !place.googlePlaceId ||
+            b._googlePlaceId !== place.googlePlaceId
+        );
 
   // Fetch photos and business status in parallel
   const [cachedPhotos, businessStatus] = await Promise.all([
@@ -359,7 +376,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       )}
 
       {/* Branches — show for any place that has branch data */}
-      {place.branches.length > 0 && (
+      {displayedBranches.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
           {place.branches.length === 1 ? (
             <h2 className="mb-4 text-xl font-extrabold text-ink-900">📍 موقع الفرع</h2>
@@ -369,11 +386,11 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
                 📍 فروع {place.name}
               </h2>
               <p className="mb-4 text-sm text-ink-600">
-                {place.branches.length} فروع — اضغط على الفرع لعرض عنوانه وتفاصيله
+                {displayedBranches.length} {displayedBranches.length === 1 ? "فرع" : "فروع"} — اضغط على الفرع لعرض عنوانه وتفاصيله
               </p>
             </>
           )}
-          <BranchPanel branches={place.branches} placeId={place.id} />
+          <BranchPanel branches={displayedBranches} placeId={place.id} />
         </div>
       )}
 
