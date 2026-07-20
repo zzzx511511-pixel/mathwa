@@ -1791,7 +1791,7 @@ function AdminDashboard() {
             )}
             {adminSearch && (
               <span className="absolute left-8 top-1/2 -translate-y-1/2 text-[10px] font-bold"
-                style={{ color: adminAiSearching ? "#94a3b8" : "#0ea5e9" }}>
+                style={{ color: adminAiSearching ? "#94a3b8" : "#0F5C56" }}>
                 {adminAiSearching ? "..." : "✦ AI"}
               </span>
             )}

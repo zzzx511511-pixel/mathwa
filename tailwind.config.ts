@@ -10,17 +10,24 @@ const config: Config = {
     extend: {
       colors: {
         sal: {
-          50:  "#f0f9ff",
-          100: "#e0f2fe",
-          200: "#bae6fd",
-          300: "#7dd3fc",
-          400: "#38bdf8",  // accent
-          500: "#0ea5e9",  // primary
-          600: "#0284c7",
-          700: "#0369a1",  // primary-dark
-          800: "#075985",
-          900: "#0c4a6e",
-          950: "#082f49",  // primary-deep (nav/hero bg)
+          50:  "#FAF7F2",  // warm background
+          100: "#E8F5F4",  // very light teal
+          200: "#C4E8E5",
+          300: "#7DCEC9",
+          400: "#16A394",  // primary light
+          500: "#0F5C56",  // primary dark
+          600: "#0D4F4A",
+          700: "#0A4440",  // primary-dark
+          800: "#073530",
+          900: "#052825",
+          950: "#031A17",  // deep dark (nav/footer bg)
+        },
+        coral: {
+          300: "#FFB09D",
+          400: "#FF8A6A",
+          500: "#FF6B4A",  // CTA / action
+          600: "#E05030",
+          700: "#C04020",
         },
         gold: {
           300: "#FCD34D",
@@ -37,11 +44,11 @@ const config: Config = {
         },
         // backward compat
         brand: {
-          50:  "#f0f9ff",
-          100: "#e0f2fe",
-          300: "#0ea5e9",
-          400: "#0369a1",
-          500: "#075985",
+          50:  "#FAF7F2",
+          100: "#E8F5F4",
+          300: "#16A394",
+          400: "#0F5C56",
+          500: "#073530",
         },
       },
       fontFamily: {

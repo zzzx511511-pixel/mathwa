@@ -18,9 +18,9 @@ export function RegionsFilter() {
           href={r.value === "all" ? "/places" : `/places?region=${encodeURIComponent(r.value)}`}
           className={`${r.span ? "col-span-2 sm:col-span-3" : ""} rounded-2xl border-2 px-5 py-4 text-center text-sm font-bold transition hover:-translate-y-0.5`}
           style={{
-            background: "#f0f9ff",
-            borderColor: "#e0f2fe",
-            color: "#0c4a6e",
+            background: "#FAF7F2",
+            borderColor: "#C4E8E5",
+            color: "#0F5C56",
           }}
         >
           {r.label}

@@ -52,13 +52,13 @@ function singlePopup(place: Place, cat: CategoryMeta, isApprox: boolean): string
       <span style="display:inline-block;background:${cat.bg};color:${cat.color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:800;margin-bottom:8px">
         ${cat.icon} ${cat.label}
       </span>
-      <p style="margin:0 0 4px;font-size:15px;font-weight:800;color:#0c4a6e;line-height:1.3">${place.name}</p>
+      <p style="margin:0 0 4px;font-size:15px;font-weight:800;color:#0F5C56;line-height:1.3">${place.name}</p>
       <p style="margin:0 0 2px;font-size:12px;color:#f59e0b;letter-spacing:1px">${stars(place.rating)} <span style="color:#64748b;letter-spacing:0">${place.rating.toFixed(1)}</span></p>
       ${place.neighborhood ? `<p style="margin:0 0 10px;font-size:11px;color:#94a3b8">📍 ${place.neighborhood}</p>` : '<div style="margin-bottom:10px"></div>'}
       ${isApprox ? `<p style="margin:-4px 0 10px;font-size:10px;color:#f59e0b;font-weight:600">⚠️ موقع تقريبي</p>` : ""}
       <a
         href="/places/${place.id}"
-        style="display:block;background:linear-gradient(135deg,#38bdf8 0%,#0369a1 100%);color:white;text-decoration:none;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;text-align:center"
+        style="display:block;background:linear-gradient(135deg,#16A394 0%,#0F5C56 100%);color:white;text-decoration:none;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;text-align:center"
       >عرض التفاصيل ←</a>
     </div>`;
 }
@@ -67,11 +67,11 @@ function multiPopup(group: Place[], cat: CategoryMeta): string {
   const items = group.map(
     (p) => `
     <div style="padding:10px 0;border-bottom:1px solid #f1f5f9">
-      <p style="margin:0 0 2px;font-size:13px;font-weight:800;color:#0c4a6e">${p.name}</p>
+      <p style="margin:0 0 2px;font-size:13px;font-weight:800;color:#0F5C56">${p.name}</p>
       <p style="margin:0 0 6px;font-size:11px;color:#f59e0b;letter-spacing:1px">${stars(p.rating)} <span style="color:#64748b;letter-spacing:0">${p.rating.toFixed(1)}</span></p>
       <a
         href="/places/${p.id}"
-        style="display:inline-block;background:linear-gradient(135deg,#38bdf8 0%,#0369a1 100%);color:white;text-decoration:none;padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700"
+        style="display:inline-block;background:linear-gradient(135deg,#16A394 0%,#0F5C56 100%);color:white;text-decoration:none;padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700"
       >عرض التفاصيل ←</a>
     </div>`,
   );

@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "سياسة الخصوصية — سلسبيل",
-  description: "سياسة الخصوصية الخاصة بموقع سلسبيل",
+  title: "سياسة الخصوصية — وين",
+  description: "سياسة الخصوصية الخاصة بموقع وين",
 };
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
+    <div className="min-h-screen" style={{ background: "#FAF7F2" }}>
       <div
         className="px-5 py-14 text-center"
-        style={{ background: "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)" }}
+        style={{ background: "linear-gradient(160deg, #031A17 0%, #0F5C56 60%, #16A394 100%)" }}
       >
         <h1 className="text-4xl font-black text-white">سياسة الخصوصية</h1>
         <p className="mt-3 text-white/60 text-sm">آخر تحديث: يوليو 2025</p>
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
         <Section title="مقدمة">
           <p>
-            نحن في <strong>سلسبيل</strong> نحرص على حماية خصوصيتك. توضّح هذه السياسة ما نجمعه من
+            نحن في <strong>وين</strong> نحرص على حماية خصوصيتك. توضّح هذه السياسة ما نجمعه من
             بيانات، وكيف نستخدمها، وحقوقك كمستخدم.
           </p>
         </Section>

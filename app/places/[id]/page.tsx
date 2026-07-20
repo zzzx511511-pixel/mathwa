@@ -175,7 +175,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow transition hover:-translate-y-0.5"
-            style={{ background: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)" }}
+            style={{ background: "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)" }}
           >
             📍 الموقع
           </a>

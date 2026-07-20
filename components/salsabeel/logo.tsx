@@ -1,4 +1,4 @@
-/** Water-drop logo component — matches salsabeel-logo.html design */
+/** Water-drop logo component */
 
 type Size = "xs" | "sm" | "md" | "lg";
 
@@ -17,10 +17,10 @@ export function LogoDrop({ size = "md", glow = true }: { size?: Size; glow?: boo
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(160deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)",
+          background: "linear-gradient(160deg, #16A394 0%, #0F5C56 55%, #031A17 100%)",
           borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
           transform: "rotate(180deg)",
-          boxShadow: glow ? "0 0 20px rgba(56,189,248,0.45)" : undefined,
+          boxShadow: glow ? "0 0 20px rgba(22,163,148,0.45)" : undefined,
         }}
       />
       <div
@@ -67,7 +67,7 @@ export function SalsabeelBrand({
           className={`font-extrabold tracking-wide text-white ${textSizes[size]}`}
           style={{ fontFamily: "Tajawal, sans-serif" }}
         >
-          سل<span style={{ color: "#38bdf8" }}>س</span>بيل
+          و<span style={{ color: "#16A394" }}>ي</span>ن
         </span>
       </div>
       {showTagline && (

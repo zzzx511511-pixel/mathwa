@@ -5,14 +5,14 @@
 @tailwind utilities;
 
 body {
-  background: #f0f9ff;
+  background: #FAF7F2;
   color: #0c1a2e;
   font-family: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
 }
 
 a { @apply transition-colors; }
 html { scroll-behavior: smooth; }
-::selection { background: #38bdf8; color: #082f49; }
+::selection { background: #16A394; color: #031A17; }
 
 /* ── Animations ───────────────────────────────────────────────────── */
 @keyframes fadeUp {
@@ -26,8 +26,8 @@ html { scroll-behavior: smooth; }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 40px rgba(56,189,248,0.4), 0 0 80px rgba(56,189,248,0.2); }
-  50%       { box-shadow: 0 0 60px rgba(56,189,248,0.7), 0 0 120px rgba(56,189,248,0.35); }
+  0%, 100% { box-shadow: 0 0 40px rgba(22,163,148,0.4), 0 0 80px rgba(22,163,148,0.2); }
+  50%       { box-shadow: 0 0 60px rgba(22,163,148,0.7), 0 0 120px rgba(22,163,148,0.35); }
 }
 
 @keyframes star-glow {

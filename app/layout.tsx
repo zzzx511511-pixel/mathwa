@@ -3,9 +3,9 @@ import "./globals.css";
 import { MainShell } from "@/components/layout/main-shell";
 
 export const metadata: Metadata = {
-  title: "سلسبيل — اختر بثقة، قيّم بصدق",
+  title: "وين — اختر بثقة، قيّم بصدق",
   description:
-    "سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات والمجمعات في الرياض",
+    "وين — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات والمجمعات في الرياض",
 };
 
 export const viewport: Viewport = {

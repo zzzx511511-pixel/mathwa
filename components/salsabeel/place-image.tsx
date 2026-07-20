@@ -1,15 +1,15 @@
 import type { Category } from "@/lib/salsabeel/types";
 
-// ── Per-category styles (aqua-blue / white Salsabeel palette) ────────────────
+// ── Per-category styles (تصميم وين — أخضر مويلي ومرجاني) ────────────────────
 const CAT: Record<
   Category,
   { label: string; from: string; mid: string; to: string; accent: string }
 > = {
-  cafes:       { label: "كوفيهات",         from: "#0c4a6e", mid: "#0369a1", to: "#0ea5e9", accent: "#38bdf8" },
-  restaurants: { label: "مطاعم",           from: "#082f49", mid: "#075985", to: "#0284c7", accent: "#22d3ee" },
+  cafes:       { label: "كوفيهات",         from: "#031A17", mid: "#0F5C56", to: "#16A394", accent: "#16A394" },
+  restaurants: { label: "مطاعم",           from: "#031A17", mid: "#0F5C56", to: "#16A394", accent: "#FF6B4A" },
   clinics:     { label: "عيادات",          from: "#134e4a", mid: "#0e7490", to: "#06b6d4", accent: "#67e8f9" },
-  salons:      { label: "صالونات",         from: "#1e3a8a", mid: "#1d4ed8", to: "#38bdf8", accent: "#7dd3fc" },
-  malls:       { label: "الوجهات المفتوحة", from: "#0a2235", mid: "#155e75", to: "#0e7490", accent: "#22d3ee" },
+  salons:      { label: "صالونات",         from: "#1e3a8a", mid: "#1d4ed8", to: "#60a5fa", accent: "#7dd3fc" },
+  malls:       { label: "الوجهات المفتوحة", from: "#031A17", mid: "#0F5C56", to: "#16A394", accent: "#FF6B4A" },
 };
 
 // ── Category icons ────────────────────────────────────────────────────────────

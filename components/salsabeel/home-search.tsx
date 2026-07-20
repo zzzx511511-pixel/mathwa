@@ -34,7 +34,7 @@ export function HomeSearch() {
       <button
         type="submit"
         className="shrink-0 rounded-2xl px-6 py-3.5 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5"
-        style={{ background: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)" }}
+        style={{ background: "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)" }}
       >
         بحث
       </button>

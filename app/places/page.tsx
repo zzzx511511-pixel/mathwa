@@ -9,8 +9,8 @@ import { SuggestPlaceForm } from "@/components/salsabeel/suggest-place-form";
 
 export const dynamic = "force-dynamic";
 
-const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
-const GLOW = "rgba(56,189,248,0.3)";
+const GRAD = "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)";
+const GLOW = "rgba(22,163,148,0.3)";
 
 export default async function PlacesPage() {
   const [custom, statusRows] = await Promise.all([getCustomPlaces(), getPlaceStatuses()]);
@@ -20,17 +20,17 @@ export default async function PlacesPage() {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
+    <div className="min-h-screen" style={{ background: "#FAF7F2" }}>
 
       {/* ── Page Header ─────────────────────────────────── */}
       <div
         className="px-5 py-16 text-center"
-        style={{ background: "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)" }}
+        style={{ background: "linear-gradient(160deg, #031A17 0%, #0F5C56 60%, #16A394 100%)" }}
       >
         <div className="mx-auto max-w-screen-xl">
           <div
             className="mb-4 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-bold"
-            style={{ background: "rgba(56,189,248,0.12)", borderColor: "rgba(56,189,248,0.3)", color: "#38bdf8" }}
+            style={{ background: "rgba(22,163,148,0.12)", borderColor: "rgba(22,163,148,0.3)", color: "#16A394" }}
           >
             ✦ استكشف الأماكن
           </div>
@@ -48,7 +48,7 @@ export default async function PlacesPage() {
         {/* ── Categories ──────────────────────────────── */}
         <section id="categories">
           <div className="mb-8">
-            <p className="mb-2 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            <p className="mb-2 text-sm font-bold uppercase tracking-widest" style={{ color: "#0F5C56" }}>
               التصنيفات
             </p>
             <h2 className="text-3xl font-black text-ink-900">تصفح حسب التصنيف</h2>
@@ -59,7 +59,7 @@ export default async function PlacesPage() {
                 key={cat.slug}
                 href={`/category/${cat.slug}`}
                 className="group relative overflow-hidden rounded-3xl border p-6 text-center transition hover:-translate-y-1 hover:shadow-xl"
-                style={{ background: "#fff", borderColor: "#e0f2fe" }}
+                style={{ background: "#fff", borderColor: "#C4E8E5" }}
               >
                 <div
                   aria-hidden
@@ -77,7 +77,7 @@ export default async function PlacesPage() {
                 <span className="mb-3 block text-4xl">{cat.icon}</span>
                 <p className="text-base font-black text-ink-900">{cat.label}</p>
                 {cat.count > 0 && (
-                  <p className="mt-0.5 text-xs font-bold" style={{ color: "#0ea5e9" }}>
+                  <p className="mt-0.5 text-xs font-bold" style={{ color: "#0F5C56" }}>
                     +{cat.count}
                   </p>
                 )}

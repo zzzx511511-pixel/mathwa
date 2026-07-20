@@ -28,12 +28,12 @@ const STEPS = [
   { n: "١", title: "بحث شامل",     desc: "نجمع التقييمات من عدة مصادر لكل مكان ونحللها بدقة" },
   { n: "٢", title: "تقييم موثوق",  desc: "نجمع النجمات ونسبة القبول والرفض ورأي الناس في جملة واحدة" },
   { n: "٣", title: "تحديث مستمر", desc: "نتابع الأكثر زيارة خلال 28 يوماً لنعطيك الأحدث دائماً" },
-  { n: "٤", title: "توسع مستمر",  desc: "سلسبيل في نمو دائم — نضيف تصنيفات ومناطق جديدة باستمرار" },
+  { n: "٤", title: "توسع مستمر",  desc: "وين في نمو دائم — نضيف تصنيفات ومناطق جديدة باستمرار" },
 ];
 
-const GRAD      = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
-const GRAD_DEEP = "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)";
-const GLOW      = "rgba(56,189,248,0.35)";
+const GRAD      = "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)";
+const GRAD_DEEP = "linear-gradient(160deg, #031A17 0%, #0F5C56 60%, #16A394 100%)";
+const GLOW      = "rgba(255,107,74,0.35)";
 
 export default function HomePage() {
   return (
@@ -48,12 +48,12 @@ export default function HomePage() {
         <div
           aria-hidden
           className="anim-float pointer-events-none absolute -left-24 -top-24 h-[480px] w-[480px] rounded-full"
-          style={{ background: "rgba(56,189,248,0.07)" }}
+          style={{ background: "rgba(22,163,148,0.07)" }}
         />
         <div
           aria-hidden
           className="anim-float-slow pointer-events-none absolute -bottom-32 -right-20 h-[560px] w-[560px] rounded-full"
-          style={{ background: "rgba(56,189,248,0.05)" }}
+          style={{ background: "rgba(22,163,148,0.05)" }}
         />
 
         <div className="relative z-10 flex max-w-2xl flex-col items-center gap-5">
@@ -61,9 +61,9 @@ export default function HomePage() {
           <div
             className="anim-fade-up inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-bold tracking-wide"
             style={{
-              background: "rgba(56,189,248,0.12)",
-              borderColor: "rgba(56,189,248,0.3)",
-              color: "#38bdf8",
+              background: "rgba(22,163,148,0.12)",
+              borderColor: "rgba(22,163,148,0.3)",
+              color: "#16A394",
             }}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-sal-400" />
@@ -82,11 +82,11 @@ export default function HomePage() {
           >
             اختر بثقة
             <br />
-            <span style={{ color: "#38bdf8" }}>قيّم بصدق</span>
+            <span style={{ color: "#16A394" }}>قيّم بصدق</span>
           </h1>
 
           <p className="anim-fade-up-d2 max-w-xl text-lg leading-relaxed text-white/60">
-            سلسبيل — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
+            وين — دليلك الأمين لأفضل الكافيهات والمطاعم والعيادات والصالونات في الرياض. تقييمات حقيقية ومعلومات موثوقة.
           </p>
 
           <div className="anim-fade-up-d3 w-full flex justify-center">
@@ -115,7 +115,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════ STATS ══ */}
       <div
         className="flex flex-wrap justify-center gap-14 px-10 py-14"
-        style={{ background: "#fff", borderBottom: "1px solid #e0f2fe" }}
+        style={{ background: "#fff", borderBottom: "1px solid #C4E8E5" }}
       >
         {[
           { num: "5",  label: "تصنيفات رئيسية" },
@@ -124,7 +124,7 @@ export default function HomePage() {
           { num: "∞",  label: "توسع مستمر في التغطية" },
         ].map((s) => (
           <div key={s.label} className="text-center">
-            <p className="text-5xl font-black leading-none" style={{ color: "#0ea5e9" }}>
+            <p className="text-5xl font-black leading-none" style={{ color: "#0F5C56" }}>
               {s.num}
             </p>
             <p className="mt-2 text-sm font-medium text-ink-600">{s.label}</p>
@@ -135,14 +135,14 @@ export default function HomePage() {
       {/* ══════════════════════════════════ CATEGORIES ══ */}
       <section id="categories" className="scroll-mt-20 px-5 py-24">
         <div className="mx-auto max-w-screen-xl">
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0F5C56" }}>
             التصنيفات
           </p>
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="text-4xl font-black text-ink-900">كل ما تحتاجه في مكان واحد</h2>
               <p className="mt-2 max-w-xl text-base leading-relaxed text-ink-600">
-                سلسبيل يغطي أهم تصنيفات الخدمات في الرياض بتقييمات دقيقة ومعلومات موثوقة.
+                وين يغطي أهم تصنيفات الخدمات في الرياض بتقييمات دقيقة ومعلومات موثوقة.
               </p>
             </div>
             <Link
@@ -155,7 +155,7 @@ export default function HomePage() {
           </div>
 
           <p className="mb-10 text-sm font-medium text-ink-400">
-            منصة سلسبيل (نسخة تجريبية Beta) — دليل خدمي تجريبي لمدينة الرياض.
+            منصة وين (نسخة تجريبية Beta) — دليل خدمي تجريبي لمدينة الرياض.
           </p>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -164,7 +164,7 @@ export default function HomePage() {
                 key={cat.slug}
                 href={`/category/${cat.slug}`}
                 className="group relative overflow-hidden rounded-3xl border p-8 transition hover:-translate-y-1 hover:shadow-xl"
-                style={{ background: "#fff", borderColor: "#e0f2fe" }}
+                style={{ background: "#fff", borderColor: "#C4E8E5" }}
               >
                 {/* Corner gradient accent */}
                 <div
@@ -182,7 +182,7 @@ export default function HomePage() {
                 )}
                 <span className="mb-4 block text-5xl">{cat.icon}</span>
                 <p className="text-xl font-black text-ink-900">{cat.label}</p>
-                <p className="mt-1 text-sm font-bold" style={{ color: "#0ea5e9" }}>
+                <p className="mt-1 text-sm font-bold" style={{ color: "#0F5C56" }}>
                   {CAT_SUB[cat.slug] ?? (cat.count > 0 ? `+${cat.count}` : "")}
                 </p>
                 <p className="mt-2 text-xs leading-relaxed text-ink-600">
@@ -202,7 +202,7 @@ export default function HomePage() {
           </p>
           <h2 className="mb-3 text-4xl font-black text-white">بحث شامل ونتائج موثوقة</h2>
           <p className="mb-14 max-w-xl text-base leading-relaxed text-white/55">
-            فريق سلسبيل يجمع ويحلل آلاف التقييمات من مصادر متعددة ليقدم لك خلاصة موثوقة ودقيقة.
+            فريق وين يجمع ويحلل آلاف التقييمات من مصادر متعددة ليقدم لك خلاصة موثوقة ودقيقة.
           </p>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -210,7 +210,7 @@ export default function HomePage() {
               <div
                 key={step.n}
                 className="rounded-2xl p-7"
-                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(56,189,248,0.2)" }}
+                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(22,163,148,0.2)" }}
               >
                 <div
                   className="mb-5 flex h-11 w-11 items-center justify-center rounded-full text-lg font-black text-white"
@@ -229,7 +229,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════ REGIONS ══ */}
       <section id="regions" className="scroll-mt-20 px-5 py-24" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-screen-xl">
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0F5C56" }}>
             التغطية الجغرافية
           </p>
           <h2 className="mb-3 text-4xl font-black text-ink-900">الرياض كاملة بين يديك</h2>
@@ -253,11 +253,11 @@ export default function HomePage() {
                   <div
                     key={r.value}
                     className="flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-5 text-center"
-                    style={{ background: "#f0f9ff", borderColor: "#e0f2fe" }}
+                    style={{ background: "#FAF7F2", borderColor: "#C4E8E5" }}
                   >
                     <span className="text-2xl">{r.icon}</span>
-                    <p className="text-sm font-bold" style={{ color: "#0c4a6e" }}>{r.label}</p>
-                    <p className="text-xs font-semibold" style={{ color: "#0ea5e9" }}>
+                    <p className="text-sm font-bold" style={{ color: "#0F5C56" }}>{r.label}</p>
+                    <p className="text-xs font-semibold" style={{ color: "#0F5C56" }}>
                       {counts[r.value] ?? 0}+ مكان
                     </p>
                   </div>
@@ -268,7 +268,7 @@ export default function HomePage() {
 
           <p className="mt-6 text-center text-sm text-ink-500">
             لتصفية الأماكن بالمنطقة —{" "}
-            <a href="#categories" className="font-semibold underline" style={{ color: "#0ea5e9" }}>
+            <a href="#categories" className="font-semibold underline" style={{ color: "#0F5C56" }}>
               اختر تصنيفاً أولاً ↑
             </a>
           </p>
@@ -276,11 +276,11 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════ CONTACT ══ */}
-      <section id="contact" className="scroll-mt-20 px-5 py-24" style={{ background: "#f0f9ff" }}>
+      <section id="contact" className="scroll-mt-20 px-5 py-24" style={{ background: "#FAF7F2" }}>
         <div className="mx-auto grid max-w-screen-xl gap-16 lg:grid-cols-2 lg:items-center">
           {/* Info */}
           <div>
-            <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            <p className="mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: "#0F5C56" }}>
               تواصل معنا
             </p>
             <h2 className="mb-4 text-4xl font-black leading-tight text-ink-900">
