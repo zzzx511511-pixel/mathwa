@@ -2344,6 +2344,19 @@ function AdminDashboard() {
                                             searchHint={`${editForm?.name ?? ""} ${branch.neighborhood ?? ""}`}
                                             onSelect={(url, lat, lng) => updateBranchInEdit(branch.id, { mapsUrl: url || undefined, lat, lng })}
                                           />
+                                          {/* Override: force branch to appear in the public list
+                                              even if it's the hero branch shown in the top card */}
+                                          <label className="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-sal-200 bg-white px-3 py-2">
+                                            <input
+                                              type="checkbox"
+                                              checked={branch.showInBranchesListEvenIfHero ?? false}
+                                              onChange={(e) => updateBranchInEdit(branch.id, { showInBranchesListEvenIfHero: e.target.checked || undefined })}
+                                              className="h-3.5 w-3.5 rounded accent-sal-600"
+                                            />
+                                            <span className="text-[11px] text-ink-700">
+                                              عرض في قائمة الفروع حتى لو كان مصدر البطاقة الرئيسية
+                                            </span>
+                                          </label>
                                           <button
                                             type="button"
                                             onClick={() => setEditBranchId(null)}
