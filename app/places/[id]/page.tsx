@@ -64,7 +64,7 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       place.id,
       place.name,
       place.neighborhood ?? mainBranch?.neighborhood,
-      2,
+      10,
       place.googlePlaceId
     ),
     getPlaceStatus(place.id),
@@ -358,10 +358,10 @@ export default async function PlaceDetailPage({ params }: { params: { id: string
       {galleryPhotos.length > 0 && (
         <div className="rounded-2xl border border-sal-100 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-extrabold text-ink-900">📷 صور المكان</h2>
-          <PhotoLightbox photos={galleryPhotos.slice(0, 2)} altPrefix={place.name} />
+          <PhotoLightbox photos={galleryPhotos} altPrefix={place.name} />
           {/* Wrong photo report buttons — one per visible photo */}
           <div className="mt-3 flex flex-wrap gap-3 border-t border-sal-50 pt-3">
-            {galleryPhotos.slice(0, 2).map((url, i) => (
+            {galleryPhotos.map((url, i) => (
               <WrongPhotoButton
                 key={i}
                 placeId={place.id}
