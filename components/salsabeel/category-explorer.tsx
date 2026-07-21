@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { Place } from "@/lib/salsabeel/types";
 import { CLINIC_SPECS } from "@/lib/salsabeel/types";
 import type { CategoryMeta } from "@/lib/salsabeel/categories";
+import type { BranchPin } from "./category-map-view";
 import { PlaceCard } from "./place-card";
 
 const CategoryMapView = lazy(() =>
@@ -71,6 +72,9 @@ export function CategoryExplorer({
   const [spec, setSpec]           = useState("all");
   const [sort, setSort]           = useState<SortMode>("default");
   const [view, setView]           = useState<"cards" | "map">("cards");
+  const [mapSearchInput, setMapSearchInput]       = useState("");
+  const [mapSearchCommitted, setMapSearchCommitted] = useState("");
+  const [mapRemountKey, setMapRemountKey]         = useState(0);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoState, setGeoState]   = useState<"idle" | "loading" | "error">("idle");
   const [geoError, setGeoError]   = useState<string>("");
@@ -146,6 +150,55 @@ export function CategoryExplorer({
     }
     return filtered;
   }, [filtered, sort, userCoords, visitCounts]);
+
+  // Searches ALL places in the category (ignores region/spec filter) so every
+  // branch of a matching establishment appears on the map, regardless of region.
+  const focusedBranches = useMemo((): BranchPin[] | undefined => {
+    if (!mapSearchCommitted.trim()) return undefined;
+    const q = normalize(mapSearchCommitted.trim());
+    const matched = places.filter((p) =>
+      normalize(p.name).includes(q) ||
+      p.tags.some((t) => normalize(t).includes(q)) ||
+      (p.keywords ?? []).some((k) => normalize(k).includes(q))
+    );
+    const pins: BranchPin[] = [];
+    matched.forEach((place) => {
+      place.branches.forEach((branch) => {
+        if (branch.lat && branch.lng) {
+          pins.push({
+            place,
+            branchName:    branch.name,
+            branchAddress: branch.address,
+            mapsUrl:       branch.mapsUrl,
+            lat:           branch.lat,
+            lng:           branch.lng,
+          });
+        } else if (place.branches.length === 1 && place.lat && place.lng) {
+          // Single-branch place: fall back to place-level coordinates
+          pins.push({
+            place,
+            branchName:    branch.name,
+            branchAddress: branch.address,
+            mapsUrl:       branch.mapsUrl,
+            lat:           place.lat,
+            lng:           place.lng,
+          });
+        }
+      });
+    });
+    return pins;
+  }, [mapSearchCommitted, places]);
+
+  function submitMapSearch() {
+    setMapSearchCommitted(mapSearchInput);
+    setMapRemountKey((k) => k + 1);
+  }
+
+  function clearMapSearch() {
+    setMapSearchInput("");
+    setMapSearchCommitted("");
+    setMapRemountKey((k) => k + 1);
+  }
 
   function setRegion(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -389,15 +442,67 @@ export function CategoryExplorer({
 
       {/* ── Map view ── */}
       {view === "map" && (
-        <Suspense
-          fallback={
-            <div className="flex h-64 items-center justify-center rounded-2xl border border-sal-100 bg-sal-50">
-              <p className="text-sm font-semibold text-ink-500">⏳ جارٍ تحميل الخريطة...</p>
+        <div className="space-y-3">
+          {/* Branch search bar — find all branches of a specific establishment */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <svg
+                className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400"
+                fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
+              </svg>
+              <input
+                type="text"
+                value={mapSearchInput}
+                onChange={(e) => setMapSearchInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submitMapSearch(); }}
+                placeholder="ابحث عن منشأة لعرض كل فروعها على الخريطة..."
+                className="w-full rounded-2xl border border-sal-200 bg-white py-2.5 pr-11 pl-10 text-sm text-ink-900 outline-none focus:border-sal-400 transition"
+                style={{ direction: "rtl" }}
+              />
+              {mapSearchInput && (
+                <button
+                  onClick={clearMapSearch}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700 text-base leading-none"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-          }
-        >
-          <CategoryMapView places={displayed} cat={cat} />
-        </Suspense>
+            <button
+              onClick={submitMapSearch}
+              className="shrink-0 rounded-2xl px-5 py-2.5 text-sm font-bold text-white transition"
+              style={{ background: "linear-gradient(135deg,#16A394 0%,#0F5C56 100%)" }}
+            >
+              بحث
+            </button>
+          </div>
+
+          {/* Result summary for branch search */}
+          {mapSearchCommitted && (
+            <p className="text-xs font-medium" style={{ color: focusedBranches && focusedBranches.length > 0 ? "#0F5C56" : "#ef4444" }}>
+              {focusedBranches && focusedBranches.length > 0
+                ? `📍 ${focusedBranches.length} فرع${focusedBranches.length === 1 ? "" : "ًا"} مطابق لـ "${mapSearchCommitted}"`
+                : `لا توجد فروع بإحداثيات مسجّلة لـ "${mapSearchCommitted}" — جرب اسمًا مختلفًا أو أضف الإحداثيات من لوحة التحكم`}
+            </p>
+          )}
+
+          <Suspense
+            fallback={
+              <div className="flex h-64 items-center justify-center rounded-2xl border border-sal-100 bg-sal-50">
+                <p className="text-sm font-semibold text-ink-500">⏳ جارٍ تحميل الخريطة...</p>
+              </div>
+            }
+          >
+            <CategoryMapView
+              key={mapRemountKey}
+              places={displayed}
+              cat={cat}
+              branchPins={focusedBranches}
+            />
+          </Suspense>
+        </div>
       )}
 
       {/* ── Nearest note ── */}

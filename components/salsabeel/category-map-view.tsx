@@ -4,6 +4,15 @@ import { useEffect, useRef, useMemo } from "react";
 import type { Place } from "@/lib/salsabeel/types";
 import type { CategoryMeta } from "@/lib/salsabeel/categories";
 
+export type BranchPin = {
+  place: Place;
+  branchName: string;
+  branchAddress: string;
+  mapsUrl?: string;
+  lat: number;
+  lng: number;
+};
+
 const REGION_CENTERS: Record<string, [number, number]> = {
   "شمال": [24.800, 46.650],
   "جنوب": [24.570, 46.720],
@@ -13,7 +22,6 @@ const REGION_CENTERS: Record<string, [number, number]> = {
 };
 const RIYADH_CENTER: [number, number] = [24.690, 46.690];
 
-// Spread pins that share a region center using the golden angle
 function spreadOffset(index: number): [number, number] {
   const angle  = (index * 137.508) % 360;
   const radius = 0.012 + (index % 6) * 0.006;
@@ -21,8 +29,6 @@ function spreadOffset(index: number): [number, number] {
   return [Math.sin(rad) * radius, Math.cos(rad) * radius];
 }
 
-// Returns true when we have a real GPS pin (place-level or branch-level).
-// False means we're falling back to a region-centre approximation.
 function hasExactPin(place: Place): boolean {
   if (place.lat && place.lng) return true;
   return place.branches.some((b) => b.lat && b.lng);
@@ -30,9 +36,6 @@ function hasExactPin(place: Place): boolean {
 
 function getCoords(place: Place, index: number): [number, number] {
   if (place.lat && place.lng) return [place.lat, place.lng];
-  // Fall back to first branch that has GPS coords (e.g. from Google Places fetch).
-  // For single-branch places this IS the place's location.
-  // For multi-branch places it's the first branch — much better than a region centre.
   const withCoords = place.branches.find((b) => b.lat && b.lng);
   if (withCoords) return [withCoords.lat!, withCoords.lng!];
   const center  = REGION_CENTERS[place.region ?? "وسط"] ?? RIYADH_CENTER;
@@ -85,17 +88,37 @@ function multiPopup(group: Place[], cat: CategoryMeta): string {
     </div>`;
 }
 
+function branchPinPopup(pin: BranchPin, cat: CategoryMeta): string {
+  const showBranchName = pin.branchName && pin.branchName !== pin.place.name;
+  return `
+    <div style="min-width:220px;max-width:260px;font-family:'Tajawal',system-ui,sans-serif;direction:rtl;text-align:right;padding:4px 0">
+      <span style="display:inline-block;background:${cat.bg};color:${cat.color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:800;margin-bottom:8px">
+        ${cat.icon} ${cat.label}
+      </span>
+      <p style="margin:0 0 2px;font-size:15px;font-weight:800;color:#0F5C56;line-height:1.3">${pin.place.name}</p>
+      ${showBranchName ? `<p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#475569">🏪 ${pin.branchName}</p>` : ""}
+      ${pin.branchAddress ? `<p style="margin:0 0 8px;font-size:11px;color:#94a3b8">📍 ${pin.branchAddress}</p>` : '<div style="margin-bottom:8px"></div>'}
+      ${pin.mapsUrl ? `<a href="${pin.mapsUrl}" target="_blank" rel="noopener noreferrer" style="display:block;margin-bottom:6px;background:#E8F5F4;color:#0F5C56;text-decoration:none;padding:6px 16px;border-radius:8px;font-size:11px;font-weight:700;text-align:center">🗺️ فتح في الخرائط</a>` : ""}
+      <a href="/places/${pin.place.id}" style="display:block;background:linear-gradient(135deg,#16A394 0%,#0F5C56 100%);color:white;text-decoration:none;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;text-align:center">عرض التفاصيل ←</a>
+    </div>`;
+}
+
 export function CategoryMapView({
   places,
   cat,
+  branchPins,
 }: {
   places: Place[];
   cat: CategoryMeta;
+  branchPins?: BranchPin[];
 }) {
   const mapDivRef      = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<import("leaflet").Map | null>(null);
 
+  const isBranchMode = branchPins !== undefined && branchPins.length > 0;
+
   const coordsList = useMemo(() => {
+    if (isBranchMode) return [];
     const regionCounters: Record<string, number> = {};
     return places.map((place) => {
       const key = place.region ?? "وسط";
@@ -103,10 +126,10 @@ export function CategoryMapView({
       regionCounters[key] = idx + 1;
       return getCoords(place, idx);
     });
-  }, [places]);
+  }, [places, isBranchMode]);
 
-  // Group places that share the same resolved coordinates
   const groups = useMemo(() => {
+    if (isBranchMode) return [];
     const map = new Map<string, { places: Place[]; coords: [number, number]; hasApprox: boolean }>();
     places.forEach((place, i) => {
       const [lat, lng] = coordsList[i];
@@ -117,10 +140,13 @@ export function CategoryMapView({
       if (isApprox) map.get(key)!.hasApprox = true;
     });
     return Array.from(map.values());
-  }, [places, coordsList]);
+  }, [places, coordsList, isBranchMode]);
 
-  const hasExact    = useMemo(() => places.some((p) => hasExactPin(p)),   [places]);
-  const approxCount = useMemo(() => places.filter((p) => !hasExactPin(p)).length, [places]);
+  const hasExact    = useMemo(() => places.some((p) => hasExactPin(p)), [places]);
+  const approxCount = useMemo(
+    () => (isBranchMode ? 0 : places.filter((p) => !hasExactPin(p)).length),
+    [places, isBranchMode]
+  );
 
   useEffect(() => {
     if (!mapDivRef.current || mapInstanceRef.current) return;
@@ -172,18 +198,38 @@ export function CategoryMapView({
         });
       };
 
-      groups.forEach(({ places: grp, coords, hasApprox }) => {
-        const [lat, lng] = coords;
-        const icon       = makeIcon(grp.length);
-        const content    =
-          grp.length === 1
-            ? singlePopup(grp[0], cat, hasApprox)
-            : multiPopup(grp, cat);
+      if (branchPins && branchPins.length > 0) {
+        // Branch-search mode: one pin per branch, then fit bounds to show them all
+        const latLngs: [number, number][] = [];
 
-        L.marker([lat, lng], { icon })
-          .addTo(map)
-          .bindPopup(content, { maxWidth: 280, closeButton: true });
-      });
+        branchPins.forEach((pin) => {
+          const icon = makeIcon(1);
+          L.marker([pin.lat, pin.lng], { icon })
+            .addTo(map)
+            .bindPopup(branchPinPopup(pin, cat), { maxWidth: 280, closeButton: true });
+          latLngs.push([pin.lat, pin.lng]);
+        });
+
+        if (latLngs.length > 1) {
+          map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50], maxZoom: 16 });
+        } else if (latLngs.length === 1) {
+          map.setView(latLngs[0], 15);
+        }
+      } else {
+        // Normal mode: one pin per coordinate group (existing behavior)
+        groups.forEach(({ places: grp, coords, hasApprox }) => {
+          const [lat, lng] = coords;
+          const icon       = makeIcon(grp.length);
+          const content    =
+            grp.length === 1
+              ? singlePopup(grp[0], cat, hasApprox)
+              : multiPopup(grp, cat);
+
+          L.marker([lat, lng], { icon })
+            .addTo(map)
+            .bindPopup(content, { maxWidth: 280, closeButton: true });
+        });
+      }
 
       mapInstanceRef.current = map;
     });
