@@ -622,6 +622,9 @@ function AdminDashboard() {
     saving: boolean;
   } | null>(null);
   const [previewLoading, setPreviewLoading] = useState<string | null>(null);
+  // Storage photos shown in edit form with per-photo delete buttons
+  const [storagePhotos, setStoragePhotos] = useState<string[]>([]);
+  const [storagePhotoDeleting, setStoragePhotoDeleting] = useState<Set<string>>(new Set());
   const [newNearby, setNewNearby]   = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [editNearby, setEditNearby] = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [saving, setSaving]         = useState(false);
@@ -835,6 +838,35 @@ function AdminDashboard() {
     branchLng: undefined as number | undefined,
   });
 
+  // ── Storage photo helpers (individual delete in edit form) ─────────
+  async function loadStoragePhotos(placeId: string) {
+    setStoragePhotos([]);
+    try {
+      const res = await fetch(`/api/admin/storage-photos?place_id=${encodeURIComponent(placeId)}`);
+      if (!res.ok) return;
+      const { photos } = await res.json() as { photos: string[] };
+      setStoragePhotos(photos ?? []);
+    } catch {
+      // silent — section simply stays empty
+    }
+  }
+
+  async function deleteStoragePhoto(placeId: string, photoUrl: string) {
+    setStoragePhotoDeleting((s) => new Set(s).add(photoUrl));
+    try {
+      const res = await fetch("/api/admin/storage-photos", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ place_id: placeId, photo_url: photoUrl }),
+      });
+      if (res.ok) {
+        setStoragePhotos((prev) => prev.filter((u) => u !== photoUrl));
+      }
+    } finally {
+      setStoragePhotoDeleting((s) => { const n = new Set(s); n.delete(photoUrl); return n; });
+    }
+  }
+
   // ── Edit helpers ────────────────────────────────────────────────────
   function startEdit(place: Place) {
     setEditingId(place.id);
@@ -842,6 +874,9 @@ function AdminDashboard() {
     setNewBranch({});
     setEditBranchId(null);
     setSaveError(null);
+    setStoragePhotos([]);
+    setStoragePhotoDeleting(new Set());
+    loadStoragePhotos(place.id);
     setEditForm({
       id: place.id,
       name: place.name,
@@ -1019,6 +1054,8 @@ function AdminDashboard() {
     setNewBranch({});
     setEditBranchId(null);
     setDeletingBranchId(null);
+    setStoragePhotos([]);
+    setStoragePhotoDeleting(new Set());
   }
 
   // ── Branch helpers ──────────────────────────────────────────────────
@@ -2257,6 +2294,38 @@ function AdminDashboard() {
                                   </div>
                                 )}
                               </div>
+
+                              {/* ── Storage photos (Google-cached) with per-photo delete ── */}
+                              {storagePhotos.length > 0 && (
+                                <div className="sm:col-span-2">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <label className="text-xs font-semibold text-ink-700">🗂️ صور مخزنة من Google</label>
+                                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                                      {storagePhotos.length}
+                                    </span>
+                                  </div>
+                                  <p className="mb-2 text-[11px] text-ink-500">احذف أي صورة بعينها دون مسح الكل — بعد الحذف يُعاد جلب بديل من Google عند أول زيارة.</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {storagePhotos.map((url) => (
+                                      <div key={url} className="relative">
+                                        <img
+                                          src={url}
+                                          alt=""
+                                          className={`h-20 w-20 rounded-xl object-cover transition ${storagePhotoDeleting.has(url) ? "opacity-30" : ""}`}
+                                        />
+                                        <button
+                                          type="button"
+                                          disabled={storagePhotoDeleting.has(url)}
+                                          onClick={() => deleteStoragePhoto(editForm.id as string, url)}
+                                          className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow disabled:opacity-40"
+                                        >
+                                          {storagePhotoDeleting.has(url) ? "…" : "×"}
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
 
                               {/* ── Branches ── */}
                               <div className="sm:col-span-2">

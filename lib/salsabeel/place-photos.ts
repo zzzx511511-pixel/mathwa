@@ -195,8 +195,11 @@ export async function deleteSpecificPhoto(placeId: string, photoUrl: string): Pr
   if (!SUPABASE_URL || !SUPABASE_KEY) return false;
   try {
     // Extract filename from the Supabase public URL.
-    // URL shape: .../object/public/place-photos/{placeId}/{filename}
-    const filename = photoUrl.split("/").pop();
+    // URL shape: .../object/public/place-photos/{placeId}/{filename}[?t=cache-buster]
+    // Strip the ?t=... cache-buster before testing — the buster is appended by getStoredState
+    // but is not part of the actual storage filename.
+    const rawFilename = photoUrl.split("/").pop() ?? "";
+    const filename = rawFilename.split("?")[0];
     if (!filename || !/^photo_\d+\.(jpg|jpeg|png|webp)$/i.test(filename)) return false;
 
     const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
@@ -225,6 +228,15 @@ export async function deleteSpecificPhoto(placeId: string, photoUrl: string): Pr
   } catch {
     return false;
   }
+}
+
+/**
+ * Return current Storage photo URLs for a place without triggering any Google fetch.
+ * Used by admin to preview and individually delete cached Storage photos.
+ */
+export async function listStoredPhotos(placeId: string): Promise<string[]> {
+  const { urls } = await getStoredState(placeId, 20);
+  return urls;
 }
 
 // Fetch via Place ID (accurate — no text-search guessing).
