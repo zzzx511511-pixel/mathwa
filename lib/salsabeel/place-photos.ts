@@ -428,6 +428,55 @@ async function downloadAndStore(
 }
 
 /**
+ * Fetch photo refs from Google without storing anything — used by the admin
+ * preview flow so the admin can select which photos to keep before saving.
+ */
+export async function fetchGooglePhotoRefsPreview(
+  googlePlaceId: string | null,
+  placeName: string,
+  neighborhood: string | undefined,
+  count = 10
+): Promise<string[]> {
+  if (!GOOGLE_KEY) return [];
+  const { refs } = googlePlaceId
+    ? await fetchGoogleDataById(googlePlaceId, count)
+    : await fetchGoogleData(
+        [placeName, neighborhood, "الرياض"].filter(Boolean).join(" "),
+        count
+      );
+  return refs;
+}
+
+/**
+ * Download and store only the admin-selected photo refs.
+ * Clears previous photos + GID sentinels, then stores the selected subset.
+ * If refs is empty, writes .skip to prevent auto-refetch.
+ */
+export async function storeSelectedPhotos(
+  placeId: string,
+  googlePlaceId: string,
+  refs: string[]
+): Promise<string[]> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return [];
+  await ensureBucket();
+  const { fileNames } = await getStoredState(placeId, 20);
+  // Clear old photos, GID sentinels, and any existing .skip
+  await clearPhotosAndGid(placeId, fileNames);
+  await clearSkipSentinel(placeId);
+
+  if (!refs.length) {
+    // Admin chose no photos — write .skip so Google doesn't auto-refetch
+    await writeSentinel(placeId);
+    return [];
+  }
+
+  const results = await Promise.all(refs.map((ref, i) => downloadAndStore(placeId, ref, i)));
+  const stored = results.filter(Boolean) as string[];
+  await writeGidSentinel(placeId, googlePlaceId, stored.length);
+  return stored;
+}
+
+/**
  * Get up to `count` photos for a place.
  * Checks Supabase Storage first; fetches from Google and stores if missing.
  *

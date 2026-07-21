@@ -613,6 +613,15 @@ function AdminDashboard() {
   const [statusChecking, setStatusChecking] = useState(false);
   const [photoClearId, setPhotoClearId] = useState<string | null>(null); // "clearing" | "done" | "error" keyed by id
   const [photoClearState, setPhotoClearState] = useState<Record<string, "clearing" | "done" | "error">>({});
+  // Bug 2: Google photo preview + selection
+  const [googlePhotoPreview, setGooglePhotoPreview] = useState<{
+    placeId: string;
+    googlePlaceId: string;
+    placeName: string;
+    items: Array<{ ref: string; previewUrl: string; selected: boolean }>;
+    saving: boolean;
+  } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState<string | null>(null);
   const [newNearby, setNewNearby]   = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [editNearby, setEditNearby] = useState<{ place_id: string; name: string; address: string }[]>([]);
   const [saving, setSaving]         = useState(false);
@@ -875,7 +884,53 @@ function AdminDashboard() {
     });
   }
 
-  async function saveEdit() {
+  // Bug 2: open Google photo preview modal
+  async function openGooglePhotoPreview(placeId: string, googlePlaceId: string, placeName: string) {
+    setPreviewLoading(placeId);
+    try {
+      const params = new URLSearchParams({ gid: googlePlaceId, name: placeName, count: "10" });
+      const res = await fetch(`/api/admin/preview-google-photos?${params}`);
+      if (!res.ok) throw new Error("فشل جلب المعاينة");
+      const { items } = await res.json() as { items: Array<{ ref: string; previewUrl: string }> };
+      setGooglePhotoPreview({
+        placeId, googlePlaceId, placeName,
+        items: items.map((item) => ({ ...item, selected: true })),
+        saving: false,
+      });
+    } catch {
+      // silent — user can retry
+    } finally {
+      setPreviewLoading(null);
+    }
+  }
+
+  // Bug 2: save the admin-selected Google photos
+  async function saveSelectedGooglePhotos() {
+    if (!googlePhotoPreview) return;
+    const selectedRefs = googlePhotoPreview.items.filter((i) => i.selected).map((i) => i.ref);
+    setGooglePhotoPreview((prev) => prev ? { ...prev, saving: true } : prev);
+    try {
+      const res = await fetch("/api/admin/save-selected-photos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          place_id:        googlePhotoPreview.placeId,
+          google_place_id: googlePhotoPreview.googlePlaceId,
+          refs:            selectedRefs,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const closedPlaceId = googlePhotoPreview.placeId;
+      setGooglePhotoPreview(null);
+      setPhotoClearState((s) => { const n = { ...s }; delete n[closedPlaceId]; return n; });
+    } catch {
+      setGooglePhotoPreview((prev) => prev ? { ...prev, saving: false } : prev);
+    }
+  }
+
+  // photosOverride lets removePhoto auto-save the new list without waiting for
+  // a React re-render to commit the setEditForm state update.
+  async function saveEdit(photosOverride?: string[]) {
     if (!editForm) return;
     const original = places.find((p) => p.id === editForm.id);
     if (!original) return;
@@ -913,7 +968,8 @@ function AdminDashboard() {
         : typeof editForm.keywords === "string"
           ? (editForm.keywords as string).split(",").map((k) => k.trim()).filter(Boolean)
           : original.keywords,
-      photos: editForm.photos ?? original.photos,
+      // Bug 3: photosOverride bypasses stale state when called from removePhoto
+      photos: photosOverride !== undefined ? photosOverride : (editForm.photos ?? original.photos),
       videos: original.videos,
       branches: editForm.branches ?? original.branches,
       tags: typeof editForm.tags === "string"
@@ -1014,10 +1070,14 @@ function AdminDashboard() {
     });
   }
 
-  function removePhoto(index: number) {
-    setEditForm((prev) =>
-      prev ? { ...prev, photos: (prev.photos ?? []).filter((_, i) => i !== index) } : prev
-    );
+  async function removePhoto(index: number) {
+    const photo = (editForm?.photos ?? [])[index];
+    const newPhotos = (editForm?.photos ?? []).filter((_, i) => i !== index);
+    setEditForm((prev) => prev ? { ...prev, photos: newPhotos } : prev);
+    // Bug 3: auto-persist deletion for saved HTTP URLs (not data: blobs, which aren't yet saved)
+    if (photo && !photo.startsWith("data:")) {
+      await saveEdit(newPhotos);
+    }
   }
 
   function addVideo() {
@@ -2163,6 +2223,11 @@ function AdminDashboard() {
                               {/* Photos */}
                               <div className="sm:col-span-2">
                                 <label className="mb-1 block text-xs font-semibold text-ink-700">صور المكان</label>
+                                {editForm.googlePlaceId && (
+                                  <p className="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-800">
+                                    ⚠️ الصور المجلوبة من Google تُلغي صور &quot;place.photos&quot; أدناه عند العرض. للتحكم في صور Google استخدم زر &quot;📸 اختر صور قوقل&quot; في قائمة الأماكن.
+                                  </p>
+                                )}
                                 <input
                                   ref={fileInputRef}
                                   type="file"
@@ -2524,7 +2589,7 @@ function AdminDashboard() {
                           <td className="px-4 py-4">
                             <div className="flex flex-col gap-2">
                               <button
-                                onClick={saveEdit}
+                                onClick={() => saveEdit()}
                                 disabled={saving}
                                 className="rounded-xl bg-sal-600 px-4 py-2 text-xs font-bold text-white hover:bg-sal-700 transition disabled:opacity-60"
                               >
@@ -2623,6 +2688,18 @@ function AdminDashboard() {
                                   🗑️ حذف
                                 </button>
                               </div>
+                              {place.googlePlaceId && !photoClearState[place.id] && (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    title="اختر صور Google لهذا المكان"
+                                    onClick={() => openGooglePhotoPreview(place.id, place.googlePlaceId!, place.name)}
+                                    disabled={previewLoading === place.id}
+                                    className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition"
+                                  >
+                                    {previewLoading === place.id ? "⏳" : "📸 اختر صور قوقل"}
+                                  </button>
+                                </div>
+                              )}
                               <div className="flex items-center gap-1.5">
                                 <select
                                   value={placeStatuses.get(place.id) ?? ""}
@@ -2643,39 +2720,32 @@ function AdminDashboard() {
                                   <option value="CLOSED_PERMANENTLY">🔴 مغلق نهائيًا</option>
                                 </select>
                                 {photoClearState[place.id] === "done" ? (
-                                  <button
-                                    title="إعادة جلب صور من Google"
-                                    onClick={async () => {
-                                      setPhotoClearState((s) => ({ ...s, [place.id]: "clearing" }));
-                                      // If the place has a Google Place ID, call reset-place-cache which
-                                      // clears old photos and immediately re-fetches fresh ones from Google.
-                                      // Otherwise fall back to clearing .skip only (lazy re-fetch on next visit).
-                                      let ok = false;
-                                      if (place.googlePlaceId) {
-                                        const res = await fetch("/api/admin/reset-place-cache", {
-                                          method: "POST",
-                                          headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({
-                                            place_id: place.id,
-                                            google_place_id: place.googlePlaceId,
-                                            place_name: place.name,
-                                            count: 2,
-                                          }),
-                                        });
-                                        ok = res.ok;
-                                      } else {
+                                  place.googlePlaceId ? (
+                                    <button
+                                      title="اختر صور Google لهذا المكان"
+                                      onClick={() => openGooglePhotoPreview(place.id, place.googlePlaceId!, place.name)}
+                                      disabled={previewLoading === place.id}
+                                      className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition"
+                                    >
+                                      {previewLoading === place.id ? "⏳" : "📸 اختر صور قوقل"}
+                                    </button>
+                                  ) : (
+                                    <button
+                                      title="إعادة جلب صور من Google"
+                                      onClick={async () => {
+                                        setPhotoClearState((s) => ({ ...s, [place.id]: "clearing" }));
                                         const res = await fetch(`/api/place-photos/${place.id}`, { method: "PATCH" });
-                                        ok = res.ok;
-                                      }
-                                      setPhotoClearState((s) => {
-                                        if (ok) { const n = { ...s }; delete n[place.id]; return n; }
-                                        return { ...s, [place.id]: "error" };
-                                      });
-                                    }}
-                                    className="rounded-lg border border-green-200 bg-green-50 px-2 py-1 text-[10px] font-bold text-green-700 hover:bg-green-100 transition"
-                                  >
-                                    ✅ تم المسح — إعادة جلب؟
-                                  </button>
+                                        const ok = res.ok;
+                                        setPhotoClearState((s) => {
+                                          if (ok) { const n = { ...s }; delete n[place.id]; return n; }
+                                          return { ...s, [place.id]: "error" };
+                                        });
+                                      }}
+                                      className="rounded-lg border border-green-200 bg-green-50 px-2 py-1 text-[10px] font-bold text-green-700 hover:bg-green-100 transition"
+                                    >
+                                      ✅ تم المسح — إعادة جلب؟
+                                    </button>
+                                  )
                                 ) : photoClearState[place.id] === "error" ? (
                                   <span className="text-[10px] font-bold text-red-600">❌ فشل</span>
                                 ) : (
@@ -2710,6 +2780,91 @@ function AdminDashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Google Photo Preview Modal (Bug 2) ───────────────────────── */}
+      {googlePhotoPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+              <div>
+                <h3 className="text-base font-extrabold text-ink-900">📸 اختر صور Google</h3>
+                <p className="mt-0.5 text-xs text-ink-500">{googlePhotoPreview.placeName}</p>
+              </div>
+              <button
+                onClick={() => setGooglePhotoPreview(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 hover:bg-gray-100 text-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto p-5 flex-1">
+              {googlePhotoPreview.items.length === 0 ? (
+                <p className="text-center text-sm text-ink-500 py-8">لا توجد صور متاحة من Google لهذا المكان</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {googlePhotoPreview.items.map((item, i) => (
+                    <label
+                      key={item.ref}
+                      className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition ${
+                        item.selected ? "border-sal-500" : "border-transparent opacity-50"
+                      }`}
+                    >
+                      <img
+                        src={item.previewUrl}
+                        alt={`صورة ${i + 1}`}
+                        className="h-32 w-full object-cover"
+                      />
+                      <input
+                        type="checkbox"
+                        checked={item.selected}
+                        onChange={(e) =>
+                          setGooglePhotoPreview((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  items: prev.items.map((x, j) =>
+                                    j === i ? { ...x, selected: e.target.checked } : x
+                                  ),
+                                }
+                              : prev
+                          )
+                        }
+                        className="absolute top-2 right-2 h-4 w-4 accent-sal-600 rounded"
+                      />
+                      {item.selected && (
+                        <div className="absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-full bg-sal-600 text-white text-[10px] font-bold">
+                          ✓
+                        </div>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between border-t border-gray-100 px-5 py-4">
+              <span className="text-xs text-ink-500">
+                {googlePhotoPreview.items.filter((i) => i.selected).length} / {googlePhotoPreview.items.length} محددة
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGooglePhotoPreview(null)}
+                  disabled={googlePhotoPreview.saving}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-ink-600 hover:bg-gray-50 disabled:opacity-50 transition"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={saveSelectedGooglePhotos}
+                  disabled={googlePhotoPreview.saving || googlePhotoPreview.items.filter((i) => i.selected).length === 0}
+                  className="rounded-xl bg-sal-600 px-4 py-2 text-sm font-bold text-white hover:bg-sal-700 disabled:opacity-50 transition"
+                >
+                  {googlePhotoPreview.saving ? "⏳ جاري الحفظ…" : "حفظ المحدد"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
