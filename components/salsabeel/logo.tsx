@@ -1,50 +1,44 @@
-/** Water-drop logo component — matches salsabeel-logo.html design */
+/** Map-pin logo component — وين brand identity */
 
 type Size = "xs" | "sm" | "md" | "lg";
 
-const SIZES: Record<Size, { drop: number; star: number }> = {
-  xs: { drop: 28, star: 15 },
-  sm: { drop: 36, star: 20 },
-  md: { drop: 44, star: 26 },
-  lg: { drop: 80, star: 46 },
+const SIZES: Record<Size, number> = {
+  xs: 28,
+  sm: 36,
+  md: 44,
+  lg: 80,
 };
 
+/**
+ * Map-pin icon: coral outer body (#FF6B4A) with a dark-teal inner circle (#0F5C56).
+ * Replaces the old water-drop + star shape.
+ */
 export function LogoDrop({ size = "md", glow = true }: { size?: Size; glow?: boolean }) {
-  const { drop: d, star: s } = SIZES[size];
+  const d = SIZES[size];
   return (
-    <div style={{ position: "relative", width: d, height: d, flexShrink: 0 }}>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(160deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)",
-          borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-          transform: "rotate(180deg)",
-          boxShadow: glow ? "0 0 20px rgba(56,189,248,0.45)" : undefined,
-        }}
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      width={d}
+      height={d}
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        flexShrink: 0,
+        filter: glow ? "drop-shadow(0 0 6px rgba(255,107,74,0.55))" : undefined,
+      }}
+    >
+      {/* Pin body — coral */}
+      <path
+        d="M16 2C9.4 2 4 7.4 4 14c0 7.2 11.3 17.6 11.8 18.1a.3.3 0 0 0 .4 0C16.7 31.6 28 21.2 28 14 28 7.4 22.6 2 16 2z"
+        fill="#FF6B4A"
       />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <svg viewBox="0 0 60 60" fill="none" width={s} height={s}>
-          <polygon
-            points="30,6 35.5,22.5 53,22.5 39,32.5 44.5,49 30,39 15.5,49 21,32.5 7,22.5 24.5,22.5"
-            fill="white"
-            opacity="0.95"
-          />
-        </svg>
-      </div>
-    </div>
+      {/* Inner circle — dark teal */}
+      <circle cx="16" cy="13.5" r="4.5" fill="#0F5C56" />
+    </svg>
   );
 }
 
-/** Full logo (drop + name) */
+/** Full logo (pin icon + brand name) */
 export function SalsabeelBrand({
   size = "md",
   showTagline = false,
@@ -67,7 +61,7 @@ export function SalsabeelBrand({
           className={`font-extrabold tracking-wide text-white ${textSizes[size]}`}
           style={{ fontFamily: "Tajawal, sans-serif" }}
         >
-          سل<span style={{ color: "#38bdf8" }}>س</span>بيل
+          و<span style={{ color: "#FF6B4A" }}>ي</span>ن
         </span>
       </div>
       {showTagline && (
