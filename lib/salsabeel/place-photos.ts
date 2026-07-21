@@ -49,8 +49,7 @@ async function ensureBucket(): Promise<void> {
 //                  serving from cache — prevents stale leftover photos from leaking
 //                  in even if the pre-clear step failed silently.
 async function getStoredState(
-  placeId: string,
-  count: number
+  placeId: string
 ): Promise<{ urls: string[]; skipGoogle: boolean; storedGid: string | null; storedCount: number; fileNames: string[] }> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return { urls: [], skipGoogle: false, storedGid: null, storedCount: 0, fileNames: [] };
   try {
@@ -59,7 +58,7 @@ async function getStoredState(
       headers: storageHeaders(),
       body: JSON.stringify({
         prefix: `${placeId}/`,
-        limit: 20,
+        limit: 50,
         sortBy: { column: "name", order: "asc" },
       }),
     });
@@ -90,7 +89,6 @@ async function getStoredState(
 
     const urls = files
       .filter((f) => /photo_\d+\.(jpg|jpeg|png|webp)$/i.test(f.name))
-      .slice(0, count)
       .map((f) => {
         // Append updated_at as a cache-buster so CDN edges don't serve stale
         // content after a delete+re-upload of the same filename.
@@ -224,6 +222,10 @@ export async function deleteSpecificPhoto(placeId: string, photoUrl: string): Pr
         body: JSON.stringify({ prefixes: toDelete }),
       });
     }
+    // Write .skip so Google does NOT auto-refetch on next page visit — otherwise
+    // the same photo would be restored from Google immediately.
+    // Admin can manually select new photos via "اختر صور قوقل" when needed.
+    await writeSentinel(placeId);
     return true;
   } catch {
     return false;
@@ -235,14 +237,15 @@ export async function deleteSpecificPhoto(placeId: string, photoUrl: string): Pr
  * Used by admin to preview and individually delete cached Storage photos.
  */
 export async function listStoredPhotos(placeId: string): Promise<string[]> {
-  const { urls } = await getStoredState(placeId, 20);
+  const { urls } = await getStoredState(placeId);
   return urls;
 }
 
 // Fetch via Place ID (accurate — no text-search guessing).
+// count=0 means status-only (no photo refs returned). Omit to return all available.
 async function fetchGoogleDataById(
   googlePlaceId: string,
-  count: number
+  count = Number.MAX_SAFE_INTEGER
 ): Promise<{ refs: string[]; businessStatus: string | null }> {
   if (!GOOGLE_KEY) return { refs: [], businessStatus: null };
   try {
@@ -274,9 +277,10 @@ async function fetchGoogleDataById(
 }
 
 // Fetch photo references + business_status from Google Places Legacy API.
+// Omit count to return all available refs.
 async function fetchGoogleData(
   query: string,
-  count: number
+  count = Number.MAX_SAFE_INTEGER
 ): Promise<{ refs: string[]; businessStatus: string | null }> {
   if (!GOOGLE_KEY) return { refs: [], businessStatus: null };
   try {
@@ -471,7 +475,7 @@ export async function storeSelectedPhotos(
 ): Promise<string[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
   await ensureBucket();
-  const { fileNames } = await getStoredState(placeId, 20);
+  const { fileNames } = await getStoredState(placeId);
   // Clear old photos, GID sentinels, and any existing .skip
   await clearPhotosAndGid(placeId, fileNames);
   await clearSkipSentinel(placeId);
@@ -489,42 +493,37 @@ export async function storeSelectedPhotos(
 }
 
 /**
- * Get up to `count` photos for a place.
+ * Get all available photos for a place (no fixed cap).
  * Checks Supabase Storage first; fetches from Google and stores if missing.
  *
  * When `googlePlaceId` is provided the function ONLY ever fetches from that
  * exact Place ID — no text-search fallback, no mixing from other sources.
- * If the Place ID yields fewer photos than `count`, only those photos are
- * returned; the count is never padded from another source.
  */
 export async function getPlacePhotos(
   placeId: string,
   placeName: string,
   neighborhood?: string,
-  count = 2,
   googlePlaceId?: string
 ): Promise<string[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
 
   // 1. Check cache, skip-sentinel, and source tracking in one Storage call.
-  const { urls: cached, skipGoogle, storedGid, storedCount, fileNames } = await getStoredState(placeId, count);
+  const { urls: cached, skipGoogle, storedGid, storedCount, fileNames } = await getStoredState(placeId);
 
   // Admin manually cleared photos — don't auto-refetch from Google.
   if (skipGoogle) return [];
 
   if (googlePlaceId) {
     // ── Place-ID path ──────────────────────────────────────────────────────
-    // Cache hit: photos were fetched with the same Place ID.
-    // Use storedCount (from sentinel filename) as the authoritative cap — prevents
-    // stale leftover photos from leaking in even if the pre-clear DELETE failed.
-    if (storedGid === googlePlaceId && storedCount > 0) return cached.slice(0, storedCount);
+    // Cache hit: photos were fetched with the same Place ID and sentinel count > 0.
+    if (storedGid === googlePlaceId && storedCount > 0) return cached;
 
     // Cache miss or stale (different source): clear old photos/gid and re-fetch.
     if (!GOOGLE_KEY) return [];
     await ensureBucket();
     await clearPhotosAndGid(placeId, fileNames);
 
-    const { refs, businessStatus } = await fetchGoogleDataById(googlePlaceId, count);
+    const { refs, businessStatus } = await fetchGoogleDataById(googlePlaceId);
     if (businessStatus) saveBusinessStatus(placeId, businessStatus).catch(() => {});
 
     if (!refs.length) {
@@ -537,8 +536,6 @@ export async function getPlacePhotos(
     const results = await Promise.all(refs.map((ref, i) => downloadAndStore(placeId, ref, i)));
     const stored = results.filter(Boolean) as string[];
 
-    // Record source + exact count stored. On the next cache read, slice(0, storedCount)
-    // ensures no stale photos beyond this count can be served.
     await writeGidSentinel(placeId, googlePlaceId, stored.length);
 
     // Return only what this Place ID provided — never supplement from another source.
@@ -546,13 +543,12 @@ export async function getPlacePhotos(
   }
 
   // ── Text-search path (no googlePlaceId) ───────────────────────────────────
-  if (cached.length >= count) return cached.slice(0, count);
+  if (cached.length > 0) return cached;
   if (!GOOGLE_KEY) return cached;
   await ensureBucket();
 
   const { refs, businessStatus } = await fetchGoogleData(
-    [placeName, neighborhood, "الرياض"].filter(Boolean).join(" "),
-    count
+    [placeName, neighborhood, "الرياض"].filter(Boolean).join(" ")
   );
   if (businessStatus) saveBusinessStatus(placeId, businessStatus).catch(() => {});
   if (!refs.length) return cached;

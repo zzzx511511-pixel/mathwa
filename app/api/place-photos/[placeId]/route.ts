@@ -16,7 +16,7 @@ export async function GET(
   if (!name || !placeId)
     return NextResponse.json({ photos: [] });
 
-  const photos = await getPlacePhotos(placeId, name, nbh, 2, gid);
+  const photos = await getPlacePhotos(placeId, name, nbh, gid);
 
   return NextResponse.json(
     { photos },

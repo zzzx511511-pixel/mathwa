@@ -1960,6 +1960,10 @@ function AdminDashboard() {
                 {filtered.map((place) => {
                   const cat = getCategoryMeta(place.category);
                   const isEditing = editingId === place.id;
+                  // Derive Google Place ID: prefer place-level, fall back to first branch with _googlePlaceId
+                  const effectiveGid = place.googlePlaceId
+                    ?? (place.branches as Array<Branch & { _googlePlaceId?: string }>)
+                         .find((b) => b._googlePlaceId)?._googlePlaceId;
 
                   return (
                     <tr id={`place-row-${place.id}`} key={place.id} className={`border-b border-sal-50 last:border-0 transition ${isEditing ? "bg-sal-50" : "hover:bg-gray-50"}`}>
@@ -2757,11 +2761,11 @@ function AdminDashboard() {
                                   🗑️ حذف
                                 </button>
                               </div>
-                              {place.googlePlaceId && !photoClearState[place.id] && (
+                              {effectiveGid && !photoClearState[place.id] && (
                                 <div className="flex items-center gap-1">
                                   <button
                                     title="اختر صور Google لهذا المكان"
-                                    onClick={() => openGooglePhotoPreview(place.id, place.googlePlaceId!, place.name)}
+                                    onClick={() => openGooglePhotoPreview(place.id, effectiveGid, place.name)}
                                     disabled={previewLoading === place.id}
                                     className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition"
                                   >
@@ -2789,10 +2793,10 @@ function AdminDashboard() {
                                   <option value="CLOSED_PERMANENTLY">🔴 مغلق نهائيًا</option>
                                 </select>
                                 {photoClearState[place.id] === "done" ? (
-                                  place.googlePlaceId ? (
+                                  effectiveGid ? (
                                     <button
                                       title="اختر صور Google لهذا المكان"
-                                      onClick={() => openGooglePhotoPreview(place.id, place.googlePlaceId!, place.name)}
+                                      onClick={() => openGooglePhotoPreview(place.id, effectiveGid, place.name)}
                                       disabled={previewLoading === place.id}
                                       className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition"
                                     >

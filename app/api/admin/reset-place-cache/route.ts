@@ -4,14 +4,13 @@
  *   place_id:       string   — Supabase folder to clear (e.g. "c104")
  *   google_place_id: string  — Google Place ID to re-fetch from
  *   place_name:     string   — display name (e.g. "بيك")
- *   count?:         number   — how many photos to fetch (default 2)
  *   delete_debug?:  boolean  — also delete _debug/<google_place_id>/ (default true)
  * }
  *
  * Steps:
  *   1. Delete all photos + .gid-* in place_id/ (leaves .skip intact)
  *   2. Optionally delete _debug/<google_place_id>/
- *   3. Re-fetch photos from Google using the (now fixed) getPlacePhotos
+ *   3. Re-fetch all available photos from Google using getPlacePhotos
  *   4. Return new photo URLs for verification
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -69,11 +68,10 @@ export async function POST(req: NextRequest) {
     place_id: string;
     google_place_id: string;
     place_name: string;
-    count?: number;
     delete_debug?: boolean;
   };
 
-  const { place_id, google_place_id, place_name, count = 2, delete_debug = true } = body;
+  const { place_id, google_place_id, place_name, delete_debug = true } = body;
   if (!place_id || !google_place_id || !place_name)
     return NextResponse.json({ error: "place_id, google_place_id, and place_name are required" }, { status: 400 });
 
@@ -94,8 +92,8 @@ export async function POST(req: NextRequest) {
       await deleteByPrefix(`_debug/${google_place_id}`);
     }
 
-    // Step 3: re-fetch from Google using the updated code (PHOTO_INDEX_SKIP applied)
-    const photos = await getPlacePhotos(place_id, place_name, undefined, count, google_place_id);
+    // Step 3: re-fetch all available photos from Google (no count cap)
+    const photos = await getPlacePhotos(place_id, place_name, undefined, google_place_id);
 
     return NextResponse.json({
       place_id,

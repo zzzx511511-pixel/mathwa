@@ -160,7 +160,6 @@ function FullBranchFetchDashboard() {
 
   // M5: photo cache reset
   const [resetGid, setResetGid]     = useState("");
-  const [resetCount, setResetCount] = useState(2);
   const [resetState, setResetState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [resetPhotos, setResetPhotos] = useState<string[]>([]);
   const [resetError, setResetError]   = useState("");
@@ -292,7 +291,7 @@ function FullBranchFetchDashboard() {
           setResetGid(gid);
           setTimeout(() => photoSectionRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
           // Auto-fetch photos immediately — no manual button press needed
-          await doPhotoReset(selectedPlace.id, gid, selectedPlace.name, resetCount);
+          await doPhotoReset(selectedPlace.id, gid, selectedPlace.name);
         }
       }
     } catch (err) {
@@ -301,7 +300,7 @@ function FullBranchFetchDashboard() {
     }
   }
 
-  async function doPhotoReset(placeId: string, gid: string, placeName: string, count: number) {
+  async function doPhotoReset(placeId: string, gid: string, placeName: string) {
     setResetState("loading");
     setResetPhotos([]);
     setResetError("");
@@ -309,7 +308,7 @@ function FullBranchFetchDashboard() {
       const res = await fetch("/api/admin/reset-place-cache", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ place_id: placeId, google_place_id: gid, place_name: placeName, count }),
+        body: JSON.stringify({ place_id: placeId, google_place_id: gid, place_name: placeName }),
       });
       const data = await res.json() as { new_photos?: string[]; error?: string };
       if (!res.ok || data.error) {
@@ -327,7 +326,7 @@ function FullBranchFetchDashboard() {
 
   async function resetPhotoCache() {
     if (!selectedPlace || !resetGid.trim()) return;
-    await doPhotoReset(selectedPlace.id, resetGid.trim(), selectedPlace.name, resetCount);
+    await doPhotoReset(selectedPlace.id, resetGid.trim(), selectedPlace.name);
   }
 
   const allChecked  = (fetched ?? []).length > 0 && (fetched ?? []).every((b) => checks[b._googlePlaceId]);
@@ -603,15 +602,6 @@ function FullBranchFetchDashboard() {
               placeholder="ChIJ... (Google Place ID)"
               className="flex-1 rounded-xl border border-sal-200 bg-white px-4 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-sal-400 focus:outline-none font-mono"
             />
-            <select
-              value={resetCount}
-              onChange={(e) => setResetCount(Number(e.target.value))}
-              className="rounded-xl border border-sal-200 bg-white px-3 py-2.5 text-sm text-ink-700 focus:border-sal-400 focus:outline-none"
-            >
-              {[1, 2, 3, 4].map((n) => (
-                <option key={n} value={n}>{n} صور</option>
-              ))}
-            </select>
             <button
               type="button"
               onClick={resetPhotoCache}
