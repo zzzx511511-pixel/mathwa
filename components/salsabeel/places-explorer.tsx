@@ -71,7 +71,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
     return sorted.slice(0, 6);
   }, [filtered, period]);
 
-  const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
+  const GRAD = "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)";
 
   return (
     <div className="space-y-14">
@@ -104,7 +104,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
           )}
           {search && (
             <span className="absolute left-12 top-1/2 -translate-y-1/2 text-[10px] font-bold"
-              style={{ color: aiSearching ? "#94a3b8" : "#0ea5e9" }}>
+              style={{ color: aiSearching ? "#94a3b8" : "#0F5C56" }}>
               {aiSearching ? "..." : "✦ AI"}
             </span>
           )}
@@ -120,7 +120,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
               style={
                 region === r.value
                   ? { background: GRAD, color: "#fff" }
-                  : { background: "#f0f9ff", color: "#0ea5e9", border: "1px solid #bae6fd" }
+                  : { background: "#FAF7F2", color: "#0F5C56", border: "1px solid #bae6fd" }
               }
             >
               {r.value === "all" ? "🗺 الكل" : r.label}
@@ -132,7 +132,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
       {/* ── Top Rated ─────────────────────────────────── */}
       <section>
         <div className="mb-6">
-          <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+          <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0F5C56" }}>
             الأعلى تقييماً
           </p>
           <h2 className="text-2xl font-black text-ink-900">⭐ الأماكن الأكثر إعجاباً</h2>
@@ -152,7 +152,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
       <section>
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0ea5e9" }}>
+            <p className="mb-1 text-sm font-bold uppercase tracking-widest" style={{ color: "#0F5C56" }}>
               الأكثر زيارة
             </p>
             <h2 className="text-2xl font-black text-ink-900">🔥 الوجهات التي لا يفوتها أحد</h2>
@@ -160,7 +160,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
           {/* 28-day toggle */}
           <div
             className="flex overflow-hidden rounded-xl border"
-            style={{ borderColor: "#bae6fd" }}
+            style={{ borderColor: "#C4E8E5" }}
           >
             <button
               onClick={() => setPeriod("all")}
@@ -168,7 +168,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
               style={
                 period === "all"
                   ? { background: GRAD, color: "#fff" }
-                  : { background: "#f0f9ff", color: "#0ea5e9" }
+                  : { background: "#FAF7F2", color: "#0F5C56" }
               }
             >
               كل الوقت
@@ -179,7 +179,7 @@ export function PlacesExplorer({ allPlaces, statuses = {} }: { allPlaces: Place[
               style={
                 period === "28d"
                   ? { background: GRAD, color: "#fff" }
-                  : { background: "#f0f9ff", color: "#0ea5e9" }
+                  : { background: "#FAF7F2", color: "#0F5C56" }
               }
             >
               خلال 28 يوم

@@ -18,11 +18,11 @@ const LEGAL_LINKS = [
 
 export function MainShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
+    <div className="min-h-screen" style={{ background: "#FAF7F2" }}>
       <SalsabeelHeader />
       <main className="w-full">{children}</main>
 
-      <footer style={{ background: "#082f49", padding: "60px 40px 40px" }}>
+      <footer style={{ background: "#031A17", padding: "60px 40px 40px" }}>
         <div className="mx-auto max-w-screen-xl text-center">
           {/* Logo */}
           <div className="mb-4 flex items-center justify-center gap-3">
@@ -31,7 +31,7 @@ export function MainShell({ children }: { children: ReactNode }) {
               className="text-xl font-black text-white"
               style={{ fontFamily: "Tajawal, sans-serif" }}
             >
-              سل<span style={{ color: "#38bdf8" }}>س</span>بيل
+              و<span style={{ color: "#16A394" }}>ي</span>ن
             </span>
           </div>
 
@@ -65,7 +65,7 @@ export function MainShell({ children }: { children: ReactNode }) {
           </div>
 
           <p className="mt-4 text-xs text-white/25">
-            © 2025 سلسبيل — جميع الحقوق محفوظة
+            © 2025 وين — جميع الحقوق محفوظة
           </p>
         </div>
       </footer>

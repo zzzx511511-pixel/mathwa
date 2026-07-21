@@ -26,7 +26,7 @@ export function ContactForm() {
           name: form.name,
           email: form.email,
           replyto: form.email,
-          subject: `[سلسبيل] رسالة جديدة: ${form.type}`,
+          subject: `[وين] رسالة جديدة: ${form.type}`,
           message: `نوع التواصل: ${form.type}\n\nالرسالة:\n${form.message}`,
           botcheck: "",
         }),
@@ -118,7 +118,7 @@ export function ContactForm() {
           disabled={loading}
           className="mt-2 w-full rounded-xl py-3.5 text-base font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
-            background: "linear-gradient(135deg,#38bdf8 0%,#0ea5e9 55%,#0369a1 100%)",
+            background: "linear-gradient(135deg,#FF8A6A 0%,#FF6B4A 55%,#E05030 100%)",
             boxShadow: "0 6px 20px rgba(56,189,248,0.35)",
           }}
         >

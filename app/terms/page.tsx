@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "شروط الاستخدام — سلسبيل",
-  description: "شروط استخدام موقع سلسبيل",
+  title: "شروط الاستخدام — وين",
+  description: "شروط استخدام موقع وين",
 };
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen" style={{ background: "#f0f9ff" }}>
+    <div className="min-h-screen" style={{ background: "#FAF7F2" }}>
       <div
         className="px-5 py-14 text-center"
-        style={{ background: "linear-gradient(160deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)" }}
+        style={{ background: "linear-gradient(160deg, #031A17 0%, #0F5C56 60%, #16A394 100%)" }}
       >
         <h1 className="text-4xl font-black text-white">شروط الاستخدام</h1>
         <p className="mt-3 text-white/60 text-sm">آخر تحديث: يوليو 2025</p>
@@ -21,14 +21,14 @@ export default function TermsPage() {
 
         <Section title="القبول بالشروط">
           <p>
-            باستخدامك لموقع <strong>سلسبيل</strong>، فإنك توافق على الشروط والأحكام الواردة في هذه
+            باستخدامك لموقع <strong>وين</strong>، فإنك توافق على الشروط والأحكام الواردة في هذه
             الصفحة. إن كنت لا توافق عليها، يُرجى التوقف عن استخدام الموقع.
           </p>
         </Section>
 
         <Section title="طبيعة المحتوى">
           <p>
-            التقييمات والمعلومات والمحتوى المنشور في سلسبيل هي <strong>للإرشاد والتوجيه فقط</strong>.
+            التقييمات والمعلومات والمحتوى المنشور في وين هي <strong>للإرشاد والتوجيه فقط</strong>.
             لا تُعدّ توصية طبية أو قانونية أو مهنية من أي نوع. يُنصح دائمًا بالتحقق المباشر من
             المنشأة قبل اتخاذ أي قرار.
           </p>
@@ -36,7 +36,7 @@ export default function TermsPage() {
 
         <Section title="دقة المعلومات">
           <p>
-            سلسبيل <strong>غير مسؤول</strong> عن دقة المعلومات المقدّمة من المنشآت أو المستخدمين،
+            وين <strong>غير مسؤول</strong> عن دقة المعلومات المقدّمة من المنشآت أو المستخدمين،
             بما فيها أوقات العمل، وعناوين الفروع، والأسعار، وأي تفاصيل أخرى. قد تتغير هذه
             المعلومات دون إشعار مسبق.
           </p>
@@ -44,7 +44,7 @@ export default function TermsPage() {
 
         <Section title="إضافة المنشآت وحذفها">
           <p>
-            يحق لفريق سلسبيل <strong>إضافة أو تعديل أو حذف</strong> أي منشأة من الموقع في أي وقت
+            يحق لفريق وين <strong>إضافة أو تعديل أو حذف</strong> أي منشأة من الموقع في أي وقت
             ودون الحاجة إلى إبداء أسباب، وذلك وفق سياسة تحريرية تضمن جودة المحتوى المقدّم.
           </p>
         </Section>
@@ -52,7 +52,7 @@ export default function TermsPage() {
         <Section title="الاستخدام التجاري">
           <p>
             يُمنع منعًا باتًا استخدام محتوى الموقع — بما فيه النصوص والتقييمات والصور — لأي
-            غرض تجاري أو إعادة نشره دون <strong>إذن كتابي مسبق</strong> من فريق سلسبيل.
+            غرض تجاري أو إعادة نشره دون <strong>إذن كتابي مسبق</strong> من فريق وين.
             للتواصل بخصوص ذلك:{" "}
             <a
               href="mailto:salsabelapp@gmail.com"

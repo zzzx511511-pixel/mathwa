@@ -178,7 +178,7 @@ export function CategoryExplorer({
     );
   }
 
-  const GRAD = "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)";
+  const GRAD = "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)";
 
   function sortBtn(mode: SortMode, label: string, onClick?: () => void) {
     const isActive = sort === mode;
@@ -189,7 +189,7 @@ export function CategoryExplorer({
         style={
           isActive
             ? { background: GRAD, borderColor: "transparent", color: "#fff" }
-            : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+            : { background: "#FAF7F2", borderColor: "#C4E8E5", color: "#0F5C56" }
         }
       >
         {label}
@@ -239,7 +239,7 @@ export function CategoryExplorer({
               style={
                 sort === "nearest"
                   ? { background: GRAD, borderColor: "transparent", color: "#fff" }
-                  : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+                  : { background: "#FAF7F2", borderColor: "#C4E8E5", color: "#0F5C56" }
               }
             >
               {geoState === "loading" ? "⏳ جارٍ تحديد موقعك..." : "📍 الأقرب إليك"}
@@ -266,7 +266,7 @@ export function CategoryExplorer({
             style={
               view === "cards"
                 ? { background: cat.color, color: "#fff" }
-                : { background: "#f0f9ff", color: "#0c4a6e" }
+                : { background: "#FAF7F2", color: "#0F5C56" }
             }
             title="عرض البطاقات"
           >
@@ -281,7 +281,7 @@ export function CategoryExplorer({
             style={
               view === "map"
                 ? { background: cat.color, color: "#fff" }
-                : { background: "#f0f9ff", color: "#0c4a6e" }
+                : { background: "#FAF7F2", color: "#0F5C56" }
             }
             title="عرض الخريطة"
           >
@@ -307,7 +307,7 @@ export function CategoryExplorer({
             style={
               spec === "all"
                 ? { background: cat.bg, borderColor: cat.color, color: cat.color }
-                : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+                : { background: "#FAF7F2", borderColor: "#C4E8E5", color: "#0F5C56" }
             }
           >
             🏥 جميع التخصصات
@@ -327,7 +327,7 @@ export function CategoryExplorer({
                 style={
                   isActive
                     ? { background: cat.bg, borderColor: cat.color, color: cat.color }
-                    : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+                    : { background: "#FAF7F2", borderColor: "#C4E8E5", color: "#0F5C56" }
                 }
               >
                 {s.icon} {s.label}
@@ -359,7 +359,7 @@ export function CategoryExplorer({
               style={
                 isActive
                   ? { background: cat.bg, borderColor: cat.color, color: cat.color }
-                  : { background: "#f0f9ff", borderColor: "#e0f2fe", color: "#0c4a6e" }
+                  : { background: "#FAF7F2", borderColor: "#C4E8E5", color: "#0F5C56" }
               }
             >
               {r.label}
@@ -369,7 +369,7 @@ export function CategoryExplorer({
                   style={
                     isActive
                       ? { background: cat.color + "22", color: cat.color }
-                      : { background: "#e0f2fe", color: "#0369a1" }
+                      : { background: "#C4E8E5", color: "#0F5C56" }
                   }
                 >
                   {count}

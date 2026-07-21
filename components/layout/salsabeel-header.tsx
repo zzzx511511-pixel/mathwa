@@ -17,7 +17,7 @@ export function SalsabeelHeader() {
     <header
       className="sticky top-0 z-50 border-b border-white/10"
       style={{
-        background: "rgba(8, 47, 73, 0.97)",
+        background: "rgba(3, 26, 23, 0.97)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
       }}
@@ -31,7 +31,7 @@ export function SalsabeelHeader() {
             className="text-xl font-black tracking-wide text-white"
             style={{ fontFamily: "Tajawal, sans-serif" }}
           >
-            سل<span style={{ color: "#38bdf8" }}>س</span>بيل
+            و<span style={{ color: "#16A394" }}>ي</span>ن
           </span>
         </Link>
 
@@ -50,8 +50,8 @@ export function SalsabeelHeader() {
             href="/#contact"
             className="rounded-2xl px-5 py-2 text-sm font-bold text-white shadow"
             style={{
-              background: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0369a1 100%)",
-              boxShadow: "0 4px 14px rgba(56,189,248,0.35)",
+              background: "linear-gradient(135deg, #FF8A6A 0%, #FF6B4A 55%, #E05030 100%)",
+              boxShadow: "0 4px 14px rgba(255,107,74,0.35)",
             }}
           >
             تواصل معنا
@@ -78,7 +78,7 @@ export function SalsabeelHeader() {
       {open && (
         <div
           className="border-t border-white/10 px-5 pb-4 md:hidden"
-          style={{ background: "rgba(8,47,73,0.98)" }}
+          style={{ background: "rgba(3,26,23,0.98)" }}
         >
           <div className="flex flex-col gap-1 pt-3">
             {NAV_LINKS.map((l) => (
@@ -95,7 +95,7 @@ export function SalsabeelHeader() {
               href="/#contact"
               onClick={() => setOpen(false)}
               className="mt-1 rounded-2xl py-3 text-center text-sm font-bold text-white shadow"
-              style={{ background: "linear-gradient(135deg,#38bdf8,#0ea5e9,#0369a1)" }}
+              style={{ background: "linear-gradient(135deg,#FF8A6A,#FF6B4A,#E05030)" }}
             >
               تواصل معنا
             </Link>
