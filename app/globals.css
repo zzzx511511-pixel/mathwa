@@ -8,6 +8,7 @@ body {
   background: #FAF7F2;
   color: #0c1a2e;
   font-family: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 a { @apply transition-colors; }
